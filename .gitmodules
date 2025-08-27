@@ -1,0 +1,6 @@
+[submodule "NanoSVG"]
+	path = NanoSVG
+	url = https://github.com/memononen/nanosvg
+[submodule "SVGView"]
+	path = SVGView
+	url = git@github.com:threedeyes/BSVGView.git
