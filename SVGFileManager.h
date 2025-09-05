@@ -33,22 +33,21 @@ class SVGFileManager {
 public:
     SVGFileManager();
     ~SVGFileManager();
-    
+
     bool LoadFile(const char* filePath, SVGView* svgView, HVIFView* iconView, BString& source);
     status_t LoadSourceFromFile(const char* filePath, BString& source);
-    
-    // Save functions
-    status_t SaveFile(const char* filePath, const BString& source);
+
+    status_t SaveFile(const char* filePath, const BString& source, const char* mime);
     bool SaveCurrentFile(const BString& currentPath, const BString& source);
     bool SaveAsFile(const BString& source, BHandler* target);
     bool CanDirectSave(const BString& currentPath) const;
-    
+
     void ShowOpenPanel(BHandler* target = NULL);
     void ShowSaveAsPanel(BHandler* target = NULL);
-    
+
     BFilePanel* GetOpenPanel() { return fOpenPanel; }
     BFilePanel* GetSavePanel() { return fSavePanel; }
-    
+
     file_type GetLastLoadedFileType() const { return fLastFileType; }
     void SetLastLoadedFileType(file_type type) { fLastFileType = type; }
 
@@ -56,7 +55,7 @@ private:
     BFilePanel* fOpenPanel;
     BFilePanel* fSavePanel;
     file_type fLastFileType;
-    
+
     bool _LoadHVIFFile(const char* filePath, HVIFView* iconView, BString& source);
     bool _LoadSVGFile(const char* filePath, SVGView* svgView, HVIFView* iconView, BString& source);
     bool _LoadFromFileAttributes(const char* filePath, HVIFView* iconView, BString& source);

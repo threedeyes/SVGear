@@ -12,6 +12,8 @@
 #include <SplitView.h>
 #include <GroupView.h>
 #include <ScrollView.h>
+#include <TabView.h>
+#include <FilePanel.h>
 
 #include "SVGConstants.h"
 #include "BSVGView.h"
@@ -23,6 +25,7 @@ class SVGMenuManager;
 class SVGFileManager;
 class SVGToolBar;
 class BMenuBar;
+class BTextView;
 
 class SVGMainWindow : public BWindow {
 public:
@@ -41,14 +44,16 @@ private:
     void _BuildToolBars();
     void _BuildMainView();
     void _BuildStatusBar();
-    
+    void _BuildTabView();
+
     // Message handlers
     void _HandleFileMessages(BMessage* message);
     void _HandleViewMessages(BMessage* message);
     void _HandleEditMessages(BMessage* message);
     void _HandleDropMessages(BMessage* message);
-    void _HandleSaveMessages(BMessage* message);
-    
+    void _HandleExportMessages(BMessage* message);
+    void _HandleExportSavePanel(BMessage* message);
+
     // File operations
     void _LoadNewFile();
     void _LoadTemplateFile(const char* resourceName, const char* title);
@@ -57,19 +62,36 @@ private:
     void _SaveAsFile();
     void _HandleSavePanel(BMessage* message);
     bool _UpdateTitleAfterSave(const char* filePath);
-    
+
+    // Export operations
+    void _ExportHVIF();
+    void _ExportRDef();
+    void _ExportCPP();
+    status_t _SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime);
+    void _ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType);
+
     // UI Updates
     void _UpdateStatus();
     void _UpdateInterface();
     void _UpdateDisplayModeMenu();
     void _UpdateViewMenu();
     void _UpdateFileMenu();
-    
+
+    // Tab management
+    void _UpdateAllTabs();
+    void _UpdateRDefTab();
+    void _UpdateCPPTab();
+    void _HandleTabSelection();
+
     // Source view management
     void _ToggleSourceView();
-    void _UpdateSourceView();
     void _ReloadFromSource();
-    
+
+    // Data conversion and generation
+    void _GenerateHVIFFromSVG();
+    BString _ConvertToRDef(const unsigned char* data, size_t size);
+    BString _ConvertToCPP(const unsigned char* data, size_t size);
+
     // Utility functions
     BString _GetDisplayModeName() const;
     void _ShowAbout();
@@ -80,27 +102,42 @@ private:
 private:
     // Core components
     SVGView*         fSVGView;
-    SVGTextEdit*     fSourceView;
     HVIFView*        fIconView;
-    
+
+    // Tab components
+    BTabView*        fTabView;
+    SVGTextEdit*     fSVGTextView;
+    BTextView*       fRDefTextView;
+    BTextView*       fCPPTextView;
+    BScrollView*     fSVGScrollView;
+    BScrollView*     fRDefScrollView;
+    BScrollView*     fCPPScrollView;
+
     // Managers
     SVGMenuManager*  fMenuManager;
     SVGFileManager*  fFileManager;
-    
+
     // UI elements
     BMenuBar*        fMenuBar;
     BGroupView*      fMenuContainer;
     BGroupView*      fEditorContainer;
     BStringView*     fStatusView;
     BSplitView*      fSplitView;
-    BScrollView*     fSourceScrollView;
     SVGToolBar*      fToolBar;
     SVGToolBar*      fEditToolBar;
-    
+
     // State
     BString          fCurrentSource;
     BString          fCurrentFilePath;
     bool             fDocumentModified;
+
+    // Current HVIF data for export
+    unsigned char*   fCurrentHVIFData;
+    size_t           fCurrentHVIFSize;
+
+    // Export panel
+    BFilePanel*      fExportPanel;
+    uint32           fCurrentExportType;
 };
 
 #endif

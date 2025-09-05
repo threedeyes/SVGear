@@ -44,6 +44,14 @@ const uint32 MSG_EDIT_APPLY = 'appl';
 const uint32 MSG_EDIT_WORD_WRAP = 'wrap';
 const uint32 MSG_DROP_HVIF = '_RRC';
 
+// Export messages
+const uint32 MSG_EXPORT_HVIF = 'exhv';
+const uint32 MSG_EXPORT_RDEF = 'exrd';
+const uint32 MSG_EXPORT_CPP = 'excx';
+
+// Tab selection message
+const uint32 MSG_TAB_SELECTION = 'tabs';
+
 // Application messages
 const uint32 MSG_APP_QUIT = 'QAPP';
 const uint32 MSG_WINDOW_ACTIVATED = 'AWIN';
@@ -56,6 +64,13 @@ const int32 TOOLBAR_ICON_SIZE = 24;
 const float SOURCE_VIEW_WEIGHT = 0.3f;
 const float MAIN_VIEW_WEIGHT = 0.7f;
 
+// Tab indices
+enum {
+    TAB_SVG = 0,
+    TAB_RDEF = 1,
+    TAB_CPP = 2
+};
+
 // Error messages
 const char* const ERROR_FILE_NOT_SPECIFIED = "File path not specified";
 const char* const ERROR_READING_SVG = "Error reading SVG file";
@@ -63,8 +78,10 @@ const char* const ERROR_PARSING_SVG = "Error parsing SVG from source code. Pleas
 const char* const ERROR_SOURCE_EMPTY = "Source code is empty.";
 const char* const ERROR_SAVE_FAILED = "Failed to save file";
 const char* const ERROR_INVALID_PATH = "Invalid file path";
+const char* const ERROR_EXPORT_FAILED = "Failed to export file";
 
 // Success messages
 const char* const MSG_FILE_SAVED = "File saved successfully";
+const char* const MSG_FILE_EXPORTED = "File exported successfully";
 
 #endif

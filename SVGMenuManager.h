@@ -20,8 +20,9 @@ class SVGMenuManager {
 public:
     SVGMenuManager();
     ~SVGMenuManager();
-    
+
     BMenuBar* CreateMenuBar(BHandler* target);
+	void CreateExportSubMenu(BHandler* target);
     void UpdateDisplayMode(svg_display_mode mode);
     void UpdateViewOptions(bool showTransparency, bool showSource);
     void UpdateFileMenu(bool canSave, bool isModified);
@@ -36,7 +37,8 @@ private:
     BMenuItem* fSourceViewItem;
 	BMenuItem* fSaveItem;
     BMenuItem* fSaveAsItem;
-    
+    BMenu* fExportSubMenu;
+
     void _CreateFileMenu(BHandler* target);
     void _CreateViewMenu(BHandler* target);
     void _CreateDisplayMenu(BHandler* target);

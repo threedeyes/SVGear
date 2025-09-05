@@ -11,6 +11,10 @@
 #include <MessageRunner.h>
 #include <File.h>
 #include <Clipboard.h>
+#include <TabView.h>
+#include <TextView.h>
+#include <Directory.h>
+#include <GroupView.h>
 
 #include <private/interface/AboutWindow.h>
 
@@ -24,777 +28,1134 @@
 #include "SVGApplication.h"
 
 #include "HVIFParser.h"
+#include "HVIFWriter.h"
+#include "SVGParser.h"
 #include "SVGRenderer.h"
 
 SVGMainWindow::SVGMainWindow(const char* filePath)
-    : BWindow(BRect(100, 100, 1200, 800), "SVGear", B_DOCUMENT_WINDOW, B_ASYNCHRONOUS_CONTROLS),
-      fSVGView(NULL),
-      fSourceView(NULL),
-      fIconView(NULL),
-      fMenuManager(NULL),
-      fFileManager(NULL),
-      fMenuBar(NULL),
-      fMenuContainer(NULL),
-      fEditorContainer(NULL),
-      fStatusView(NULL),
-      fSplitView(NULL),
-      fSourceScrollView(NULL),
-      fToolBar(NULL),
-      fEditToolBar(NULL),
-      fDocumentModified(false)
+	: BWindow(BRect(100, 100, 1200, 800), "SVGear", B_DOCUMENT_WINDOW, B_ASYNCHRONOUS_CONTROLS),
+	fSVGView(NULL),
+	fIconView(NULL),
+	fTabView(NULL),
+	fSVGTextView(NULL),
+	fRDefTextView(NULL),
+	fCPPTextView(NULL),
+	fSVGScrollView(NULL),
+	fRDefScrollView(NULL),
+	fCPPScrollView(NULL),
+	fMenuManager(NULL),
+	fFileManager(NULL),
+	fMenuBar(NULL),
+	fMenuContainer(NULL),
+	fEditorContainer(NULL),
+	fStatusView(NULL),
+	fSplitView(NULL),
+	fToolBar(NULL),
+	fEditToolBar(NULL),
+	fDocumentModified(false),
+	fCurrentHVIFData(NULL),
+	fCurrentHVIFSize(0),
+	fExportPanel(NULL),
+	fCurrentExportType(0)
 {
-    fMenuManager = new SVGMenuManager();
-    fFileManager = new SVGFileManager();
-    
-    _BuildInterface();
+	fMenuManager = new SVGMenuManager();
+	fFileManager = new SVGFileManager();
 
-    if (filePath) {
-        LoadFile(filePath);
-    }
+	_BuildInterface();
 
-    if (fSVGView) {
-        fSVGView->SetTarget(this);
-    }
-    
-    _UpdateStatus();
+	if (filePath)
+		LoadFile(filePath);
+
+	if (fSVGView)
+		fSVGView->SetTarget(this);
+
+	_UpdateStatus();
 }
 
 SVGMainWindow::~SVGMainWindow()
 {
-    delete fMenuManager;
-    delete fFileManager;
-    be_app->PostMessage(MSG_WINDOW_CLOSED);
+	delete fMenuManager;
+	delete fFileManager;
+	delete fExportPanel;
+	delete[] fCurrentHVIFData;
+	be_app->PostMessage(MSG_WINDOW_CLOSED);
 }
 
 void
 SVGMainWindow::_BuildInterface()
 {
-    _BuildToolBars();
-    _BuildMainView();
-    _BuildStatusBar();
-    
-    fMenuBar = fMenuManager->CreateMenuBar(this);
-    
-    fIconView = new HVIFView("drag_icon");
-    font_height height;
-    fMenuBar->GetFontHeight(&height);
-    float iconSize = height.ascent + height.descent + 2.0f;
-    fIconView->SetExplicitMinSize(BSize(iconSize, B_SIZE_UNSET));
-    fIconView->SetExplicitMaxSize(BSize(iconSize, B_SIZE_UNSET));
+	_BuildToolBars();
+	_BuildMainView();
+	_BuildStatusBar();
 
-    fMenuContainer = new BGroupView(B_HORIZONTAL, 0);
-    fMenuContainer->GroupLayout()->AddView(fMenuBar);
-    fMenuContainer->GroupLayout()->AddView(fIconView);
-    fMenuBar->SetBorders(BControlLook::B_ALL_BORDERS & ~BControlLook::B_RIGHT_BORDER);
-    
-    BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
-        .Add(fMenuContainer)
-        .Add(fToolBar)
-        .Add(fSplitView)
-        .AddGroup(B_HORIZONTAL, 0)
-            .Add(fStatusView)
-            .AddGlue()
-            .End()
-        .End();
+	fMenuBar = fMenuManager->CreateMenuBar(this);
+
+	fIconView = new HVIFView("drag_icon");
+	font_height height;
+	fMenuBar->GetFontHeight(&height);
+	float iconSize = height.ascent + height.descent + 2.0f;
+	fIconView->SetExplicitMinSize(BSize(iconSize, B_SIZE_UNSET));
+	fIconView->SetExplicitMaxSize(BSize(iconSize, B_SIZE_UNSET));
+
+	fMenuContainer = new BGroupView(B_HORIZONTAL, 0);
+	fMenuContainer->GroupLayout()->AddView(fMenuBar);
+	fMenuContainer->GroupLayout()->AddView(fIconView);
+	fMenuBar->SetBorders(BControlLook::B_ALL_BORDERS & ~BControlLook::B_RIGHT_BORDER);
+
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+		.Add(fMenuContainer)
+		.Add(fToolBar)
+		.Add(fSplitView)
+		.AddGroup(B_HORIZONTAL, 0)
+			.Add(fStatusView)
+			.AddGlue()
+			.End()
+		.End();
 }
 
 void
 SVGMainWindow::_BuildToolBars()
 {
-    fToolBar = new SVGToolBar();
-    fToolBar->AddAction(MSG_NEW_FILE, this, SVGApplication::GetIcon("document-new", TOOLBAR_ICON_SIZE), "New");
-    fToolBar->AddAction(MSG_OPEN_FILE, this, SVGApplication::GetIcon("document-open", TOOLBAR_ICON_SIZE), "Open");
-    fToolBar->AddAction(MSG_SAVE_FILE, this, SVGApplication::GetIcon("document-save", TOOLBAR_ICON_SIZE), "Save");
-    fToolBar->AddSeparator();
-    fToolBar->AddAction(MSG_ZOOM_IN, this, SVGApplication::GetIcon("zoom-in", TOOLBAR_ICON_SIZE), "Zoom in");
-    fToolBar->AddAction(MSG_ZOOM_OUT, this, SVGApplication::GetIcon("zoom-out", TOOLBAR_ICON_SIZE), "Zoom out");
-    fToolBar->AddAction(MSG_ZOOM_ORIGINAL, this, SVGApplication::GetIcon("zoom-original", TOOLBAR_ICON_SIZE), "Zoom original");
-    fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), "Best fit");
-    fToolBar->AddSeparator();
-    fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), "Show Source Code");
-    fToolBar->AddGlue();
-    
-    fEditToolBar = new SVGToolBar();
-    fEditToolBar->AddAction(B_UNDO, this, SVGApplication::GetIcon("edit-undo", TOOLBAR_ICON_SIZE), "Undo");
-    fEditToolBar->AddSeparator();
-    fEditToolBar->AddAction(MSG_EDIT_COPY, this, SVGApplication::GetIcon("edit-copy", TOOLBAR_ICON_SIZE), "Copy");
-    fEditToolBar->AddAction(MSG_EDIT_PASTE, this, SVGApplication::GetIcon("edit-paste", TOOLBAR_ICON_SIZE), "Paste");
-    fEditToolBar->AddAction(MSG_EDIT_CUT, this, SVGApplication::GetIcon("edit-cut", TOOLBAR_ICON_SIZE), "Cut");
-    fEditToolBar->AddSeparator();
-    fEditToolBar->AddAction(MSG_EDIT_WORD_WRAP, this, SVGApplication::GetIcon("text-wrap", TOOLBAR_ICON_SIZE), "Text wrap");
-    fEditToolBar->AddSeparator();
-    fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), "Apply");
-    fEditToolBar->AddGlue();
+	fToolBar = new SVGToolBar();
+	fToolBar->AddAction(MSG_NEW_FILE, this, SVGApplication::GetIcon("document-new", TOOLBAR_ICON_SIZE), "New");
+	fToolBar->AddAction(MSG_OPEN_FILE, this, SVGApplication::GetIcon("document-open", TOOLBAR_ICON_SIZE), "Open");
+	fToolBar->AddAction(MSG_SAVE_FILE, this, SVGApplication::GetIcon("document-save", TOOLBAR_ICON_SIZE), "Save");
+	fToolBar->AddSeparator();
+	fToolBar->AddAction(MSG_ZOOM_IN, this, SVGApplication::GetIcon("zoom-in", TOOLBAR_ICON_SIZE), "Zoom in");
+	fToolBar->AddAction(MSG_ZOOM_OUT, this, SVGApplication::GetIcon("zoom-out", TOOLBAR_ICON_SIZE), "Zoom out");
+	fToolBar->AddAction(MSG_ZOOM_ORIGINAL, this, SVGApplication::GetIcon("zoom-original", TOOLBAR_ICON_SIZE), "Zoom original");
+	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), "Best fit");
+	fToolBar->AddSeparator();
+	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), "Show Source Code");
+	fToolBar->AddGlue();
+
+	fEditToolBar = new SVGToolBar();
+	fEditToolBar->AddAction(B_UNDO, this, SVGApplication::GetIcon("edit-undo", TOOLBAR_ICON_SIZE), "Undo");
+	fEditToolBar->AddSeparator();
+	fEditToolBar->AddAction(MSG_EDIT_COPY, this, SVGApplication::GetIcon("edit-copy", TOOLBAR_ICON_SIZE), "Copy");
+	fEditToolBar->AddAction(MSG_EDIT_PASTE, this, SVGApplication::GetIcon("edit-paste", TOOLBAR_ICON_SIZE), "Paste");
+	fEditToolBar->AddAction(MSG_EDIT_CUT, this, SVGApplication::GetIcon("edit-cut", TOOLBAR_ICON_SIZE), "Cut");
+	fEditToolBar->AddSeparator();
+	fEditToolBar->AddAction(MSG_EDIT_WORD_WRAP, this, SVGApplication::GetIcon("text-wrap", TOOLBAR_ICON_SIZE), "Text wrap");
+	fEditToolBar->AddSeparator();
+	fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), "Apply");
+	fEditToolBar->AddGlue();
+}
+
+void
+SVGMainWindow::_BuildTabView()
+{
+	fTabView = new BTabView("tab_view", B_WIDTH_FROM_WIDEST);
+
+	BGroupView* svgTabGroup = new BGroupView(B_VERTICAL, 0);
+	svgTabGroup->GroupLayout()->AddView(fEditToolBar);
+
+	fSVGTextView = new SVGTextEdit("svg_text");
+	fSVGTextView->SetWordWrap(true);
+	fSVGScrollView = new BScrollView("svg_scroll", fSVGTextView,
+					B_WILL_DRAW | B_FRAME_EVENTS,
+					true, true, B_NO_BORDER);
+
+	svgTabGroup->GroupLayout()->AddView(fSVGScrollView);
+
+	BTab* svgTab = new BTab();
+	fTabView->AddTab(svgTabGroup, svgTab);
+	svgTab->SetLabel("SVG");
+
+	fRDefTextView = new BTextView("rdef_text");
+	fRDefTextView->SetWordWrap(true);
+	fRDefTextView->MakeEditable(false);
+
+	BFont fixedFont(be_fixed_font);
+	fRDefTextView->SetFontAndColor(&fixedFont);
+
+	fRDefScrollView = new BScrollView("rdef_scroll", fRDefTextView,
+					B_WILL_DRAW | B_FRAME_EVENTS,
+					true, true, B_NO_BORDER);
+
+	BTab* rdefTab = new BTab();
+	fTabView->AddTab(fRDefScrollView, rdefTab);
+	rdefTab->SetLabel("RDef");
+
+	fCPPTextView = new BTextView("cpp_text");
+	fCPPTextView->SetWordWrap(true);
+	fCPPTextView->MakeEditable(false);
+	fCPPTextView->SetFontAndColor(&fixedFont);
+
+	fCPPScrollView = new BScrollView("cpp_scroll", fCPPTextView,
+					B_WILL_DRAW | B_FRAME_EVENTS,
+					true, true, B_NO_BORDER);
+
+	BTab* cppTab = new BTab();
+	fTabView->AddTab(fCPPScrollView, cppTab);
+	cppTab->SetLabel("C++");
 }
 
 void
 SVGMainWindow::_BuildMainView()
 {
-    fSVGView = new SVGView("svg_view");
+	fSVGView = new SVGView("svg_view");
 
-    fSourceView = new SVGTextEdit("source_view");
-    fSourceView->SetWordWrap(true);
-    fSourceScrollView = new BScrollView("source_scroll", fSourceView,
-                      B_WILL_DRAW | B_FRAME_EVENTS,
-                      true, true, B_NO_BORDER);
+	_BuildTabView();
 
-    fEditorContainer = new BGroupView(B_VERTICAL, 0);
-    fEditorContainer->GroupLayout()->AddView(fEditToolBar);
-    fEditorContainer->GroupLayout()->AddView(fSourceScrollView);
+	fEditorContainer = new BGroupView(B_VERTICAL, 0);
+	fEditorContainer->GroupLayout()->AddView(fTabView);
 
-    fSplitView = new BSplitView(B_VERTICAL);
-    fSplitView->AddChild(fSVGView);
-    fSplitView->AddChild(fEditorContainer);
-    fSplitView->SetCollapsible(1, true);
-    fSplitView->SetCollapsible(0, false);
-    fSplitView->SetItemCollapsed(1, true);
+	fSplitView = new BSplitView(B_VERTICAL);
+	fSplitView->AddChild(fSVGView);
+	fSplitView->AddChild(fEditorContainer);
+	fSplitView->SetCollapsible(1, true);
+	fSplitView->SetCollapsible(0, false);
+	fSplitView->SetItemCollapsed(1, true);
 }
 
 void
 SVGMainWindow::_BuildStatusBar()
 {
-    fStatusView = new BStringView("status", "Ready");
-    BFont font;
-    if (fSVGView) {
-        fSVGView->GetFont(&font);
-        font.SetSize(font.Size() - 2.0);
-        fStatusView->SetFont(&font);
-    }
-    fStatusView->SetAlignment(B_ALIGN_LEFT);
+	fStatusView = new BStringView("status", "Ready");
+	BFont font;
+	if (fSVGView) {
+		fSVGView->GetFont(&font);
+		font.SetSize(font.Size() - 2.0);
+		fStatusView->SetFont(&font);
+	}
+	fStatusView->SetAlignment(B_ALIGN_LEFT);
 }
 
 bool
 SVGMainWindow::QuitRequested()
 {
-    return true;
+	return true;
 }
 
 void
 SVGMainWindow::MessageReceived(BMessage* message)
 {
-    if (message->WasDropped()) {
-        _HandleDropMessages(message);
-        return;
-    }
+	if (message->WasDropped()) {
+		_HandleDropMessages(message);
+		return;
+	}
 
-    switch (message->what) {
-        case MSG_NEW_FILE:
-        case MSG_OPEN_FILE:
-        case MSG_SAVE_FILE:
-        case MSG_SAVE_AS_FILE:
-        case MSG_SAVE_PANEL_SAVE:
-        case B_REFS_RECEIVED:
-        case B_SAVE_REQUESTED:  // Добавить эту строку
-            _HandleFileMessages(message);
-            break;
-            
-        case MSG_FIT_WINDOW:
-        case MSG_ZOOM_ORIGINAL:
-        case MSG_CENTER:
-        case MSG_ZOOM_IN:
-        case MSG_ZOOM_OUT:
-        case MSG_RESET_VIEW:
-        case MSG_DISPLAY_NORMAL:
-        case MSG_DISPLAY_OUTLINE:
-        case MSG_DISPLAY_FILL_ONLY:
-        case MSG_DISPLAY_STROKE_ONLY:
-        case MSG_TOGGLE_TRANSPARENCY:
-        case MSG_TOGGLE_SOURCE_VIEW:
-            _HandleViewMessages(message);
-            break;
-            
-        case MSG_EDIT_COPY:
-        case MSG_EDIT_PASTE:
-        case MSG_EDIT_CUT:
-        case MSG_EDIT_APPLY:
-        case MSG_EDIT_WORD_WRAP:
-        case MSG_RELOAD_FROM_SOURCE:
-        case B_UNDO:
-            _HandleEditMessages(message);
-            break;
-            
-        case MSG_ABOUT:
-            _ShowAbout();
-            break;
-            
-        case MSG_EASTER_EGG:
-            _LoadTemplateFile("Teapot.svg", "Teapot.svg");
-            break;
-            
-        case MSG_SVG_STATUS_UPDATE:
-            _UpdateStatus();
-            break;
-            
-        default:
-            BWindow::MessageReceived(message);
-            break;
-    }
+	if (message->what == B_SAVE_REQUESTED && fCurrentExportType != 0) {
+		_HandleExportSavePanel(message);
+		return;
+	}
+
+	switch (message->what) {
+		case MSG_NEW_FILE:
+		case MSG_OPEN_FILE:
+		case MSG_SAVE_FILE:
+		case MSG_SAVE_AS_FILE:
+		case MSG_SAVE_PANEL_SAVE:
+		case B_REFS_RECEIVED:
+		case B_SAVE_REQUESTED:
+			_HandleFileMessages(message);
+			break;
+
+		case MSG_EXPORT_HVIF:
+		case MSG_EXPORT_RDEF:
+		case MSG_EXPORT_CPP:
+			_HandleExportMessages(message);
+			break;
+
+		case MSG_TAB_SELECTION:
+			_HandleTabSelection();
+			break;
+
+		case MSG_FIT_WINDOW:
+		case MSG_ZOOM_ORIGINAL:
+		case MSG_CENTER:
+		case MSG_ZOOM_IN:
+		case MSG_ZOOM_OUT:
+		case MSG_RESET_VIEW:
+		case MSG_DISPLAY_NORMAL:
+		case MSG_DISPLAY_OUTLINE:
+		case MSG_DISPLAY_FILL_ONLY:
+		case MSG_DISPLAY_STROKE_ONLY:
+		case MSG_TOGGLE_TRANSPARENCY:
+		case MSG_TOGGLE_SOURCE_VIEW:
+			_HandleViewMessages(message);
+			break;
+
+		case MSG_EDIT_COPY:
+		case MSG_EDIT_PASTE:
+		case MSG_EDIT_CUT:
+		case MSG_EDIT_APPLY:
+		case MSG_EDIT_WORD_WRAP:
+		case MSG_RELOAD_FROM_SOURCE:
+		case B_UNDO:
+			_HandleEditMessages(message);
+			break;
+
+		case MSG_ABOUT:
+			_ShowAbout();
+			break;
+
+		case MSG_EASTER_EGG:
+			_LoadTemplateFile("Teapot.svg", "Teapot.svg");
+			break;
+
+		case MSG_SVG_STATUS_UPDATE:
+			_UpdateStatus();
+			break;
+
+		default:
+			BWindow::MessageReceived(message);
+			break;
+	}
 }
 
 void
 SVGMainWindow::_HandleFileMessages(BMessage* message)
 {
-    switch (message->what) {
-        case MSG_NEW_FILE:
-            _LoadNewFile();
-            break;
-            
-        case MSG_OPEN_FILE:
-            if (fFileManager) {
-                fFileManager->ShowOpenPanel(this);
-            }
-            break;
-            
-        case B_REFS_RECEIVED:
-            _HandleRefsReceived(message);
-            break;
-            
-        case MSG_SAVE_FILE:
-            _SaveFile();
-            break;
-            
-        case MSG_SAVE_AS_FILE:
-            _SaveAsFile();
-            break;
-            
-        case B_SAVE_REQUESTED:
-        case MSG_SAVE_PANEL_SAVE:  // Обрабатываем оба сообщения
-            _HandleSavePanel(message);
-            break;
-    }
+	switch (message->what) {
+		case MSG_NEW_FILE:
+			_LoadNewFile();
+			break;
+
+		case MSG_OPEN_FILE:
+			if (fFileManager) {
+				fFileManager->ShowOpenPanel(this);
+			}
+			break;
+
+		case B_REFS_RECEIVED:
+			_HandleRefsReceived(message);
+			break;
+
+		case MSG_SAVE_FILE:
+			_SaveFile();
+			break;
+
+		case MSG_SAVE_AS_FILE:
+			_SaveAsFile();
+			break;
+
+		case B_SAVE_REQUESTED:
+		case MSG_SAVE_PANEL_SAVE:
+			_HandleSavePanel(message);
+			break;
+	}
+}
+
+void
+SVGMainWindow::_HandleExportMessages(BMessage* message)
+{
+	switch (message->what) {
+		case MSG_EXPORT_HVIF:
+			_ExportHVIF();
+			break;
+		case MSG_EXPORT_RDEF:
+			_ExportRDef();
+			break;
+		case MSG_EXPORT_CPP:
+			_ExportCPP();
+			break;
+	}
+}
+
+void
+SVGMainWindow::_HandleExportSavePanel(BMessage* message)
+{
+	entry_ref dirRef;
+	BString fileName;
+
+	if (message->FindRef("directory", &dirRef) != B_OK ||
+		message->FindString("name", &fileName) != B_OK) {
+		_ShowError("Could not get export file information");
+		fCurrentExportType = 0;
+		return;
+	}
+
+	BPath dirPath(&dirRef);
+	BString fullPath = dirPath.Path();
+	fullPath << "/" << fileName;
+
+	status_t result = B_ERROR;
+
+	switch (fCurrentExportType) {
+		case MSG_EXPORT_HVIF:
+		{
+			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+				_ShowError("No HVIF data available");
+				break;
+			}
+
+			if (!fileName.EndsWith(".hvif"))
+				fullPath << ".hvif";
+
+			result = _SaveBinaryData(fullPath.String(), fCurrentHVIFData, fCurrentHVIFSize, "image/x-hvif");
+			break;
+		}
+
+		case MSG_EXPORT_RDEF:
+		{
+			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+				_ShowError("No HVIF data available");
+				break;
+			}
+
+			if (!fileName.EndsWith(".rdef"))
+				fullPath << ".rdef";
+
+			BString rdefContent = _ConvertToRDef(fCurrentHVIFData, fCurrentHVIFSize);
+			result = fFileManager->SaveFile(fullPath.String(), rdefContent, "text/plain");
+			break;
+		}
+
+		case MSG_EXPORT_CPP:
+		{
+			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+				_ShowError("No HVIF data available");
+				break;
+			}
+
+			if (!fileName.EndsWith(".h") && !fileName.EndsWith(".hpp") && !fileName.EndsWith(".cpp")) {
+				fullPath << ".h";
+			}
+
+			BString cppContent = _ConvertToCPP(fCurrentHVIFData, fCurrentHVIFSize);
+			result = fFileManager->SaveFile(fullPath.String(), cppContent, "text/x-source-code");
+			break;
+		}
+	}
+
+	if (result == B_OK) {
+		_ShowSuccess(MSG_FILE_EXPORTED);
+	} else {
+		BString error;
+		error.SetToFormat("%s: %s", ERROR_EXPORT_FAILED, strerror(result));
+		_ShowError(error.String());
+	}
+
+	fCurrentExportType = 0;
 }
 
 void
 SVGMainWindow::_HandleViewMessages(BMessage* message)
 {
-    if (!fSVGView)
-        return;
+	if (!fSVGView)
+		return;
 
-    switch (message->what) {
-        case MSG_FIT_WINDOW:
-            fSVGView->ZoomToFit();
-            break;
-            
-        case MSG_ZOOM_ORIGINAL:
-            fSVGView->ZoomToOriginal();
-            break;
-            
-        case MSG_CENTER:
-            fSVGView->CenterImage();
-            break;
-            
-        case MSG_ZOOM_IN:
-            fSVGView->ZoomIn();
-            break;
-            
-        case MSG_ZOOM_OUT:
-            fSVGView->ZoomOut();
-            break;
-            
-        case MSG_RESET_VIEW:
-            fSVGView->ResetView();
-            break;
-            
-        case MSG_DISPLAY_NORMAL:
-            fSVGView->SetDisplayMode(SVG_DISPLAY_NORMAL);
-            _UpdateDisplayModeMenu();
-            break;
-            
-        case MSG_DISPLAY_OUTLINE:
-            fSVGView->SetDisplayMode(SVG_DISPLAY_OUTLINE);
-            _UpdateDisplayModeMenu();
-            break;
-            
-        case MSG_DISPLAY_FILL_ONLY:
-            fSVGView->SetDisplayMode(SVG_DISPLAY_FILL_ONLY);
-            _UpdateDisplayModeMenu();
-            break;
-            
-        case MSG_DISPLAY_STROKE_ONLY:
-            fSVGView->SetDisplayMode(SVG_DISPLAY_STROKE_ONLY);
-            _UpdateDisplayModeMenu();
-            break;
-            
-        case MSG_TOGGLE_TRANSPARENCY:
-            fSVGView->SetShowTransparency(!fSVGView->ShowTransparency());
-            _UpdateViewMenu();
-            break;
-            
-        case MSG_TOGGLE_SOURCE_VIEW:
-            _ToggleSourceView();
-            break;
-    }
+	switch (message->what) {
+		case MSG_FIT_WINDOW:
+			fSVGView->ZoomToFit();
+			break;
+
+		case MSG_ZOOM_ORIGINAL:
+			fSVGView->ZoomToOriginal();
+			break;
+
+		case MSG_CENTER:
+			fSVGView->CenterImage();
+			break;
+
+		case MSG_ZOOM_IN:
+			fSVGView->ZoomIn();
+			break;
+
+		case MSG_ZOOM_OUT:
+			fSVGView->ZoomOut();
+			break;
+
+		case MSG_RESET_VIEW:
+			fSVGView->ResetView();
+			break;
+
+		case MSG_DISPLAY_NORMAL:
+			fSVGView->SetDisplayMode(SVG_DISPLAY_NORMAL);
+			_UpdateDisplayModeMenu();
+			break;
+
+		case MSG_DISPLAY_OUTLINE:
+			fSVGView->SetDisplayMode(SVG_DISPLAY_OUTLINE);
+			_UpdateDisplayModeMenu();
+			break;
+
+		case MSG_DISPLAY_FILL_ONLY:
+			fSVGView->SetDisplayMode(SVG_DISPLAY_FILL_ONLY);
+			_UpdateDisplayModeMenu();
+			break;
+
+		case MSG_DISPLAY_STROKE_ONLY:
+			fSVGView->SetDisplayMode(SVG_DISPLAY_STROKE_ONLY);
+			_UpdateDisplayModeMenu();
+			break;
+
+		case MSG_TOGGLE_TRANSPARENCY:
+			fSVGView->SetShowTransparency(!fSVGView->ShowTransparency());
+			_UpdateViewMenu();
+			break;
+
+		case MSG_TOGGLE_SOURCE_VIEW:
+			_ToggleSourceView();
+			break;
+	}
 }
 
 void
 SVGMainWindow::_HandleEditMessages(BMessage* message)
 {
-    switch (message->what) {
-        case B_UNDO:
-            if (fSourceView && !fSplitView->IsItemCollapsed(1)) {
-                fSourceView->Undo(be_clipboard);
-            }
-            break;
-            
-        case MSG_EDIT_COPY:
-            if (fSourceView && !fSplitView->IsItemCollapsed(1)) {
-                fSourceView->Copy(be_clipboard);
-            }
-            break;
-            
-        case MSG_EDIT_PASTE:
-            if (fSourceView && !fSplitView->IsItemCollapsed(1)) {
-                fSourceView->Paste(be_clipboard);
-            }
-            break;
-            
-        case MSG_EDIT_CUT:
-            if (fSourceView && !fSplitView->IsItemCollapsed(1)) {
-                fSourceView->Cut(be_clipboard);
-            }
-            break;
-            
-        case MSG_EDIT_WORD_WRAP:
-            if (fSourceView && !fSplitView->IsItemCollapsed(1)) {
-                fSourceView->SetWordWrap(!fSourceView->DoesWordWrap());
-            }
-            break;
-            
-        case MSG_EDIT_APPLY:
-        case MSG_RELOAD_FROM_SOURCE:
-            _ReloadFromSource();
-            break;
-    }
+	BTextView* currentTextView = NULL;
+
+	if (fTabView && !fSplitView->IsItemCollapsed(1)) {
+		int32 selection = fTabView->Selection();
+		switch (selection) {
+			case TAB_SVG:
+				currentTextView = fSVGTextView;
+				break;
+			case TAB_RDEF:
+				currentTextView = fRDefTextView;
+				break;
+			case TAB_CPP:
+				currentTextView = fCPPTextView;
+				break;
+		}
+	}
+
+	switch (message->what) {
+		case B_UNDO:
+			if (currentTextView && currentTextView == fSVGTextView)
+				fSVGTextView->Undo(be_clipboard);
+			break;
+
+		case MSG_EDIT_COPY:
+			if (currentTextView)
+				currentTextView->Copy(be_clipboard);
+			break;
+
+		case MSG_EDIT_PASTE:
+			if (currentTextView && currentTextView == fSVGTextView)
+				fSVGTextView->Paste(be_clipboard);
+			break;
+
+		case MSG_EDIT_CUT:
+			if (currentTextView && currentTextView == fSVGTextView)
+				fSVGTextView->Cut(be_clipboard);
+			break;
+
+		case MSG_EDIT_WORD_WRAP:
+			if (currentTextView)
+				currentTextView->SetWordWrap(!currentTextView->DoesWordWrap());
+			break;
+
+		case MSG_EDIT_APPLY:
+		case MSG_RELOAD_FROM_SOURCE:
+			_ReloadFromSource();
+			break;
+	}
 }
 
 void
 SVGMainWindow::_HandleDropMessages(BMessage* message)
 {
-    if (message->HasData("icon", B_VECTOR_ICON_TYPE)) {
-        ssize_t size;
-        const void* data;
-        if (message->FindData("icon", B_VECTOR_ICON_TYPE, &data, &size) != B_OK)
-            return;
+	if (message->HasData("icon", B_VECTOR_ICON_TYPE)) {
+		ssize_t size;
+		const void* data;
+		if (message->FindData("icon", B_VECTOR_ICON_TYPE, &data, &size) != B_OK)
+			return;
 
-        std::vector<uint8_t> icondata((uint8_t*)data, (uint8_t*)data + size);
+		std::vector<uint8_t> icondata((uint8_t*)data, (uint8_t*)data + size);
 
-        hvif::HVIFParser parser;
-        if (!parser.ParseData(icondata)) {
-            return;
-        }
-        
-        if (fIconView) {
-            fIconView->SetIcon(parser.GetIconData(), parser.GetIconDataSize());
-        }
-        
-        const hvif::HVIFIcon& icon = parser.GetIcon();
-        hvif::SVGRenderer renderer;
-        std::string svg = renderer.RenderIcon(icon, 64, 64);
-        fCurrentSource.SetTo(svg.c_str());
+		hvif::HVIFParser parser;
+		if (!parser.ParseData(icondata)) {
+			return;
+		}
 
-        _UpdateStatus();
-        _UpdateSourceView();
-        _ReloadFromSource();
+		delete[] fCurrentHVIFData;
+		fCurrentHVIFSize = parser.GetIconDataSize();
+		fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
+		memcpy(fCurrentHVIFData, parser.GetIconData(), fCurrentHVIFSize);
 
-        SetTitle("SVGear - Untitled.svg");
-    } else if (message->HasRef("refs")) {
-        message->what = B_REFS_RECEIVED;
-        _HandleRefsReceived(message);
-    }
+		if (fIconView)
+			fIconView->SetIcon(parser.GetIconData(), parser.GetIconDataSize());
+
+		const hvif::HVIFIcon& icon = parser.GetIcon();
+		hvif::SVGRenderer renderer;
+		std::string svg = renderer.RenderIcon(icon, 64, 64);
+		fCurrentSource.SetTo(svg.c_str());
+
+		_UpdateStatus();
+		_UpdateAllTabs();
+		_ReloadFromSource();
+
+		SetTitle("SVGear - Untitled.svg");
+	} else if (message->HasRef("refs")) {
+		message->what = B_REFS_RECEIVED;
+		_HandleRefsReceived(message);
+	}
 }
 
 void
 SVGMainWindow::_LoadNewFile()
 {
-    _LoadTemplateFile("Untitled.svg", "Untitled.svg");
-    if (fIconView) {
-        fIconView->RemoveIcon();
-    }
-    
-    // Сбрасываем путь для нового файла
-    fCurrentFilePath = "";
-    fDocumentModified = false;
-    if (fFileManager) {
-        fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
-    }
-    _UpdateFileMenu();
+	_LoadTemplateFile("Untitled.svg", "Untitled.svg");
+	if (fIconView) {
+		fIconView->RemoveIcon();
+	}
+
+	delete[] fCurrentHVIFData;
+	fCurrentHVIFData = NULL;
+	fCurrentHVIFSize = 0;
+
+	fCurrentFilePath = "";
+	fDocumentModified = false;
+	if (fFileManager) {
+		fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
+	}
+	_UpdateFileMenu();
 }
 
 void
 SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 {
-    app_info info;
-    be_app->GetAppInfo(&info);
-    BFile file(&info.ref, B_READ_ONLY);
+	app_info info;
+	be_app->GetAppInfo(&info);
+	BFile file(&info.ref, B_READ_ONLY);
 
-    BResources res;
-    if (res.SetTo(&file) != B_OK)
-        return;
+	BResources res;
+	if (res.SetTo(&file) != B_OK)
+		return;
 
-    size_t size;
-    char* data = (char*)res.LoadResource('rSTL', resourceName, &size);
-    if (data == NULL || size <= 0)
-        return;
-        
-    data[size] = 0;
-    fCurrentSource.SetTo(data);
+	size_t size;
+	char* data = (char*)res.LoadResource('rSTL', resourceName, &size);
+	if (data == NULL || size <= 0)
+		return;
 
-    if (fSVGView) {
-        fSVGView->LoadFromMemory(fCurrentSource.String());
-    }
+	data[size] = 0;
+	fCurrentSource.SetTo(data);
 
-    _UpdateStatus();
-    _UpdateSourceView();
+	if (fSVGView)
+		fSVGView->LoadFromMemory(fCurrentSource.String());
 
-    BString windowTitle("SVGear - ");
-    windowTitle << title;
-    SetTitle(windowTitle.String());
+	_UpdateStatus();
+	_UpdateAllTabs();
+
+	BString windowTitle("SVGear - ");
+	windowTitle << title;
+	SetTitle(windowTitle.String());
 }
 
 void
 SVGMainWindow::_HandleRefsReceived(BMessage* message)
 {
-    entry_ref ref;
-    if (message->FindRef("refs", &ref) == B_OK) {
-        BPath path(&ref);
-        if (path.InitCheck() == B_OK) {
-            LoadFile(path.Path());
-        }
-    }
+	entry_ref ref;
+	if (message->FindRef("refs", &ref) == B_OK) {
+		BPath path(&ref);
+		if (path.InitCheck() == B_OK) {
+			LoadFile(path.Path());
+		}
+	}
 }
 
 void
 SVGMainWindow::LoadFile(const char* filePath)
 {
-    if (!fFileManager || !fSVGView)
-        return;
+	if (!fFileManager || !fSVGView)
+		return;
 
-    if (fFileManager->LoadFile(filePath, fSVGView, fIconView, fCurrentSource)) {
-        BPath path(filePath);
-        BString title("SVGear - ");
-        title << path.Leaf();
-        SetTitle(title.String());
-        
-        fSVGView->ResetView();
-        fCurrentFilePath = filePath;
-        fDocumentModified = false;
-        
-        _UpdateStatus();
-        _UpdateSourceView();
-        _ReloadFromSource();
-        _UpdateFileMenu();
-    }
+	if (fFileManager->LoadFile(filePath, fSVGView, fIconView, fCurrentSource)) {
+		BPath path(filePath);
+		BString title("SVGear - ");
+		title << path.Leaf();
+		SetTitle(title.String());
+
+		fSVGView->ResetView();
+		fCurrentFilePath = filePath;
+		fDocumentModified = false;
+
+		_GenerateHVIFFromSVG();
+
+		_UpdateStatus();
+		_UpdateAllTabs();
+		_ReloadFromSource();
+		_UpdateFileMenu();
+	}
+}
+
+void
+SVGMainWindow::_GenerateHVIFFromSVG()
+{
+	if (fCurrentSource.IsEmpty())
+		return;
+
+	try {
+		hvif::HVIFWriter writer;
+		hvif::SVGParser parser;
+
+		if (parser.ParseString(fCurrentSource.String(), writer)) {
+			std::vector<uint8_t> hvifData = writer.WriteToBuffer();
+
+			if (!hvifData.empty()) {
+				delete[] fCurrentHVIFData;
+				fCurrentHVIFSize = hvifData.size();
+				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
+				memcpy(fCurrentHVIFData, &hvifData[0], fCurrentHVIFSize);
+			}
+		}
+	} catch (...) {
+	}
 }
 
 void
 SVGMainWindow::_UpdateStatus()
 {
-    BString status;
+	BString status;
 
-    if (fSVGView && fSVGView->IsLoaded()) {
-        float scale = fSVGView->Scale();
-        float width = fSVGView->SVGWidth();
-        float height = fSVGView->SVGHeight();
+	if (fSVGView && fSVGView->IsLoaded()) {
+		float scale = fSVGView->Scale();
+		float width = fSVGView->SVGWidth();
+		float height = fSVGView->SVGHeight();
 
-        status.SetToFormat(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s",
-                width, height, scale * 100.0f, _GetDisplayModeName().String());
-    } else {
-        status = "No SVG loaded";
-    }
+		status.SetToFormat(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s",
+				width, height, scale * 100.0f, _GetDisplayModeName().String());
+	} else {
+		status = "No SVG loaded";
+	}
 
-    if (fStatusView) {
-        fStatusView->SetText(status.String());
-    }
+	if (fStatusView)
+		fStatusView->SetText(status.String());
 }
 
 void
 SVGMainWindow::_UpdateInterface()
 {
-    _UpdateDisplayModeMenu();
-    _UpdateViewMenu();
-    _UpdateStatus();
+	_UpdateDisplayModeMenu();
+	_UpdateViewMenu();
+	_UpdateStatus();
 }
 
 void
 SVGMainWindow::_UpdateDisplayModeMenu()
 {
-    if (fMenuManager && fSVGView) {
-        fMenuManager->UpdateDisplayMode(fSVGView->DisplayMode());
-    }
+	if (fMenuManager && fSVGView)
+		fMenuManager->UpdateDisplayMode(fSVGView->DisplayMode());
 }
 
 void
 SVGMainWindow::_UpdateViewMenu()
 {
-    if (fMenuManager && fSVGView && fSplitView) {
-        bool showTransparency = fSVGView->ShowTransparency();
-        bool showSource = !fSplitView->IsItemCollapsed(1);
-        fMenuManager->UpdateViewOptions(showTransparency, showSource);
-    }
+	if (fMenuManager && fSVGView && fSplitView) {
+		bool showTransparency = fSVGView->ShowTransparency();
+		bool showSource = !fSplitView->IsItemCollapsed(1);
+		fMenuManager->UpdateViewOptions(showTransparency, showSource);
+	}
 }
 
 BString
 SVGMainWindow::_GetDisplayModeName() const
 {
-    if (!fSVGView)
-        return "Unknown";
+	if (!fSVGView)
+		return "Unknown";
 
-    switch (fSVGView->DisplayMode()) {
-        case SVG_DISPLAY_NORMAL:
-            return "Normal";
-        case SVG_DISPLAY_OUTLINE:
-            return "Outline";
-        case SVG_DISPLAY_FILL_ONLY:
-            return "Fill Only";
-        case SVG_DISPLAY_STROKE_ONLY:
-            return "Stroke Only";
-        default:
-            return "Unknown";
-    }
+	switch (fSVGView->DisplayMode()) {
+		case SVG_DISPLAY_NORMAL:
+			return "Normal";
+		case SVG_DISPLAY_OUTLINE:
+			return "Outline";
+		case SVG_DISPLAY_FILL_ONLY:
+			return "Fill Only";
+		case SVG_DISPLAY_STROKE_ONLY:
+			return "Stroke Only";
+		default:
+			return "Unknown";
+	}
 }
 
 void
 SVGMainWindow::_ShowAbout()
 {
-    BAboutWindow* about = new BAboutWindow("SVGear", APP_SIGNATURE);
-    about->AddCopyright(2025, "Gerasim Troeglazov (3dEyes**)");
-    about->AddDescription(
-        "SVGear provides an intuitive interface for viewing and manipulating "
-        "SVG (Scalable Vector Graphics) files. \n"
-        "The application supports format conversion operations, enabling "
-        "users to transform SVG files into other vector formats such as "
-        "HVIF (Haiku Vector Icon Format).");
-    about->Show();
+	BAboutWindow* about = new BAboutWindow("SVGear", APP_SIGNATURE);
+	about->AddCopyright(2025, "Gerasim Troeglazov (3dEyes**)");
+	about->AddDescription(
+		"SVGear provides an intuitive interface for viewing and manipulating "
+		"SVG (Scalable Vector Graphics) files. \n"
+		"The application supports format conversion operations, enabling "
+		"users to transform SVG files into other vector formats such as "
+		"HVIF (Haiku Vector Icon Format).");
+	about->Show();
 }
 
 void
 SVGMainWindow::_ToggleSourceView()
 {
-    if (!fSplitView)
-        return;
+	if (!fSplitView)
+		return;
 
-    fSplitView->SetItemCollapsed(1, !fSplitView->IsItemCollapsed(1));
+	fSplitView->SetItemCollapsed(1, !fSplitView->IsItemCollapsed(1));
 
-    if (!fSplitView->IsItemCollapsed(1)) {
-        _UpdateSourceView();
-        fSplitView->SetItemWeight(0, MAIN_VIEW_WEIGHT, false);
-        fSplitView->SetItemWeight(1, SOURCE_VIEW_WEIGHT, false);
-    }
+	if (!fSplitView->IsItemCollapsed(1)) {
+		_UpdateAllTabs();
+		fSplitView->SetItemWeight(0, MAIN_VIEW_WEIGHT, false);
+		fSplitView->SetItemWeight(1, SOURCE_VIEW_WEIGHT, false);
+	}
 
-    _UpdateViewMenu();
-    _UpdateStatus();
+	_UpdateViewMenu();
+	_UpdateStatus();
 }
 
 void
-SVGMainWindow::_UpdateSourceView()
+SVGMainWindow::_UpdateAllTabs()
 {
-    if (fSourceView && !fCurrentSource.IsEmpty()) {
-        fSourceView->SetText(fCurrentSource.String());
-        fSourceView->ApplySyntaxHighlighting();
-    }
+	if (fSVGTextView && !fCurrentSource.IsEmpty()) {
+		fSVGTextView->SetText(fCurrentSource.String());
+		fSVGTextView->ApplySyntaxHighlighting();
+	}
+	
+	_UpdateRDefTab();
+	_UpdateCPPTab();
+}
+
+void
+SVGMainWindow::_UpdateRDefTab()
+{
+	if (!fRDefTextView || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		if (fRDefTextView)
+			fRDefTextView->SetText("No HVIF data available");
+		return;
+	}
+
+	BString rdefContent = _ConvertToRDef(fCurrentHVIFData, fCurrentHVIFSize);
+	fRDefTextView->SetText(rdefContent.String());
+}
+
+void
+SVGMainWindow::_UpdateCPPTab()
+{
+	if (!fCPPTextView || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		if (fCPPTextView)
+			fCPPTextView->SetText("No HVIF data available");
+		return;
+	}
+		
+	BString cppContent = _ConvertToCPP(fCurrentHVIFData, fCurrentHVIFSize);
+	fCPPTextView->SetText(cppContent.String());
+}
+
+void
+SVGMainWindow::_HandleTabSelection()
+{
 }
 
 void
 SVGMainWindow::_ReloadFromSource()
 {
-    if (!fSourceView || !fSVGView)
-        return;
+	if (!fSVGTextView || !fSVGView)
+		return;
 
-    BString sourceText = fSourceView->Text();
-    if (sourceText.IsEmpty()) {
-        _ShowError(ERROR_SOURCE_EMPTY);
-        return;
-    }
+	BString sourceText = fSVGTextView->Text();
+	if (sourceText.IsEmpty()) {
+		_ShowError(ERROR_SOURCE_EMPTY);
+		return;
+	}
 
-    status_t result = fSVGView->LoadFromMemory(sourceText.String());
-    if (result != B_OK) {
-        _ShowError(ERROR_PARSING_SVG);
-    } else {
-        // Проверяем, изменился ли документ
-        if (fCurrentSource != sourceText) {
-            fDocumentModified = true;
-            fCurrentSource = sourceText;
-        }
-        _UpdateStatus();
-        _UpdateFileMenu();
-    }
+	status_t result = fSVGView->LoadFromMemory(sourceText.String());
+	if (result != B_OK) {
+		_ShowError(ERROR_PARSING_SVG);
+	} else {
+		if (fCurrentSource != sourceText) {
+			fDocumentModified = true;
+			fCurrentSource = sourceText;
+			_GenerateHVIFFromSVG();
+			_UpdateRDefTab();
+			_UpdateCPPTab();
+		}
+		_UpdateStatus();
+		_UpdateFileMenu();
+	}
 }
 
 void
 SVGMainWindow::_ShowError(const char* message)
 {
-    BAlert* alert = new BAlert("Error", message, "OK", NULL, NULL,
-                              B_WIDTH_AS_USUAL, B_STOP_ALERT);
-    alert->Go();
+	BAlert* alert = new BAlert("Error", message, "OK", NULL, NULL,
+							  B_WIDTH_AS_USUAL, B_STOP_ALERT);
+	alert->Go();
 }
 
 void
 SVGMainWindow::_SaveFile()
 {
-    if (!fFileManager)
-        return;
+	if (!fFileManager)
+		return;
 
-    BString currentSource = _GetCurrentSource();
-    if (currentSource.IsEmpty()) {
-        _ShowError(ERROR_SOURCE_EMPTY);
-        return;
-    }
+	BString currentSource = _GetCurrentSource();
+	if (currentSource.IsEmpty()) {
+		_ShowError(ERROR_SOURCE_EMPTY);
+		return;
+	}
 
-    // Проверяем, можем ли мы сохранить напрямую
-    if (fFileManager->CanDirectSave(fCurrentFilePath)) {
-        // Прямое сохранение SVG файла
-        if (fFileManager->SaveCurrentFile(fCurrentFilePath, currentSource)) {
-            fDocumentModified = false;
-            _ShowSuccess(MSG_FILE_SAVED);
-            _UpdateFileMenu();
-        }
-    } else {
-        // Если это новый файл, HVIF или из атрибутов - предлагаем Save As
-        _SaveAsFile();
-    }
+	if (fFileManager->CanDirectSave(fCurrentFilePath)) {
+		if (fFileManager->SaveCurrentFile(fCurrentFilePath, currentSource)) {
+			fDocumentModified = false;
+			_ShowSuccess(MSG_FILE_SAVED);
+			_UpdateFileMenu();
+		}
+	} else {
+		_SaveAsFile();
+	}
 }
 
 void
 SVGMainWindow::_SaveAsFile()
 {
-    if (!fFileManager)
-        return;
+	if (!fFileManager)
+		return;
 
-    BString currentSource = _GetCurrentSource();
-    if (currentSource.IsEmpty()) {
-        _ShowError(ERROR_SOURCE_EMPTY);
-        return;
-    }
+	BString currentSource = _GetCurrentSource();
+	if (currentSource.IsEmpty()) {
+		_ShowError(ERROR_SOURCE_EMPTY);
+		return;
+	}
 
-    fFileManager->ShowSaveAsPanel(this);
+	fFileManager->ShowSaveAsPanel(this);
 }
 
 void
 SVGMainWindow::_HandleSavePanel(BMessage* message)
 {
-    // Добавим отладочную информацию
-    printf("_HandleSavePanel called\n");
-    message->PrintToStream();
-    
-    entry_ref dirRef;
-    BString fileName;
-    
-    if (message->FindRef("directory", &dirRef) != B_OK) {
-        printf("Error: Could not find directory ref\n");
-        _ShowError("Could not find directory reference");
-        return;
-    }
-    
-    if (message->FindString("name", &fileName) != B_OK) {
-        printf("Error: Could not find file name\n");
-        _ShowError("Could not find file name");
-        return;
-    }
+	entry_ref dirRef;
+	BString fileName;
 
-    printf("Directory found, file name: %s\n", fileName.String());
+	if (message->FindRef("directory", &dirRef) != B_OK) {
+		_ShowError("Could not find directory reference");
+		return;
+	}
 
-    BDirectory dir(&dirRef);
-    if (dir.InitCheck() != B_OK) {
-        printf("Error: Directory init failed\n");
-        _ShowError(ERROR_INVALID_PATH);
-        return;
-    }
+	if (message->FindString("name", &fileName) != B_OK) {
+		_ShowError("Could not find file name");
+		return;
+	}
 
-    BPath dirPath(&dirRef);
-    if (dirPath.InitCheck() != B_OK) {
-        printf("Error: Could not get directory path\n");
-        _ShowError(ERROR_INVALID_PATH);
-        return;
-    }
-    
-    BString fullPath = dirPath.Path();
-    fullPath << "/" << fileName;
+	BDirectory dir(&dirRef);
+	if (dir.InitCheck() != B_OK) {
+		_ShowError(ERROR_INVALID_PATH);
+		return;
+	}
 
-    // Убедимся, что файл имеет расширение .svg
-    if (!fileName.EndsWith(".svg") && !fileName.EndsWith(".svgz")) {
-        fullPath << ".svg";
-    }
+	BPath dirPath(&dirRef);
+	if (dirPath.InitCheck() != B_OK) {
+		_ShowError(ERROR_INVALID_PATH);
+		return;
+	}
 
-    printf("Full path: %s\n", fullPath.String());
+	BString fullPath = dirPath.Path();
+	fullPath << "/" << fileName;
 
-    BString currentSource = _GetCurrentSource();
-    if (currentSource.IsEmpty()) {
-        printf("Error: Current source is empty\n");
-        _ShowError(ERROR_SOURCE_EMPTY);
-        return;
-    }
+	if (!fileName.EndsWith(".svg")) {
+		fullPath << ".svg";
+	}
 
-    printf("Attempting to save file...\n");
-    status_t result = fFileManager->SaveFile(fullPath.String(), currentSource);
-    
-    if (result == B_OK) {
-        printf("File saved successfully\n");
-        // Обновляем состояние после успешного сохранения
-        fCurrentFilePath = fullPath;
-        fDocumentModified = false;
-        if (fFileManager) {
-            fFileManager->SetLastLoadedFileType(FILE_TYPE_SVG);
-        }
-        
-        _UpdateTitleAfterSave(fullPath.String());
-        _ShowSuccess(MSG_FILE_SAVED);
-        _UpdateFileMenu();
-    } else {
-        printf("Error saving file: %s\n", strerror(result));
-        BString error;
-        error.SetToFormat("%s: %s", ERROR_SAVE_FAILED, strerror(result));
-        _ShowError(error.String());
-    }
+	BString currentSource = _GetCurrentSource();
+	if (currentSource.IsEmpty()) {
+		_ShowError(ERROR_SOURCE_EMPTY);
+		return;
+	}
+
+	status_t result = fFileManager->SaveFile(fullPath.String(), currentSource, "image/svg+xml");
+
+	if (result == B_OK) {
+		fCurrentFilePath = fullPath;
+		fDocumentModified = false;
+		if (fFileManager) {
+			fFileManager->SetLastLoadedFileType(FILE_TYPE_SVG);
+		}
+
+		_UpdateTitleAfterSave(fullPath.String());
+		_ShowSuccess(MSG_FILE_SAVED);
+		_UpdateFileMenu();
+	} else {
+		BString error;
+		error.SetToFormat("%s: %s", ERROR_SAVE_FAILED, strerror(result));
+		_ShowError(error.String());
+	}
 }
 
 bool
 SVGMainWindow::_UpdateTitleAfterSave(const char* filePath)
 {
-    if (!filePath)
-        return false;
+	if (!filePath)
+		return false;
 
-    BPath path(filePath);
-    if (path.InitCheck() != B_OK)
-        return false;
+	BPath path(filePath);
+	if (path.InitCheck() != B_OK)
+		return false;
 
-    BString title("SVGear - ");
-    title << path.Leaf();
-    SetTitle(title.String());
-    
-    return true;
+	BString title("SVGear - ");
+	title << path.Leaf();
+	SetTitle(title.String());
+	
+	return true;
 }
 
 BString
 SVGMainWindow::_GetCurrentSource() const
 {
-    if (fSourceView && !fSplitView->IsItemCollapsed(1)) {
-        // Если редактор источников открыт, берем текст оттуда
-        return BString(fSourceView->Text());
-    } else {
-        // Иначе используем сохраненный источник
-        return fCurrentSource;
-    }
+	if (fSVGTextView && !fSplitView->IsItemCollapsed(1)) {
+		return BString(fSVGTextView->Text());
+	} else {
+		return fCurrentSource;
+	}
 }
 
 void
 SVGMainWindow::_ShowSuccess(const char* message)
 {
-    // Можно показать в статус-баре или как уведомление
-    if (fStatusView) {
-        BString status = fStatusView->Text();
-        fStatusView->SetText(message);
-        
-        // Восстановить обычный статус через 3 секунды
-        BMessage restoreMsg(MSG_SVG_STATUS_UPDATE);
-        BMessageRunner* runner = new BMessageRunner(this, &restoreMsg, 3000000, 1);
-    }
+	if (fStatusView) {
+		BString status = fStatusView->Text();
+		fStatusView->SetText(message);
+
+		BMessage restoreMsg(MSG_SVG_STATUS_UPDATE);
+		BMessageRunner* runner = new BMessageRunner(this, &restoreMsg, 3000000, 1);
+	}
 }
 
 void
 SVGMainWindow::_UpdateFileMenu()
 {
-    // Обновляем состояние меню в зависимости от возможности прямого сохранения
-    if (fMenuManager) {
-        // TODO: Добавить метод в SVGMenuManager для обновления состояния Save/Save As
-    }
+	if (fMenuManager) {
+		// TODO: Add method to SVGMenuManager for menu item states update
+	}
+}
+
+
+void
+SVGMainWindow::_ExportHVIF()
+{
+	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		_ShowError("No HVIF data available for export");
+		return;
+	}
+
+	_ShowExportPanel("icon", ".hvif", MSG_EXPORT_HVIF);
+}
+
+void
+SVGMainWindow::_ExportRDef()
+{
+	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		_ShowError("No HVIF data available for export");
+		return;
+	}
+
+	_ShowExportPanel("icon", ".rdef", MSG_EXPORT_RDEF);
+}
+
+void
+SVGMainWindow::_ExportCPP()
+{
+	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		_ShowError("No HVIF data available for export");
+		return;
+	}
+
+	_ShowExportPanel("icon", ".cpp", MSG_EXPORT_CPP);
+}
+
+void
+SVGMainWindow::_ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType)
+{
+	if (!fExportPanel) {
+		fExportPanel = new BFilePanel(B_SAVE_PANEL, NULL, NULL, 0, false);
+		fExportPanel->SetTarget(BMessenger(this));
+	}
+
+	fCurrentExportType = exportType;
+
+	BString fileName = defaultName;
+	if (!fileName.EndsWith(extension))
+		fileName << extension;
+
+	fExportPanel->SetSaveText(fileName.String());
+	fExportPanel->Show();
+}
+
+status_t
+SVGMainWindow::_SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime)
+{
+	if (!filePath || !data || size == 0) {
+		printf("_SaveBinaryData: Invalid parameters\n");
+		return B_BAD_VALUE;
+	}
+
+	BFile file(filePath, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+	status_t initResult = file.InitCheck();
+	if (initResult != B_OK) {
+		printf("_SaveBinaryData: File init failed: %s\n", strerror(initResult));
+		return initResult;
+	}
+
+	ssize_t bytesWritten = file.Write(data, size);
+	if (bytesWritten != (ssize_t)size) {
+		printf("_SaveBinaryData: Write failed - expected %d, wrote %d\n", (int)size, (int)bytesWritten);
+		return B_ERROR;
+	}
+
+	BNodeInfo nodeInfo(&file);
+	if (nodeInfo.InitCheck() == B_OK) {
+		status_t mimeResult = nodeInfo.SetType(mime);
+		if (mimeResult != B_OK) {
+			printf("SaveFile: Warning - could not set MIME type: %s\n", strerror(mimeResult));
+		}
+	}
+
+	return B_OK;
+}
+
+BString
+SVGMainWindow::_ConvertToRDef(const unsigned char* data, size_t size)
+{
+	BString result;
+	result << "resource(1) #'VICN' array {\n";
+
+	for (size_t i = 0; i < size; i += 32) {
+		result << "\t$\"";
+
+		for (size_t j = i; j < i + 32 && j < size; j++) {
+			BString hex;
+			hex.SetToFormat("%02X", data[j]);
+			result << hex;
+		}
+
+		result << "\"";
+		if (i + 32 < size) {
+			result << ",";
+		}
+		result << "\n";
+	}
+
+	result << "};";
+	return result;
+}
+
+BString
+SVGMainWindow::_ConvertToCPP(const unsigned char* data, size_t size)
+{
+	BString result;
+	result << "const unsigned char kIconData[] = {\n";
+
+	for (size_t i = 0; i < size; i++) {
+		if (i % 16 == 0)
+			result << "\t";
+
+		BString hex;
+		hex.SetToFormat("0x%02x", data[i]);
+		result << hex;
+
+		if (i < size - 1) {
+			result << ",";
+			if ((i + 1) % 16 == 0)
+				result << "\n";
+			else
+				result << " ";
+		}
+	}
+
+	result << "\n};\n";
+	result << "\nconst size_t kIconDataSize = ";
+	BString sizeStr;
+	sizeStr.SetToFormat("%u", (unsigned int)size);
+	result << sizeStr << ";";
+
+	return result;
 }
