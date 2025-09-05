@@ -1,0 +1,49 @@
+/*
+ * Copyright 2025, Gerasim Troeglazov, 3dEyes@gmail.com. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ */
+
+#ifndef SVG_VIEW_H
+#define SVG_VIEW_H
+
+#include <Invoker.h>
+
+#include "BSVGView.h"
+
+class SVGView : public BSVGView {
+public:
+	SVGView(const char* name = "main_svg_view");
+	virtual ~SVGView() { };
+
+	virtual void MouseDown(BPoint where);
+	virtual void MouseUp(BPoint where);
+	virtual void MouseMoved(BPoint where, uint32 code, const BMessage* dragMessage);
+	virtual void MessageReceived(BMessage* message);
+	
+	bool IsSVGFile(const char* filePath);
+	status_t LoadFromFile(const char* filename, const char* units = "px", float dpi = 96.0f);
+
+	void ZoomIn(BPoint center = BPoint(-1, -1));
+	void ZoomOut(BPoint center = BPoint(-1, -1));
+	void ZoomToFit();
+	void ZoomToOriginal();
+
+	void ResetView();
+
+	void SetTarget(BHandler* target) { fTarget = target; }
+
+private:
+	void _UpdateStatus();
+	void _ZoomAtPoint(float newScale, BPoint zoomCenter);
+
+private:
+	bool		fIsDragging;
+	BPoint		fLastMousePosition;
+	BHandler*	fTarget;
+
+	static const float kMinScale;
+	static const float kMaxScale;
+	static const float kScaleStep;
+};
+
+#endif
