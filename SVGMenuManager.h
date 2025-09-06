@@ -24,7 +24,8 @@ public:
     BMenuBar* CreateMenuBar(BHandler* target);
 	void CreateExportSubMenu(BHandler* target);
     void UpdateDisplayMode(svg_display_mode mode);
-    void UpdateViewOptions(bool showTransparency, bool showSource);
+    void UpdateViewOptions(bool showTransparency, bool showSource, bool showBoundingBox);
+    void UpdateBoundingBoxStyle(svg_boundingbox_style style);
     void UpdateFileMenu(bool canSave, bool isModified);
 
 private:
@@ -34,14 +35,20 @@ private:
     BMenuItem* fFillOnlyItem;
     BMenuItem* fStrokeOnlyItem;
     BMenuItem* fTransparencyItem;
+    BMenuItem* fBoundingBoxItem;
+    BMenuItem* fBBoxNoneItem;
+    BMenuItem* fBBoxDocumentItem;
+    BMenuItem* fBBoxSimpleFrameItem;
+    BMenuItem* fBBoxTransparentGrayItem;
     BMenuItem* fSourceViewItem;
 	BMenuItem* fSaveItem;
     BMenuItem* fSaveAsItem;
     BMenu* fExportSubMenu;
+    BMenu* fDisplaySubMenu;
+    BMenu* fBoundingBoxSubMenu;
 
     void _CreateFileMenu(BHandler* target);
     void _CreateViewMenu(BHandler* target);
-    void _CreateDisplayMenu(BHandler* target);
     void _CreateHelpMenu(BHandler* target);
     void _AddShortcuts(BHandler* target);
 };

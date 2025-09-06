@@ -126,6 +126,7 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddAction(MSG_ZOOM_ORIGINAL, this, SVGApplication::GetIcon("zoom-original", TOOLBAR_ICON_SIZE), "Zoom original");
 	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), "Best fit");
 	fToolBar->AddSeparator();
+	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), "Show Bounding Box");
 	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), "Show Source Code");
 	fToolBar->AddGlue();
 
@@ -195,6 +196,7 @@ void
 SVGMainWindow::_BuildMainView()
 {
 	fSVGView = new SVGView("svg_view");
+	fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
 
 	_BuildTabView();
 
@@ -273,6 +275,11 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case MSG_DISPLAY_FILL_ONLY:
 		case MSG_DISPLAY_STROKE_ONLY:
 		case MSG_TOGGLE_TRANSPARENCY:
+		case MSG_TOGGLE_BOUNDINGBOX:
+		case MSG_BBOX_NONE:
+		case MSG_BBOX_DOCUMENT:
+		case MSG_BBOX_SIMPLE_FRAME:
+		case MSG_BBOX_TRANSPARENT_GRAY:
 		case MSG_TOGGLE_SOURCE_VIEW:
 			_HandleViewMessages(message);
 			break;
@@ -484,6 +491,40 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 
 		case MSG_TOGGLE_TRANSPARENCY:
 			fSVGView->SetShowTransparency(!fSVGView->ShowTransparency());
+			_UpdateViewMenu();
+			break;
+
+		case MSG_TOGGLE_BOUNDINGBOX:
+			if (fSVGView->BoundingBoxStyle() == SVG_BBOX_NONE) {
+				fSVGView->SetBoundingBoxStyle(SVG_BBOX_DOCUMENT);
+			} else {
+				fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
+			}
+			_UpdateBoundingBoxMenu();
+			_UpdateViewMenu();
+			break;
+
+		case MSG_BBOX_NONE:
+			fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
+			_UpdateBoundingBoxMenu();
+			_UpdateViewMenu();
+			break;
+
+		case MSG_BBOX_DOCUMENT:
+			fSVGView->SetBoundingBoxStyle(SVG_BBOX_DOCUMENT);
+			_UpdateBoundingBoxMenu();
+			_UpdateViewMenu();
+			break;
+
+		case MSG_BBOX_SIMPLE_FRAME:
+			fSVGView->SetBoundingBoxStyle(SVG_BBOX_SIMPLE_FRAME);
+			_UpdateBoundingBoxMenu();
+			_UpdateViewMenu();
+			break;
+
+		case MSG_BBOX_TRANSPARENT_GRAY:
+			fSVGView->SetBoundingBoxStyle(SVG_BBOX_TRANSPARENT_GRAY);
+			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			break;
 
@@ -707,8 +748,10 @@ SVGMainWindow::_UpdateStatus()
 		float width = fSVGView->SVGWidth();
 		float height = fSVGView->SVGHeight();
 
-		status.SetToFormat(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s",
-				width, height, scale * 100.0f, _GetDisplayModeName().String());
+		status.SetToFormat(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s",
+				width, height, scale * 100.0f, 
+				_GetDisplayModeName().String(), 
+				_GetBoundingBoxStyleName().String());
 	} else {
 		status = "No SVG loaded";
 	}
@@ -721,6 +764,7 @@ void
 SVGMainWindow::_UpdateInterface()
 {
 	_UpdateDisplayModeMenu();
+	_UpdateBoundingBoxMenu();
 	_UpdateViewMenu();
 	_UpdateStatus();
 }
@@ -733,12 +777,20 @@ SVGMainWindow::_UpdateDisplayModeMenu()
 }
 
 void
+SVGMainWindow::_UpdateBoundingBoxMenu()
+{
+	if (fMenuManager && fSVGView)
+		fMenuManager->UpdateBoundingBoxStyle(fSVGView->BoundingBoxStyle());
+}
+
+void
 SVGMainWindow::_UpdateViewMenu()
 {
 	if (fMenuManager && fSVGView && fSplitView) {
 		bool showTransparency = fSVGView->ShowTransparency();
 		bool showSource = !fSplitView->IsItemCollapsed(1);
-		fMenuManager->UpdateViewOptions(showTransparency, showSource);
+		bool showBoundingBox = fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE;
+		fMenuManager->UpdateViewOptions(showTransparency, showSource, showBoundingBox);
 	}
 }
 
@@ -757,6 +809,26 @@ SVGMainWindow::_GetDisplayModeName() const
 			return "Fill Only";
 		case SVG_DISPLAY_STROKE_ONLY:
 			return "Stroke Only";
+		default:
+			return "Unknown";
+	}
+}
+
+BString
+SVGMainWindow::_GetBoundingBoxStyleName() const
+{
+	if (!fSVGView)
+		return "Unknown";
+
+	switch (fSVGView->BoundingBoxStyle()) {
+		case SVG_BBOX_NONE:
+			return "None";
+		case SVG_BBOX_DOCUMENT:
+			return "Document";
+		case SVG_BBOX_SIMPLE_FRAME:
+			return "Simple";
+		case SVG_BBOX_TRANSPARENT_GRAY:
+			return "Gray";
 		default:
 			return "Unknown";
 	}

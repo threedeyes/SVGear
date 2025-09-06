@@ -13,7 +13,14 @@ SVGMenuManager::SVGMenuManager()
 	fFillOnlyItem(NULL),
 	fStrokeOnlyItem(NULL),
 	fTransparencyItem(NULL),
-	fSourceViewItem(NULL)
+	fBoundingBoxItem(NULL),
+	fBBoxNoneItem(NULL),
+	fBBoxDocumentItem(NULL),
+	fBBoxSimpleFrameItem(NULL),
+	fBBoxTransparentGrayItem(NULL),
+	fSourceViewItem(NULL),
+	fDisplaySubMenu(NULL),
+	fBoundingBoxSubMenu(NULL)
 {
 }
 
@@ -28,7 +35,6 @@ SVGMenuManager::CreateMenuBar(BHandler* target)
 
 	_CreateFileMenu(target);
 	_CreateViewMenu(target);
-	_CreateDisplayMenu(target);
 	_CreateHelpMenu(target);
 	_AddShortcuts(target);
 
@@ -80,9 +86,53 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 	viewMenu->AddItem(new BMenuItem("Reset View", new BMessage(MSG_RESET_VIEW), '0'));
 	viewMenu->AddSeparatorItem();
 
+	// Display mode submenu
+	fDisplaySubMenu = new BMenu("Display Mode");
+
+	fNormalItem = new BMenuItem("Normal", new BMessage(MSG_DISPLAY_NORMAL));
+	fNormalItem->SetMarked(true);
+	fDisplaySubMenu->AddItem(fNormalItem);
+
+	fOutlineItem = new BMenuItem("Outline", new BMessage(MSG_DISPLAY_OUTLINE));
+	fDisplaySubMenu->AddItem(fOutlineItem);
+
+	fFillOnlyItem = new BMenuItem("Fill Only", new BMessage(MSG_DISPLAY_FILL_ONLY));
+	fDisplaySubMenu->AddItem(fFillOnlyItem);
+
+	fStrokeOnlyItem = new BMenuItem("Stroke Only", new BMessage(MSG_DISPLAY_STROKE_ONLY));
+	fDisplaySubMenu->AddItem(fStrokeOnlyItem);
+
+	fDisplaySubMenu->SetTargetForItems(target);
+	viewMenu->AddItem(fDisplaySubMenu);
+
+	viewMenu->AddSeparatorItem();
+
 	fTransparencyItem = new BMenuItem("Show Transparency Grid", new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
 	fTransparencyItem->SetMarked(true);
 	viewMenu->AddItem(fTransparencyItem);
+
+	fBoundingBoxItem = new BMenuItem("Show Bounding Box", new BMessage(MSG_TOGGLE_BOUNDINGBOX), 'B');
+	viewMenu->AddItem(fBoundingBoxItem);
+
+	// BoundingBox style submenu
+	fBoundingBoxSubMenu = new BMenu("Bounding Box Style");
+
+	fBBoxNoneItem = new BMenuItem("None", new BMessage(MSG_BBOX_NONE));
+	fBBoxNoneItem->SetMarked(true);
+	fBoundingBoxSubMenu->AddItem(fBBoxNoneItem);
+
+	fBBoxDocumentItem = new BMenuItem("Document Style", new BMessage(MSG_BBOX_DOCUMENT));
+	fBoundingBoxSubMenu->AddItem(fBBoxDocumentItem);
+
+	fBBoxSimpleFrameItem = new BMenuItem("Simple Frame", new BMessage(MSG_BBOX_SIMPLE_FRAME));
+	fBoundingBoxSubMenu->AddItem(fBBoxSimpleFrameItem);
+
+	fBBoxTransparentGrayItem = new BMenuItem("Transparent Gray", new BMessage(MSG_BBOX_TRANSPARENT_GRAY));
+	fBoundingBoxSubMenu->AddItem(fBBoxTransparentGrayItem);
+
+	fBoundingBoxSubMenu->SetTargetForItems(target);
+	viewMenu->AddItem(fBoundingBoxSubMenu);
+
 	viewMenu->AddSeparatorItem();
 
 	fSourceViewItem = new BMenuItem("Show Source Code", new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'S');
@@ -91,28 +141,6 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	viewMenu->SetTargetForItems(target);
 	fMenuBar->AddItem(viewMenu);
-}
-
-void
-SVGMenuManager::_CreateDisplayMenu(BHandler* target)
-{
-	BMenu* displayMenu = new BMenu("Display");
-
-	fNormalItem = new BMenuItem("Normal", new BMessage(MSG_DISPLAY_NORMAL));
-	fNormalItem->SetMarked(true);
-	displayMenu->AddItem(fNormalItem);
-
-	fOutlineItem = new BMenuItem("Outline", new BMessage(MSG_DISPLAY_OUTLINE));
-	displayMenu->AddItem(fOutlineItem);
-
-	fFillOnlyItem = new BMenuItem("Fill Only", new BMessage(MSG_DISPLAY_FILL_ONLY));
-	displayMenu->AddItem(fFillOnlyItem);
-
-	fStrokeOnlyItem = new BMenuItem("Stroke Only", new BMessage(MSG_DISPLAY_STROKE_ONLY));
-	displayMenu->AddItem(fStrokeOnlyItem);
-
-	displayMenu->SetTargetForItems(target);
-	fMenuBar->AddItem(displayMenu);
 }
 
 void
@@ -148,12 +176,26 @@ SVGMenuManager::UpdateDisplayMode(svg_display_mode mode)
 }
 
 void
-SVGMenuManager::UpdateViewOptions(bool showTransparency, bool showSource)
+SVGMenuManager::UpdateBoundingBoxStyle(svg_boundingbox_style style)
+{
+	if (!fBBoxNoneItem || !fBBoxDocumentItem || !fBBoxSimpleFrameItem || !fBBoxTransparentGrayItem)
+		return;
+
+	fBBoxNoneItem->SetMarked(style == SVG_BBOX_NONE);
+	fBBoxDocumentItem->SetMarked(style == SVG_BBOX_DOCUMENT);
+	fBBoxSimpleFrameItem->SetMarked(style == SVG_BBOX_SIMPLE_FRAME);
+	fBBoxTransparentGrayItem->SetMarked(style == SVG_BBOX_TRANSPARENT_GRAY);
+}
+
+void
+SVGMenuManager::UpdateViewOptions(bool showTransparency, bool showSource, bool showBoundingBox)
 {
 	if (fTransparencyItem)
 		fTransparencyItem->SetMarked(showTransparency);
 	if (fSourceViewItem)
 		fSourceViewItem->SetMarked(showSource);
+	if (fBoundingBoxItem)
+		fBoundingBoxItem->SetMarked(showBoundingBox);
 }
 
 void

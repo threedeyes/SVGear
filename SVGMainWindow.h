@@ -74,6 +74,7 @@ private:
     void _UpdateStatus();
     void _UpdateInterface();
     void _UpdateDisplayModeMenu();
+    void _UpdateBoundingBoxMenu();
     void _UpdateViewMenu();
     void _UpdateFileMenu();
 
@@ -94,6 +95,7 @@ private:
 
     // Utility functions
     BString _GetDisplayModeName() const;
+    BString _GetBoundingBoxStyleName() const;
     void _ShowAbout();
     void _ShowError(const char* message);
     void _ShowSuccess(const char* message);
