@@ -619,6 +619,7 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 		_UpdateStatus();
 		_UpdateAllTabs();
 		_ReloadFromSource();
+		fSVGTextView->ClearUndoHistory();
 
 		SetTitle("SVGear - Untitled.svg");
 	} else if (message->HasRef("refs")) {
@@ -671,6 +672,7 @@ SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 
 	_UpdateStatus();
 	_UpdateAllTabs();
+	fSVGTextView->ClearUndoHistory();
 
 	BString windowTitle("SVGear - ");
 	windowTitle << title;
@@ -711,6 +713,7 @@ SVGMainWindow::LoadFile(const char* filePath)
 		_UpdateAllTabs();
 		_ReloadFromSource();
 		_UpdateFileMenu();
+		fSVGTextView->ClearUndoHistory();
 	}
 }
 
