@@ -113,8 +113,8 @@ private:
     // Tab components
     BTabView*        fTabView;
     SVGTextEdit*     fSVGTextView;
-    BTextView*       fRDefTextView;
-    BTextView*       fCPPTextView;
+    SVGTextEdit*     fRDefTextView;
+    SVGTextEdit*     fCPPTextView;
     BScrollView*     fSVGScrollView;
     BScrollView*     fRDefScrollView;
     BScrollView*     fCPPScrollView;

@@ -169,7 +169,7 @@ SVGMainWindow::_BuildTabView()
 	fTabView->AddTab(svgTabGroup, svgTab);
 	svgTab->SetLabel("SVG");
 
-	fRDefTextView = new BTextView("rdef_text");
+	fRDefTextView = new SVGTextEdit("rdef_text");
 	fRDefTextView->SetWordWrap(true);
 	fRDefTextView->MakeEditable(false);
 
@@ -184,7 +184,7 @@ SVGMainWindow::_BuildTabView()
 	fTabView->AddTab(fRDefScrollView, rdefTab);
 	rdefTab->SetLabel("RDef");
 
-	fCPPTextView = new BTextView("cpp_text");
+	fCPPTextView = new SVGTextEdit("cpp_text");
 	fCPPTextView->SetWordWrap(true);
 	fCPPTextView->MakeEditable(false);
 	fCPPTextView->SetFontAndColor(&fixedFont);
