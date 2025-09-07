@@ -12,17 +12,6 @@
 #include <List.h>
 #include <OS.h>
 
-const rgb_color kColorDefault = {0, 0, 0, 255};
-const rgb_color kColorTag = {0, 0, 128, 255};
-const rgb_color kColorAttribute = {128, 0, 128, 255};
-const rgb_color kColorString = {0, 128, 0, 255};
-const rgb_color kColorComment = {128, 128, 128, 255};
-const rgb_color kColorValue = {255, 69, 0, 255};
-const rgb_color kColorKeyword = {0, 0, 255, 255};
-const rgb_color kColorNumber = {255, 0, 0, 255};
-const rgb_color kColorPreprocessor = {128, 0, 255, 255};
-const rgb_color kColorOperator = {255, 140, 0, 255};
-
 enum command_type {
 	CMD_INSERT_TEXT,
 	CMD_DELETE_TEXT,
@@ -74,17 +63,8 @@ public:
 
 private:
 	void _ApplySyntaxHighlighting();
-	void _ApplySVGHighlighting();
-	void _ApplyCppHighlighting();
-	void _ApplyRdefHighlighting();
-	void _HighlightTag(int32 start, int32 end, const BFont& font);
-
 	syntax_type _DetectSyntaxType(const char* filename = NULL);
 	syntax_type _DetectSyntaxFromContent();
-	bool _IsCppKeyword(const char* word, int32 length);
-	bool _IsRdefKeyword(const char* word, int32 length);
-	int32 _SkipWhitespace(const char* text, int32 pos, int32 length);
-	int32 _FindWordEnd(const char* text, int32 pos, int32 length);
 
 	void _AddUndoCommand(command_type type, int32 offset, int32 length,
 						const char* text, const text_run_array* runs, bool canMerge = true);

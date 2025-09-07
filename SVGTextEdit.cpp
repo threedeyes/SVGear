@@ -9,6 +9,7 @@
 #include <Clipboard.h>
 
 #include "SVGTextEdit.h"
+#include "SVGTextEdit_Highlighters.h"
 
 UndoCommand::UndoCommand()
 	: type(CMD_INSERT_TEXT),
@@ -45,7 +46,8 @@ SVGTextEdit::SVGTextEdit(const char* name)
 	SetExplicitMinSize(BSize(32, 32));
 
 	BFont sourceFont(be_fixed_font);
-	SetFontAndColor(&sourceFont, B_FONT_ALL, &kColorDefault);
+	const ColorScheme& colors = GetColorScheme(this);
+	SetFontAndColor(&sourceFont, B_FONT_ALL, &colors.text);
 
 	SetDoesUndo(false);
 }
@@ -234,18 +236,15 @@ SVGTextEdit::_ApplySyntaxHighlighting()
 	}
 
 	switch (fSyntaxType) {
-		case SYNTAX_SVG_XML:
-			_ApplySVGHighlighting();
-			break;
-		case SYNTAX_CPP:
-			_ApplyCppHighlighting();
-			break;
-		case SYNTAX_RDEF:
-			_ApplyRdefHighlighting();
-			break;
+		REGISTER_HIGHLIGHTER(SYNTAX_SVG_XML, SVG)
+		REGISTER_HIGHLIGHTER(SYNTAX_CPP, Cpp)
+		REGISTER_HIGHLIGHTER(SYNTAX_RDEF, Rdef)
 		default:
-			BFont font(be_fixed_font);
-			SetFontAndColor(0, TextLength(), &font, B_FONT_ALL, &kColorDefault);
+			{
+				BFont font(be_fixed_font);
+				const ColorScheme& colors = GetColorScheme(this);
+				SetFontAndColor(0, TextLength(), &font, B_FONT_ALL, &colors.text);
+			}
 			break;
 	}
 }
@@ -253,20 +252,11 @@ SVGTextEdit::_ApplySyntaxHighlighting()
 syntax_type
 SVGTextEdit::_DetectSyntaxType(const char* filename)
 {
-	if (!filename)
-		return _DetectSyntaxFromContent();
-
-	const char* ext = strrchr(filename, '.');
-	if (!ext)
-		return _DetectSyntaxFromContent();
-
-	if (strcmp(ext, ".svg") == 0 || strcmp(ext, ".xml") == 0)
-		return SYNTAX_SVG_XML;
-	else if (strcmp(ext, ".cpp") == 0 || strcmp(ext, ".h") == 0 ||
-			 strcmp(ext, ".cc") == 0 || strcmp(ext, ".cxx") == 0)
-		return SYNTAX_CPP;
-	else if (strcmp(ext, ".rdef") == 0)
-		return SYNTAX_RDEF;
+	if (filename) {
+		REGISTER_FILENAME_DETECTOR(SVG)
+		REGISTER_FILENAME_DETECTOR(Cpp)
+		REGISTER_FILENAME_DETECTOR(Rdef)
+	}
 
 	return _DetectSyntaxFromContent();
 }
@@ -280,308 +270,11 @@ SVGTextEdit::_DetectSyntaxFromContent()
 	if (length == 0)
 		return SYNTAX_NONE;
 
-	if (length > 5 && strncmp(text, "<?xml", 5) == 0)
-		return SYNTAX_SVG_XML;
-	if (strstr(text, "<svg") != NULL || strstr(text, "</") != NULL)
-		return SYNTAX_SVG_XML;
-
-	if (strstr(text, "resource(") != NULL || strstr(text, "array {") != NULL)
-		return SYNTAX_RDEF;
-
-	if (strstr(text, "const") != NULL && strstr(text, "0x") != NULL)
-		return SYNTAX_CPP;
+	REGISTER_CONTENT_DETECTOR(SVG)
+	REGISTER_CONTENT_DETECTOR(Cpp)
+	REGISTER_CONTENT_DETECTOR(Rdef)
 
 	return SYNTAX_NONE;
-}
-
-void
-SVGTextEdit::_ApplySVGHighlighting()
-{
-	const char* text = Text();
-	int32 length = TextLength();
-
-	if (length == 0)
-		return;
-
-	BFont font(be_fixed_font);
-	SetFontAndColor(0, length, &font, B_FONT_ALL, &kColorDefault);
-
-	int32 pos = 0;
-	while (pos < length) {
-		if (text[pos] == '<') {
-			if (pos + 3 < length && strncmp(&text[pos], "<!--", 4) == 0) {
-				int32 commentEnd = pos + 4;
-				while (commentEnd + 2 < length && strncmp(&text[commentEnd], "-->", 3) != 0) {
-					commentEnd++;
-				}
-				if (commentEnd + 2 < length) {
-					commentEnd += 3;
-					SetFontAndColor(pos, commentEnd, &font, B_FONT_ALL, &kColorComment);
-					pos = commentEnd;
-					continue;
-				}
-			}
-
-			int32 tagEnd = pos + 1;
-			while (tagEnd < length && text[tagEnd] != '>') {
-				tagEnd++;
-			}
-
-			if (tagEnd < length) {
-				tagEnd++;
-				_HighlightTag(pos, tagEnd, font);
-				pos = tagEnd;
-			} else {
-				pos++;
-			}
-		} else {
-			pos++;
-		}
-	}
-}
-
-void
-SVGTextEdit::_ApplyCppHighlighting()
-{
-	const char* text = Text();
-	int32 length = TextLength();
-
-	if (length == 0)
-		return;
-
-	BFont font(be_fixed_font);
-	SetFontAndColor(0, length, &font, B_FONT_ALL, &kColorDefault);
-
-	int32 pos = 0;
-
-	while (pos < length) {
-		while (pos < length && isspace(text[pos]))
-			pos++;
-		if (pos >= length) break;
-
-		if (pos + 1 < length && text[pos] == '/' && text[pos + 1] == '/') {
-			int32 lineEnd = pos;
-			while (lineEnd < length && text[lineEnd] != '\n')
-				lineEnd++;
-			SetFontAndColor(pos, lineEnd, &font, B_FONT_ALL, &kColorComment);
-			pos = lineEnd;
-			continue;
-		}
-
-		if (pos + 1 < length && text[pos] == '0' &&
-			(text[pos + 1] == 'x' || text[pos + 1] == 'X')) {
-			int32 numEnd = pos + 2;
-			while (numEnd < length &&
-				   (isdigit(text[numEnd]) || 
-					(text[numEnd] >= 'a' && text[numEnd] <= 'f') ||
-					(text[numEnd] >= 'A' && text[numEnd] <= 'F')))
-				numEnd++;
-			SetFontAndColor(pos, numEnd, &font, B_FONT_ALL, &kColorNumber);
-			pos = numEnd;
-			continue;
-		}
-
-		if (isdigit(text[pos])) {
-			int32 numEnd = pos;
-			while (numEnd < length && isdigit(text[numEnd]))
-				numEnd++;
-			SetFontAndColor(pos, numEnd, &font, B_FONT_ALL, &kColorNumber);
-			pos = numEnd;
-			continue;
-		}
-
-		if (isalpha(text[pos]) || text[pos] == '_') {
-			int32 wordEnd = pos;
-			while (wordEnd < length && (isalnum(text[wordEnd]) || text[wordEnd] == '_'))
-				wordEnd++;
-
-			if (_IsCppKeyword(text + pos, wordEnd - pos)) {
-				SetFontAndColor(pos, wordEnd, &font, B_FONT_ALL, &kColorKeyword);
-			}
-			pos = wordEnd;
-			continue;
-		}
-
-		if (text[pos] == '{' || text[pos] == '}' || text[pos] == '[' ||
-			text[pos] == ']' || text[pos] == ',' || text[pos] == ';' ||
-			text[pos] == '=') {
-			SetFontAndColor(pos, pos + 1, &font, B_FONT_ALL, &kColorOperator);
-		}
-
-		pos++;
-	}
-}
-
-void
-SVGTextEdit::_ApplyRdefHighlighting()
-{
-	const char* text = Text();
-	int32 length = TextLength();
-
-	if (length == 0)
-		return;
-
-	BFont font(be_fixed_font);
-	SetFontAndColor(0, length, &font, B_FONT_ALL, &kColorDefault);
-
-	int32 pos = 0;
-
-	while (pos < length) {
-		while (pos < length && isspace(text[pos]))
-			pos++;
-		if (pos >= length) break;
-
-		if (text[pos] == '$' && pos + 1 < length && text[pos + 1] == '"') {
-			int32 stringEnd = pos + 2;
-			while (stringEnd < length && text[stringEnd] != '"')
-				stringEnd++;
-			if (stringEnd < length) stringEnd++;
-			SetFontAndColor(pos, stringEnd, &font, B_FONT_ALL, &kColorString);
-			pos = stringEnd;
-			continue;
-		}
-
-		if (text[pos] == '#' && pos + 1 < length && text[pos + 1] == '\'') {
-			int32 typeEnd = pos + 2;
-			while (typeEnd < length && text[typeEnd] != '\'')
-				typeEnd++;
-			if (typeEnd < length) typeEnd++;
-			SetFontAndColor(pos, typeEnd, &font, B_FONT_ALL, &kColorNumber);
-			pos = typeEnd;
-			continue;
-		}
-
-		if (isdigit(text[pos])) {
-			int32 numEnd = pos;
-			while (numEnd < length && isdigit(text[numEnd]))
-				numEnd++;
-			SetFontAndColor(pos, numEnd, &font, B_FONT_ALL, &kColorNumber);
-			pos = numEnd;
-			continue;
-		}
-
-		if (text[pos] == '{' || text[pos] == '}' || text[pos] == '(' || 
-			text[pos] == ')' || text[pos] == ',' || text[pos] == ';') {
-			SetFontAndColor(pos, pos + 1, &font, B_FONT_ALL, &kColorOperator);
-			pos++;
-			continue;
-		}
-
-		if (isalpha(text[pos]) || text[pos] == '_') {
-			int32 wordEnd = pos;
-			while (wordEnd < length && (isalnum(text[wordEnd]) || text[wordEnd] == '_'))
-				wordEnd++;
-
-			if (_IsRdefKeyword(text + pos, wordEnd - pos)) {
-				SetFontAndColor(pos, wordEnd, &font, B_FONT_ALL, &kColorKeyword);
-			}
-			pos = wordEnd;
-			continue;
-		}
-
-		pos++;
-	}
-}
-
-void
-SVGTextEdit::_HighlightTag(int32 start, int32 end, const BFont& font)
-{
-	const char* text = Text();
-
-	SetFontAndColor(start, start + 1, &font, B_FONT_ALL, &kColorTag);
-	SetFontAndColor(end - 1, end, &font, B_FONT_ALL, &kColorTag);
-
-	int32 pos = start + 1;
-
-	if (pos < end && text[pos] == '/') {
-		SetFontAndColor(pos, pos + 1, &font, B_FONT_ALL, &kColorTag);
-		pos++;
-	}
-
-	int32 tagNameStart = pos;
-	while (pos < end - 1 && !isspace(text[pos]) && text[pos] != '>')
-		pos++;
-
-	if (pos > tagNameStart)
-		SetFontAndColor(tagNameStart, pos, &font, B_FONT_ALL, &kColorTag);
-
-	while (pos < end - 1) {
-		while (pos < end - 1 && isspace(text[pos]))
-			pos++;
-
-		if (pos >= end - 1)
-			break;
-
-		int32 attrStart = pos;
-		while (pos < end - 1 && !isspace(text[pos]) && text[pos] != '=' && text[pos] != '>')
-			pos++;
-
-		if (pos > attrStart)
-			SetFontAndColor(attrStart, pos, &font, B_FONT_ALL, &kColorAttribute);
-
-		while (pos < end - 1 && (isspace(text[pos]) || text[pos] == '='))
-			pos++;
-
-		if (pos < end - 1 && (text[pos] == '"' || text[pos] == '\'')) {
-			char quote = text[pos];
-			int32 valueStart = pos;
-			pos++;
-
-			while (pos < end - 1 && text[pos] != quote)
-				pos++;
-
-			if (pos < end - 1) {
-				pos++;
-				SetFontAndColor(valueStart, pos, &font, B_FONT_ALL, &kColorString);
-			}
-		}
-	}
-}
-
-bool
-SVGTextEdit::_IsCppKeyword(const char* word, int32 length)
-{
-	static const char* keywords[] = {
-		"const", "unsigned", "char", "size_t", NULL
-	};
-
-	for (int i = 0; keywords[i]; i++) {
-		if (strlen(keywords[i]) == (size_t)length &&
-			strncmp(word, keywords[i], length) == 0)
-			return true;
-	}
-	return false;
-}
-
-bool
-SVGTextEdit::_IsRdefKeyword(const char* word, int32 length)
-{
-	static const char* keywords[] = {
-		"resource", "array", NULL
-	};
-
-	for (int i = 0; keywords[i]; i++) {
-		if (strlen(keywords[i]) == (size_t)length &&
-			strncmp(word, keywords[i], length) == 0)
-			return true;
-	}
-	return false;
-}
-
-int32
-SVGTextEdit::_SkipWhitespace(const char* text, int32 pos, int32 length)
-{
-	while (pos < length && isspace(text[pos]))
-		pos++;
-	return pos;
-}
-
-int32
-SVGTextEdit::_FindWordEnd(const char* text, int32 pos, int32 length)
-{
-	while (pos < length && (isalnum(text[pos]) || text[pos] == '_'))
-		pos++;
-	return pos;
 }
 
 void
