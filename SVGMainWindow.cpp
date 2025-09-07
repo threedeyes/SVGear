@@ -132,6 +132,7 @@ SVGMainWindow::_BuildToolBars()
 
 	fEditToolBar = new SVGToolBar();
 	fEditToolBar->AddAction(B_UNDO, this, SVGApplication::GetIcon("edit-undo", TOOLBAR_ICON_SIZE), "Undo");
+	fEditToolBar->AddAction(B_REDO, this, SVGApplication::GetIcon("edit-redo", TOOLBAR_ICON_SIZE), "Redo");
 	fEditToolBar->AddSeparator();
 	fEditToolBar->AddAction(MSG_EDIT_COPY, this, SVGApplication::GetIcon("edit-copy", TOOLBAR_ICON_SIZE), "Copy");
 	fEditToolBar->AddAction(MSG_EDIT_PASTE, this, SVGApplication::GetIcon("edit-paste", TOOLBAR_ICON_SIZE), "Paste");
@@ -291,6 +292,7 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case MSG_EDIT_WORD_WRAP:
 		case MSG_RELOAD_FROM_SOURCE:
 		case B_UNDO:
+		case B_REDO:
 			_HandleEditMessages(message);
 			break;
 
@@ -558,6 +560,11 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 		case B_UNDO:
 			if (currentTextView && currentTextView == fSVGTextView)
 				fSVGTextView->Undo(be_clipboard);
+			break;
+
+		case B_REDO:
+			if (currentTextView && currentTextView == fSVGTextView)
+				fSVGTextView->Redo();
 			break;
 
 		case MSG_EDIT_COPY:
