@@ -93,6 +93,10 @@ private:
     BString _ConvertToRDef(const unsigned char* data, size_t size);
     BString _ConvertToCPP(const unsigned char* data, size_t size);
 
+    // Settings management
+    void _SaveSettings();
+    void _RestoreSettings();
+
     // Utility functions
     BString _GetDisplayModeName() const;
     BString _GetBoundingBoxStyleName() const;

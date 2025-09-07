@@ -26,6 +26,7 @@
 #include "SVGTextEdit.h"
 #include "SVGToolBar.h"
 #include "SVGApplication.h"
+#include "SVGSettings.h"
 
 #include "HVIFParser.h"
 #include "HVIFWriter.h"
@@ -33,7 +34,8 @@
 #include "SVGRenderer.h"
 
 SVGMainWindow::SVGMainWindow(const char* filePath)
-	: BWindow(BRect(100, 100, 1200, 800), "SVGear", B_DOCUMENT_WINDOW, B_ASYNCHRONOUS_CONTROLS),
+	: BWindow(gSettings->GetRect(kWindowFrame, BRect(100, 100, 1200, 800)),
+			  "SVGear", B_DOCUMENT_WINDOW, B_ASYNCHRONOUS_CONTROLS),
 	fSVGView(NULL),
 	fIconView(NULL),
 	fTabView(NULL),
@@ -63,6 +65,8 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 
 	_BuildInterface();
 
+	_RestoreSettings();
+
 	if (filePath)
 		LoadFile(filePath);
 
@@ -74,6 +78,7 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 
 SVGMainWindow::~SVGMainWindow()
 {
+	_SaveSettings();
 	delete fMenuManager;
 	delete fFileManager;
 	delete fExportPanel;
@@ -379,6 +384,8 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 	BPath dirPath(&dirRef);
 	BString fullPath = dirPath.Path();
 	fullPath << "/" << fileName;
+
+	gSettings->SetString(kLastExportPath, dirPath.Path());
 
 	status_t result = B_ERROR;
 
@@ -707,6 +714,10 @@ SVGMainWindow::LoadFile(const char* filePath)
 		title << path.Leaf();
 		SetTitle(title.String());
 
+		BPath dirPath;
+		path.GetParent(&dirPath);
+		gSettings->SetString(kLastOpenPath, dirPath.Path());
+
 		fSVGView->ResetView();
 		fCurrentFilePath = filePath;
 		fDocumentModified = false;
@@ -868,8 +879,10 @@ SVGMainWindow::_ToggleSourceView()
 
 	if (!fSplitView->IsItemCollapsed(1)) {
 		_UpdateAllTabs();
-		fSplitView->SetItemWeight(0, MAIN_VIEW_WEIGHT, false);
-		fSplitView->SetItemWeight(1, SOURCE_VIEW_WEIGHT, false);
+		float mainWeight = gSettings->GetFloat(kMainViewWeight, 0.7f);
+		float sourceWeight = gSettings->GetFloat(kSourceViewWeight, 0.3f);
+		fSplitView->SetItemWeight(0, mainWeight, false);
+		fSplitView->SetItemWeight(1, sourceWeight, false);
 	}
 
 	_UpdateViewMenu();
@@ -1028,6 +1041,8 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 		fullPath << ".svg";
 	}
 
+	gSettings->SetString(kLastSavePath, dirPath.Path());
+
 	BString currentSource = _GetCurrentSource();
 	if (currentSource.IsEmpty()) {
 		_ShowError(ERROR_SOURCE_EMPTY);
@@ -1100,7 +1115,6 @@ SVGMainWindow::_UpdateFileMenu()
 	}
 }
 
-
 void
 SVGMainWindow::_ExportHVIF()
 {
@@ -1140,6 +1154,14 @@ SVGMainWindow::_ShowExportPanel(const char* defaultName, const char* extension, 
 	if (!fExportPanel) {
 		fExportPanel = new BFilePanel(B_SAVE_PANEL, NULL, NULL, 0, false);
 		fExportPanel->SetTarget(BMessenger(this));
+	}
+
+	BString lastExportPath = gSettings->GetString(kLastExportPath);
+	if (!lastExportPath.IsEmpty()) {
+		entry_ref ref;
+		if (get_ref_for_path(lastExportPath.String(), &ref) == B_OK) {
+			fExportPanel->SetPanelDirectory(&ref);
+		}
 	}
 
 	fCurrentExportType = exportType;
@@ -1240,4 +1262,103 @@ SVGMainWindow::_ConvertToCPP(const unsigned char* data, size_t size)
 	result << sizeStr << ";";
 
 	return result;
+}
+
+void
+SVGMainWindow::_SaveSettings()
+{
+	if (!gSettings)
+		return;
+
+	gSettings->SetRect(kWindowFrame, Frame());
+
+	if (fSplitView) {
+		gSettings->SetBool(kSourceViewCollapsed, fSplitView->IsItemCollapsed(1));
+		if (!fSplitView->IsItemCollapsed(1)) {
+			gSettings->SetFloat(kMainViewWeight, fSplitView->ItemWeight(0));
+			gSettings->SetFloat(kSourceViewWeight, fSplitView->ItemWeight(1));
+		}
+	}
+
+	if (fSVGView) {
+		gSettings->SetInt32(kDisplayMode, (int32)fSVGView->DisplayMode());
+		gSettings->SetBool(kShowTransparency, fSVGView->ShowTransparency());
+		gSettings->SetInt32(kBoundingBoxStyle, (int32)fSVGView->BoundingBoxStyle());
+	}
+
+	if (fSVGTextView) {
+		gSettings->SetBool(kWordWrap, fSVGTextView->DoesWordWrap());
+	}
+
+	if (fTabView) {
+		gSettings->SetInt32(kTabSelection, fTabView->Selection());
+	}
+
+	gSettings->Save();
+}
+
+void
+SVGMainWindow::_RestoreSettings()
+{
+	if (!gSettings)
+		return;
+
+	if (fSplitView) {
+		bool collapsed = gSettings->GetBool(kSourceViewCollapsed, true);
+		fSplitView->SetItemCollapsed(1, collapsed);
+
+		if (!collapsed) {
+			float mainWeight = gSettings->GetFloat(kMainViewWeight, 0.7f);
+			float sourceWeight = gSettings->GetFloat(kSourceViewWeight, 0.3f);
+			fSplitView->SetItemWeight(0, mainWeight, false);
+			fSplitView->SetItemWeight(1, sourceWeight, false);
+		}
+	}
+
+	if (fSVGView) {
+		int32 displayMode = gSettings->GetInt32(kDisplayMode, 0);
+		fSVGView->SetDisplayMode((svg_display_mode)displayMode);
+
+		bool showTransparency = gSettings->GetBool(kShowTransparency, true);
+		fSVGView->SetShowTransparency(showTransparency);
+
+		int32 bboxStyle = gSettings->GetInt32(kBoundingBoxStyle, 0);
+		fSVGView->SetBoundingBoxStyle((svg_boundingbox_style)bboxStyle);
+	}
+
+	if (fSVGTextView) {
+		bool wordWrap = gSettings->GetBool(kWordWrap, true);
+		fSVGTextView->SetWordWrap(wordWrap);
+	}
+
+	if (fTabView) {
+		int32 selection = gSettings->GetInt32(kTabSelection, 0);
+		if (selection >= 0 && selection < fTabView->CountTabs()) {
+			fTabView->Select(selection);
+		}
+	}
+
+	BString lastOpenPath = gSettings->GetString(kLastOpenPath);
+	if (!lastOpenPath.IsEmpty() && fFileManager) {
+		BFilePanel* openPanel = fFileManager->GetOpenPanel();
+		if (openPanel) {
+			entry_ref ref;
+			if (get_ref_for_path(lastOpenPath.String(), &ref) == B_OK) {
+				openPanel->SetPanelDirectory(&ref);
+			}
+		}
+	}
+
+	BString lastSavePath = gSettings->GetString(kLastSavePath);
+	if (!lastSavePath.IsEmpty() && fFileManager) {
+		BFilePanel* savePanel = fFileManager->GetSavePanel();
+		if (savePanel) {
+			entry_ref ref;
+			if (get_ref_for_path(lastSavePath.String(), &ref) == B_OK) {
+				savePanel->SetPanelDirectory(&ref);
+			}
+		}
+	}
+
+	_UpdateInterface();
 }

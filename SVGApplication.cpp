@@ -4,14 +4,17 @@
  */
 
 #include "SVGApplication.h"
+#include "SVGSettings.h"
 
 SVGApplication::SVGApplication() : BApplication(APP_SIGNATURE),
 	lastActivatedWindow(NULL)
 {
+	InitializeSettings();
 }
 
 SVGApplication::~SVGApplication()
 {
+	CleanupSettings();
 	be_app->PostMessage(MSG_WINDOW_CLOSED);
 };
 
