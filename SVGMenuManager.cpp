@@ -160,6 +160,7 @@ SVGMenuManager::_AddShortcuts(BHandler* target)
 	if (window) {
 		window->AddShortcut('T', B_COMMAND_KEY, new BMessage(MSG_EASTER_EGG));
 		window->AddShortcut('Z', B_COMMAND_KEY, new BMessage(B_UNDO));
+		window->AddShortcut('Z', B_COMMAND_KEY | B_SHIFT_KEY, new BMessage(B_REDO));
 	}
 }
 
