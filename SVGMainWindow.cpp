@@ -615,9 +615,6 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 		fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
 		memcpy(fCurrentHVIFData, parser.GetIconData(), fCurrentHVIFSize);
 
-		if (fIconView)
-			fIconView->SetIcon(parser.GetIconData(), parser.GetIconDataSize());
-
 		const hvif::HVIFIcon& icon = parser.GetIcon();
 		hvif::SVGRenderer renderer;
 		std::string svg = renderer.RenderIcon(icon, 64, 64);
@@ -746,6 +743,9 @@ SVGMainWindow::_GenerateHVIFFromSVG()
 		}
 	} catch (...) {
 	}
+
+	if (fIconView)
+		fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
 }
 
 void
