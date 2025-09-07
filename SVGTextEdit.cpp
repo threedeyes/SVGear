@@ -4,150 +4,510 @@
  */
 
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <Clipboard.h>
 
 #include "SVGTextEdit.h"
 
-SVGTextEdit::SVGTextEdit(const char* name)
-	: BTextView(name)
+UndoCommand::UndoCommand()
+    : type(CMD_INSERT_TEXT),
+    offset(0),
+    length(0),
+    text(NULL),
+    runs(NULL),
+	selectionStart(0),
+	selectionEnd(0),
+	timestamp(0),
+	canMerge(true)
 {
-	SetWordWrap(false);
-	MakeEditable(true);
-	SetStylable(true);
-	
-	SetExplicitMinSize(BSize(32, 32));
-	
-	BFont sourceFont(be_fixed_font);
-	SetFontAndColor(&sourceFont, B_FONT_ALL, &kColorDefault);
-	
-	SetDoesUndo(true);
+}
+
+UndoCommand::~UndoCommand()
+{
+    free(text);
+    free(runs);
+}
+
+SVGTextEdit::SVGTextEdit(const char* name)
+    : BTextView(name),
+      fMaxUndoLevels(50),
+      fInUndoRedo(false),
+      fLastOperationTime(0),
+      fMergeTimeLimit(2000000),
+      fLastWasTyping(false)
+{
+    SetWordWrap(false);
+    MakeEditable(true);
+    SetStylable(true);
+
+    SetExplicitMinSize(BSize(32, 32));
+
+    BFont sourceFont(be_fixed_font);
+    SetFontAndColor(&sourceFont, B_FONT_ALL, &kColorDefault);
+
+    SetDoesUndo(false);
+}
+
+SVGTextEdit::~SVGTextEdit()
+{
+    ClearUndoHistory();
+}
+
+void
+SVGTextEdit::KeyDown(const char* bytes, int32 numBytes)
+{
+    fLastWasTyping = _IsTypingOperation(bytes, numBytes);
+    BTextView::KeyDown(bytes, numBytes);
+}
+
+void
+SVGTextEdit::MessageReceived(BMessage* message)
+{
+    switch (message->what) {
+        case B_PASTE:
+            fLastWasTyping = false;
+            BreakUndoGroup();
+            break;
+        default:
+            break;
+    }
+    BTextView::MessageReceived(message);
 }
 
 void
 SVGTextEdit::InsertText(const char* text, int32 length, int32 offset, const text_run_array* runs)
 {
-	BTextView::InsertText(text, length, offset, runs);
-	_ApplySyntaxHighlighting();
+    if (!_IsInUndoRedoMode()) {
+        bool canMerge = fLastWasTyping && (length == 1);
+        if (length > 10) {
+            canMerge = false;
+        }
+
+        _AddUndoCommand(CMD_INSERT_TEXT, offset, length, text, runs, canMerge);
+
+        for (int32 i = 0; i < fRedoStack.CountItems(); i++) {
+            _DeleteCommand(static_cast<UndoCommand*>(fRedoStack.ItemAt(i)));
+        }
+        fRedoStack.MakeEmpty();
+    }
+
+    BTextView::InsertText(text, length, offset, runs);
+
+    if (!_IsInUndoRedoMode()) {
+        _ApplySyntaxHighlighting();
+    }
 }
 
 void
 SVGTextEdit::DeleteText(int32 start, int32 finish)
 {
-	BTextView::DeleteText(start, finish);
-	_ApplySyntaxHighlighting();
+    if (!_IsInUndoRedoMode()) {
+        int32 deleteLength = finish - start;
+        if (deleteLength > 0) {
+            char* deletedText = (char*)malloc(deleteLength + 1);
+            if (deletedText) {
+                GetText(start, deleteLength, deletedText);
+
+                text_run_array* deletedRuns = RunArray(start, finish);
+
+                bool canMerge = fLastWasTyping && (deleteLength == 1);
+                _AddUndoCommand(CMD_DELETE_TEXT, start, deleteLength, deletedText, deletedRuns, canMerge);
+
+                free(deletedText);
+                free(deletedRuns);
+            }
+        }
+
+        for (int32 i = 0; i < fRedoStack.CountItems(); i++) {
+            _DeleteCommand(static_cast<UndoCommand*>(fRedoStack.ItemAt(i)));
+        }
+        fRedoStack.MakeEmpty();
+    }
+
+    BTextView::DeleteText(start, finish);
+
+    if (!_IsInUndoRedoMode()) {
+        _ApplySyntaxHighlighting();
+    }
+}
+
+void
+SVGTextEdit::Undo(BClipboard* clipboard)
+{
+    if (!CanUndo())
+        return;
+
+    UndoCommand* cmd = static_cast<UndoCommand*>(fUndoStack.RemoveItem(fUndoStack.CountItems() - 1));
+    if (!cmd)
+        return;
+
+    _SetUndoRedoMode(true);
+
+    int32 currentStart, currentEnd;
+    GetSelection(&currentStart, &currentEnd);
+
+    _ExecuteCommand(cmd, true);
+
+    fRedoStack.AddItem(cmd);
+
+    _SetUndoRedoMode(false);
+    _ApplySyntaxHighlighting();
+
+    BreakUndoGroup();
+}
+
+void
+SVGTextEdit::Redo()
+{
+    if (!CanRedo())
+        return;
+
+    UndoCommand* cmd = static_cast<UndoCommand*>(fRedoStack.RemoveItem(fRedoStack.CountItems() - 1));
+    if (!cmd)
+        return;
+
+    _SetUndoRedoMode(true);
+    _ExecuteCommand(cmd, false);
+    fUndoStack.AddItem(cmd);
+
+    _SetUndoRedoMode(false);
+    _ApplySyntaxHighlighting();
+
+    BreakUndoGroup();
+}
+
+bool
+SVGTextEdit::CanUndo() const
+{
+    return fUndoStack.CountItems() > 0;
+}
+
+bool
+SVGTextEdit::CanRedo() const
+{
+    return fRedoStack.CountItems() > 0;
+}
+
+void
+SVGTextEdit::ClearUndoHistory()
+{
+    for (int32 i = 0; i < fUndoStack.CountItems(); i++)
+        _DeleteCommand(static_cast<UndoCommand*>(fUndoStack.ItemAt(i)));
+
+    fUndoStack.MakeEmpty();
+
+    for (int32 i = 0; i < fRedoStack.CountItems(); i++)
+        _DeleteCommand(static_cast<UndoCommand*>(fRedoStack.ItemAt(i)));
+
+    fRedoStack.MakeEmpty();
+
+    fLastOperationTime = 0;
+}
+
+void
+SVGTextEdit::BreakUndoGroup()
+{
+    fLastOperationTime = 0;
+    fLastWasTyping = false;
+}
+
+void
+SVGTextEdit::_AddUndoCommand(command_type type, int32 offset, int32 length,
+						const char* text, const text_run_array* runs, bool canMerge)
+{
+    bigtime_t currentTime = system_time();
+
+    UndoCommand* newCmd = _CreateCommand(type, offset, length, text, runs, canMerge);
+    if (!newCmd)
+        return;
+
+    newCmd->timestamp = currentTime;
+    GetSelection(&newCmd->selectionStart, &newCmd->selectionEnd);
+
+    if (canMerge && fUndoStack.CountItems() > 0) {
+        UndoCommand* lastCmd = static_cast<UndoCommand*>(fUndoStack.ItemAt(fUndoStack.CountItems() - 1));
+
+        if (lastCmd && _ShouldMergeCommands(lastCmd, newCmd)) {
+            _MergeCommands(lastCmd, newCmd);
+            _DeleteCommand(newCmd);
+            fLastOperationTime = currentTime;
+            return;
+        }
+    }
+
+    fUndoStack.AddItem(newCmd);
+    fLastOperationTime = currentTime;
+
+    while (fUndoStack.CountItems() > fMaxUndoLevels) {
+        UndoCommand* oldCmd = static_cast<UndoCommand*>(fUndoStack.RemoveItem((int32)0));
+        _DeleteCommand(oldCmd);
+    }
+}
+
+UndoCommand*
+SVGTextEdit::_CreateCommand(command_type type, int32 offset, int32 length,
+							const char* text, const text_run_array* runs, bool canMerge)
+{
+    UndoCommand* cmd = new UndoCommand;
+    if (!cmd)
+        return NULL;
+
+    cmd->type = type;
+    cmd->offset = offset;
+    cmd->length = length;
+    cmd->canMerge = canMerge;
+
+    if (text && length > 0) {
+        cmd->text = (char*)malloc(length + 1);
+        if (cmd->text) {
+            memcpy(cmd->text, text, length);
+            cmd->text[length] = '\0';
+        }
+    }
+
+    cmd->runs = _CopyRunArray(runs);
+    return cmd;
+}
+
+bool
+SVGTextEdit::_ShouldMergeCommands(UndoCommand* last, UndoCommand* current)
+{
+    if (!last || !current || !last->canMerge || !current->canMerge)
+        return false;
+
+    if (last->type != current->type)
+        return false;
+
+    if (current->timestamp - last->timestamp > fMergeTimeLimit)
+        return false;
+
+    if (last->type == CMD_INSERT_TEXT)
+        return (current->offset == last->offset + last->length);
+    else if (last->type == CMD_DELETE_TEXT)
+        return (current->offset + current->length == last->offset) || (current->offset == last->offset);
+
+    return false;
+}
+
+void
+SVGTextEdit::_MergeCommands(UndoCommand* target, UndoCommand* source)
+{
+    if (!target || !source || target->type != source->type)
+        return;
+
+    if (target->type == CMD_INSERT_TEXT) {
+        int32 newLength = target->length + source->length;
+        char* newText = (char*)realloc(target->text, newLength + 1);
+        if (newText) {
+            target->text = newText;
+            memcpy(target->text + target->length, source->text, source->length);
+            target->text[newLength] = '\0';
+            target->length = newLength;
+        }
+    } else if (target->type == CMD_DELETE_TEXT) {
+        if (source->offset + source->length == target->offset) {
+            int32 newLength = target->length + source->length;
+            char* newText = (char*)malloc(newLength + 1);
+            if (newText) {
+                memcpy(newText, source->text, source->length);
+                memcpy(newText + source->length, target->text, target->length);
+                newText[newLength] = '\0';
+                free(target->text);
+                target->text = newText;
+                target->length = newLength;
+                target->offset = source->offset;
+            }
+        } else if (source->offset == target->offset) {
+            int32 newLength = target->length + source->length;
+            char* newText = (char*)realloc(target->text, newLength + 1);
+            if (newText) {
+                target->text = newText;
+                memcpy(target->text + target->length, source->text, source->length);
+                target->text[newLength] = '\0';
+                target->length = newLength;
+            }
+        }
+    }
+
+    target->timestamp = source->timestamp;
+}
+
+bool
+SVGTextEdit::_IsTypingOperation(const char* bytes, int32 numBytes)
+{
+    if (numBytes != 1)
+        return false;
+
+    unsigned char ch = bytes[0];
+
+    if (ch == B_BACKSPACE || ch == B_DELETE)
+        return true;
+
+    if (ch >= 32 && ch < 127)
+        return true;
+
+    if (ch >= 128)
+        return true;
+
+    return false;
+}
+
+void
+SVGTextEdit::_ExecuteCommand(UndoCommand* cmd, bool isUndo)
+{
+    if (!cmd)
+        return;
+
+    switch (cmd->type) {
+        case CMD_INSERT_TEXT:
+            if (isUndo) {
+                BTextView::DeleteText(cmd->offset, cmd->offset + cmd->length);
+                Select(cmd->selectionStart, cmd->selectionEnd);
+            } else {
+                BTextView::InsertText(cmd->text, cmd->length, cmd->offset, cmd->runs);
+                Select(cmd->offset + cmd->length, cmd->offset + cmd->length);
+            }
+            break;
+
+        case CMD_DELETE_TEXT:
+            if (isUndo) {
+                BTextView::InsertText(cmd->text, cmd->length, cmd->offset, cmd->runs);
+                Select(cmd->selectionStart, cmd->selectionEnd);
+            } else {
+                BTextView::DeleteText(cmd->offset, cmd->offset + cmd->length);
+                Select(cmd->offset, cmd->offset);
+            }
+            break;
+
+        default:
+            break;
+    }
+}
+
+text_run_array*
+SVGTextEdit::_CopyRunArray(const text_run_array* runs)
+{
+    if (!runs)
+        return NULL;
+
+    size_t size = sizeof(text_run_array) + (runs->count - 1) * sizeof(text_run);
+    text_run_array* copy = static_cast<text_run_array*>(malloc(size));
+    if (copy)
+        memcpy(copy, runs, size);
+
+    return copy;
+}
+
+void
+SVGTextEdit::_DeleteCommand(UndoCommand* cmd)
+{
+    delete cmd;
 }
 
 void
 SVGTextEdit::ApplySyntaxHighlighting()
 {
-	_ApplySyntaxHighlighting();
+    _ApplySyntaxHighlighting();
 }
 
 void
 SVGTextEdit::_ApplySyntaxHighlighting()
 {
-	const char* text = Text();
-	int32 length = TextLength();
+    const char* text = Text();
+    int32 length = TextLength();
 
-	if (length == 0)
-		return;
+    if (length == 0)
+        return;
 
-	BFont font(be_fixed_font);
-	SetFontAndColor(0, length, &font, B_FONT_ALL, &kColorDefault);
+    BFont font(be_fixed_font);
+    SetFontAndColor(0, length, &font, B_FONT_ALL, &kColorDefault);
 
-	int32 pos = 0;
-	while (pos < length) {
-		if (text[pos] == '<') {
-			if (pos + 3 < length && strncmp(&text[pos], "<!--", 4) == 0) {
-				// Comment
-				int32 commentEnd = pos + 4;
-				while (commentEnd + 2 < length && strncmp(&text[commentEnd], "-->", 3) != 0) {
-					commentEnd++;
-				}
-				if (commentEnd + 2 < length) {
-					commentEnd += 3;
-					SetFontAndColor(pos, commentEnd, &font, B_FONT_ALL, &kColorComment);
-					pos = commentEnd;
-					continue;
-				}
-			}
+    int32 pos = 0;
+    while (pos < length) {
+        if (text[pos] == '<') {
+            if (pos + 3 < length && strncmp(&text[pos], "<!--", 4) == 0) {
+                int32 commentEnd = pos + 4;
+                while (commentEnd + 2 < length && strncmp(&text[commentEnd], "-->", 3) != 0) {
+                    commentEnd++;
+                }
+                if (commentEnd + 2 < length) {
+                    commentEnd += 3;
+                    SetFontAndColor(pos, commentEnd, &font, B_FONT_ALL, &kColorComment);
+                    pos = commentEnd;
+                    continue;
+                }
+            }
 
-			// Tag
-			int32 tagEnd = pos + 1;
-			while (tagEnd < length && text[tagEnd] != '>') {
-				tagEnd++;
-			}
+            int32 tagEnd = pos + 1;
+            while (tagEnd < length && text[tagEnd] != '>') {
+                tagEnd++;
+            }
 
-			if (tagEnd < length) {
-				tagEnd++; // Include '>'
-				_HighlightTag(pos, tagEnd, font);
-				pos = tagEnd;
-			} else {
-				pos++;
-			}
-		} else {
-			pos++;
-		}
-	}
+            if (tagEnd < length) {
+                tagEnd++;
+                _HighlightTag(pos, tagEnd, font);
+                pos = tagEnd;
+            } else {
+                pos++;
+            }
+        } else {
+            pos++;
+        }
+    }
 }
 
 void
 SVGTextEdit::_HighlightTag(int32 start, int32 end, const BFont& font)
 {
-	const char* text = Text();
+    const char* text = Text();
 
-	// Highlight brackets
-	SetFontAndColor(start, start + 1, &font, B_FONT_ALL, &kColorTag); // '<'
-	SetFontAndColor(end - 1, end, &font, B_FONT_ALL, &kColorTag); // '>'
+    SetFontAndColor(start, start + 1, &font, B_FONT_ALL, &kColorTag);
+    SetFontAndColor(end - 1, end, &font, B_FONT_ALL, &kColorTag);
 
-	int32 pos = start + 1;
+    int32 pos = start + 1;
 
-	// Skip '/' for closing tags
-	if (pos < end && text[pos] == '/') {
-		SetFontAndColor(pos, pos + 1, &font, B_FONT_ALL, &kColorTag);
-		pos++;
-	}
+    if (pos < end && text[pos] == '/') {
+        SetFontAndColor(pos, pos + 1, &font, B_FONT_ALL, &kColorTag);
+        pos++;
+    }
 
-	// Find tag name
-	int32 tagNameStart = pos;
-	while (pos < end - 1 && !isspace(text[pos]) && text[pos] != '>')
-		pos++;
+    int32 tagNameStart = pos;
+    while (pos < end - 1 && !isspace(text[pos]) && text[pos] != '>')
+        pos++;
 
-	if (pos > tagNameStart)
-		SetFontAndColor(tagNameStart, pos, &font, B_FONT_ALL, &kColorTag);
+    if (pos > tagNameStart)
+        SetFontAndColor(tagNameStart, pos, &font, B_FONT_ALL, &kColorTag);
 
-	// Parse attributes
-	while (pos < end - 1) {
-		while (pos < end - 1 && isspace(text[pos]))
-			pos++;
+    while (pos < end - 1) {
+        while (pos < end - 1 && isspace(text[pos]))
+            pos++;
 
-		if (pos >= end - 1)
-			break;
+        if (pos >= end - 1)
+            break;
 
-		// Attribute name
-		int32 attrStart = pos;
-		while (pos < end - 1 && !isspace(text[pos]) && text[pos] != '=' && text[pos] != '>')
-			pos++;
+        int32 attrStart = pos;
+        while (pos < end - 1 && !isspace(text[pos]) && text[pos] != '=' && text[pos] != '>')
+            pos++;
 
-		if (pos > attrStart)
-			SetFontAndColor(attrStart, pos, &font, B_FONT_ALL, &kColorAttribute);
+        if (pos > attrStart)
+            SetFontAndColor(attrStart, pos, &font, B_FONT_ALL, &kColorAttribute);
 
-		// Skip whitespace and '='
-		while (pos < end - 1 && (isspace(text[pos]) || text[pos] == '='))
-			pos++;
+        while (pos < end - 1 && (isspace(text[pos]) || text[pos] == '='))
+            pos++;
 
-		// Attribute value
-		if (pos < end - 1 && (text[pos] == '"' || text[pos] == '\'')) {
-			char quote = text[pos];
-			int32 valueStart = pos;
-			pos++; // Skip opening quote
+        if (pos < end - 1 && (text[pos] == '"' || text[pos] == '\'')) {
+            char quote = text[pos];
+            int32 valueStart = pos;
+            pos++;
 
-			while (pos < end - 1 && text[pos] != quote)
-				pos++;
+            while (pos < end - 1 && text[pos] != quote)
+                pos++;
 
-			if (pos < end - 1) {
-				pos++; // Include closing quote
-				SetFontAndColor(valueStart, pos, &font, B_FONT_ALL, &kColorString);
-			}
-		}
-	}
+            if (pos < end - 1) {
+                pos++;
+                SetFontAndColor(valueStart, pos, &font, B_FONT_ALL, &kColorString);
+            }
+        }
+    }
 }
