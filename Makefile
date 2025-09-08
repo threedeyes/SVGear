@@ -17,7 +17,7 @@ SRCS = \
 	External/HVIF-Tools/src/svg2hvif/SVGParser.cpp \
 	main.cpp
 RDEFS = Resources.rdef
-LIBS = be tracker shared $(STDCPPLIBS)
+LIBS = be tracker shared localestub $(STDCPPLIBS)
 SYSTEM_INCLUDE_PATHS = /system/develop/headers/private/interface
 LOCAL_INCLUDE_PATHS = \
 	./External/BSVGView \
@@ -26,7 +26,7 @@ LOCAL_INCLUDE_PATHS = \
 	./External/HVIF-Tools/src/hvif2svg \
 	./External/HVIF-Tools/src/svg2hvif
 OPTIMIZE := FULL
-LOCALES =
+LOCALES = en ru
 DEFINES =
 WARNINGS =
 SYMBOLS :=

@@ -5,6 +5,10 @@
 
 #include "SVGMenuManager.h"
 #include <MenuItem.h>
+#include <Catalog.h>
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SVGMenuManager"
 
 SVGMenuManager::SVGMenuManager()
 	: fMenuBar(NULL),
@@ -43,29 +47,29 @@ SVGMenuManager::CreateMenuBar(BHandler* target)
 void
 SVGMenuManager::_CreateFileMenu(BHandler* target)
 {
-	BMenu* fileMenu = new BMenu("File");
-	fileMenu->AddItem(new BMenuItem("New", new BMessage(MSG_NEW_FILE), 'N'));
-	fileMenu->AddItem(new BMenuItem("Open" B_UTF8_ELLIPSIS, new BMessage(MSG_OPEN_FILE), 'O'));
+	BMenu* fileMenu = new BMenu(B_TRANSLATE("File"));
+	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("New"), new BMessage(MSG_NEW_FILE), 'N'));
+	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("Open" B_UTF8_ELLIPSIS), new BMessage(MSG_OPEN_FILE), 'O'));
 	fileMenu->AddSeparatorItem();
 
-	fSaveItem = new BMenuItem("Save", new BMessage(MSG_SAVE_FILE), 'S');
+	fSaveItem = new BMenuItem(B_TRANSLATE("Save"), new BMessage(MSG_SAVE_FILE), 'S');
 	fileMenu->AddItem(fSaveItem);
 
-	fSaveAsItem = new BMenuItem("Save as" B_UTF8_ELLIPSIS, new BMessage(MSG_SAVE_AS_FILE), 'S', B_SHIFT_KEY);
+	fSaveAsItem = new BMenuItem(B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), new BMessage(MSG_SAVE_AS_FILE), 'S', B_SHIFT_KEY);
 	fileMenu->AddItem(fSaveAsItem);
 
 	fileMenu->AddSeparatorItem();
 
-	fExportSubMenu = new BMenu("Export");
-	fExportSubMenu->AddItem(new BMenuItem("HVIF Icon" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_HVIF)));
-	fExportSubMenu->AddItem(new BMenuItem("RDef resource" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_RDEF)));
-	fExportSubMenu->AddItem(new BMenuItem("C++ array" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_CPP)));
+	fExportSubMenu = new BMenu(B_TRANSLATE("Export"));
+	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("HVIF Icon" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_HVIF)));
+	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("RDef resource" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_RDEF)));
+	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("C++ array" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_CPP)));
 	fExportSubMenu->SetTargetForItems(target);
 
 	fileMenu->AddItem(fExportSubMenu);
 	fileMenu->AddSeparatorItem();
 
-	fileMenu->AddItem(new BMenuItem("Quit", new BMessage(B_QUIT_REQUESTED), 'Q'));
+	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("Quit"), new BMessage(B_QUIT_REQUESTED), 'Q'));
 
 	fileMenu->SetTargetForItems(target);
 	fMenuBar->AddItem(fileMenu);
@@ -74,48 +78,48 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 void
 SVGMenuManager::_CreateViewMenu(BHandler* target)
 {
-	BMenu* viewMenu = new BMenu("View");
-	viewMenu->AddItem(new BMenuItem("Zoom In", new BMessage(MSG_ZOOM_IN), '+'));
-	viewMenu->AddItem(new BMenuItem("Zoom Out", new BMessage(MSG_ZOOM_OUT), '-'));
-	viewMenu->AddItem(new BMenuItem("Zoom Original", new BMessage(MSG_ZOOM_ORIGINAL), '1'));
-	viewMenu->AddItem(new BMenuItem("Fit to Window", new BMessage(MSG_FIT_WINDOW), 'F'));
+	BMenu* viewMenu = new BMenu(B_TRANSLATE("View"));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom In"), new BMessage(MSG_ZOOM_IN), '+'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom Out"), new BMessage(MSG_ZOOM_OUT), '-'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom Original"), new BMessage(MSG_ZOOM_ORIGINAL), '1'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Fit to Window"), new BMessage(MSG_FIT_WINDOW), 'F'));
 	viewMenu->AddSeparatorItem();
-	viewMenu->AddItem(new BMenuItem("Center", new BMessage(MSG_CENTER), 'C', B_SHIFT_KEY));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Center"), new BMessage(MSG_CENTER), 'C', B_SHIFT_KEY));
 	viewMenu->AddSeparatorItem();
-	viewMenu->AddItem(new BMenuItem("Reset View", new BMessage(MSG_RESET_VIEW), '0'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Reset View"), new BMessage(MSG_RESET_VIEW), '0'));
 	viewMenu->AddSeparatorItem();
 
-	fDisplaySubMenu = new BMenu("Display Mode");
+	fDisplaySubMenu = new BMenu(B_TRANSLATE("Display Mode"));
 
-	fNormalItem = new BMenuItem("Normal", new BMessage(MSG_DISPLAY_NORMAL));
+	fNormalItem = new BMenuItem(B_TRANSLATE("Normal"), new BMessage(MSG_DISPLAY_NORMAL));
 	fNormalItem->SetMarked(true);
 	fDisplaySubMenu->AddItem(fNormalItem);
 
-	fOutlineItem = new BMenuItem("Outline", new BMessage(MSG_DISPLAY_OUTLINE));
+	fOutlineItem = new BMenuItem(B_TRANSLATE("Outline"), new BMessage(MSG_DISPLAY_OUTLINE));
 	fDisplaySubMenu->AddItem(fOutlineItem);
 
-	fFillOnlyItem = new BMenuItem("Fill Only", new BMessage(MSG_DISPLAY_FILL_ONLY));
+	fFillOnlyItem = new BMenuItem(B_TRANSLATE("Fill Only"), new BMessage(MSG_DISPLAY_FILL_ONLY));
 	fDisplaySubMenu->AddItem(fFillOnlyItem);
 
-	fStrokeOnlyItem = new BMenuItem("Stroke Only", new BMessage(MSG_DISPLAY_STROKE_ONLY));
+	fStrokeOnlyItem = new BMenuItem(B_TRANSLATE("Stroke Only"), new BMessage(MSG_DISPLAY_STROKE_ONLY));
 	fDisplaySubMenu->AddItem(fStrokeOnlyItem);
 
 	fDisplaySubMenu->SetTargetForItems(target);
 	viewMenu->AddItem(fDisplaySubMenu);
 
-	fBoundingBoxSubMenu = new BMenu("Bounding Box");
+	fBoundingBoxSubMenu = new BMenu(B_TRANSLATE("Bounding Box"));
 
-	fBBoxNoneItem = new BMenuItem("None", new BMessage(MSG_BBOX_NONE));
+	fBBoxNoneItem = new BMenuItem(B_TRANSLATE("None"), new BMessage(MSG_BBOX_NONE));
 	fBBoxNoneItem->SetMarked(true);
 	fBoundingBoxSubMenu->AddItem(fBBoxNoneItem);
 
-	fBBoxDocumentItem = new BMenuItem("Document Style", new BMessage(MSG_BBOX_DOCUMENT));
+	fBBoxDocumentItem = new BMenuItem(B_TRANSLATE("Document Style"), new BMessage(MSG_BBOX_DOCUMENT));
 	fBoundingBoxSubMenu->AddItem(fBBoxDocumentItem);
 
-	fBBoxSimpleFrameItem = new BMenuItem("Simple Frame", new BMessage(MSG_BBOX_SIMPLE_FRAME));
+	fBBoxSimpleFrameItem = new BMenuItem(B_TRANSLATE("Simple Frame"), new BMessage(MSG_BBOX_SIMPLE_FRAME));
 	fBoundingBoxSubMenu->AddItem(fBBoxSimpleFrameItem);
 
-	fBBoxTransparentGrayItem = new BMenuItem("Transparent Gray", new BMessage(MSG_BBOX_TRANSPARENT_GRAY));
+	fBBoxTransparentGrayItem = new BMenuItem(B_TRANSLATE("Transparent Gray"), new BMessage(MSG_BBOX_TRANSPARENT_GRAY));
 	fBoundingBoxSubMenu->AddItem(fBBoxTransparentGrayItem);
 
 	fBoundingBoxSubMenu->SetTargetForItems(target);
@@ -123,15 +127,15 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	viewMenu->AddSeparatorItem();
 
-	fTransparencyItem = new BMenuItem("Show Transparency Grid", new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
+	fTransparencyItem = new BMenuItem(B_TRANSLATE("Show Transparency Grid"), new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
 	fTransparencyItem->SetMarked(true);
 	viewMenu->AddItem(fTransparencyItem);
 
 	viewMenu->AddSeparatorItem();
 
-	fSourceViewItem = new BMenuItem("Show Source Code", new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'S');
+	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Source Code"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'S');
 	viewMenu->AddItem(fSourceViewItem);
-	viewMenu->AddItem(new BMenuItem("Reload from Source", new BMessage(MSG_RELOAD_FROM_SOURCE), 'R'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Reload from Source"), new BMessage(MSG_RELOAD_FROM_SOURCE), 'R'));
 
 	viewMenu->SetTargetForItems(target);
 	fMenuBar->AddItem(viewMenu);
@@ -140,8 +144,8 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 void
 SVGMenuManager::_CreateHelpMenu(BHandler* target)
 {
-	BMenu* helpMenu = new BMenu("Help");
-	helpMenu->AddItem(new BMenuItem("About SVGear...", new BMessage(MSG_ABOUT)));
+	BMenu* helpMenu = new BMenu(B_TRANSLATE("Help"));
+	helpMenu->AddItem(new BMenuItem(B_TRANSLATE("About SVGear" B_UTF8_ELLIPSIS), new BMessage(MSG_ABOUT)));
 
 	helpMenu->SetTargetForItems(target);
 	fMenuBar->AddItem(helpMenu);
@@ -198,11 +202,11 @@ SVGMenuManager::UpdateFileMenu(bool canSave, bool isModified)
 	if (fSaveItem) {
 		fSaveItem->SetEnabled(canSave || isModified);
 		if (isModified && canSave) {
-			fSaveItem->SetLabel("Save");
+			fSaveItem->SetLabel(B_TRANSLATE("Save"));
 		} else if (isModified && !canSave) {
-			fSaveItem->SetLabel("Save As" B_UTF8_ELLIPSIS);
+			fSaveItem->SetLabel(B_TRANSLATE("Save As" B_UTF8_ELLIPSIS));
 		} else {
-			fSaveItem->SetLabel("Save");
+			fSaveItem->SetLabel(B_TRANSLATE("Save"));
 		}
 	}
 

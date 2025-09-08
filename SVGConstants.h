@@ -7,6 +7,10 @@
 #define SVG_CONSTANTS_H
 
 #include <SupportDefs.h>
+#include <Catalog.h>
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SVGConstants"
 
 // Application constants
 #define APP_SIGNATURE "application/x-vnd.svgear"
@@ -76,17 +80,17 @@ enum {
     TAB_CPP = 2
 };
 
-// Error messages
-const char* const ERROR_FILE_NOT_SPECIFIED = "File path not specified";
-const char* const ERROR_READING_SVG = "Error reading SVG file";
-const char* const ERROR_PARSING_SVG = "Error parsing SVG from source code. Please check the syntax.";
-const char* const ERROR_SOURCE_EMPTY = "Source code is empty.";
-const char* const ERROR_SAVE_FAILED = "Failed to save file";
-const char* const ERROR_INVALID_PATH = "Invalid file path";
-const char* const ERROR_EXPORT_FAILED = "Failed to export file";
+// Макросы для локализованных строк
+#define ERROR_FILE_NOT_SPECIFIED B_TRANSLATE("File path not specified")
+#define ERROR_READING_SVG B_TRANSLATE("Error reading SVG file")
+#define ERROR_PARSING_SVG B_TRANSLATE("Error parsing SVG from source code. Please check the syntax.")
+#define ERROR_SOURCE_EMPTY B_TRANSLATE("Source code is empty.")
+#define ERROR_SAVE_FAILED B_TRANSLATE("Failed to save file")
+#define ERROR_INVALID_PATH B_TRANSLATE("Invalid file path")
+#define ERROR_EXPORT_FAILED B_TRANSLATE("Failed to export file")
 
 // Success messages
-const char* const MSG_FILE_SAVED = "File saved successfully";
-const char* const MSG_FILE_EXPORTED = "File exported successfully";
+#define MSG_FILE_SAVED B_TRANSLATE("File saved successfully")
+#define MSG_FILE_EXPORTED B_TRANSLATE("File exported successfully")
 
 #endif

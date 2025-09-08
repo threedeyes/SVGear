@@ -6,6 +6,7 @@
 #include <Alert.h>
 #include <Directory.h>
 #include <NodeInfo.h>
+#include <Catalog.h>
 
 #include "SVGFileManager.h"
 #include "SVGView.h"
@@ -15,6 +16,9 @@
 #include "HVIFWriter.h"
 #include "SVGParser.h"
 #include "SVGRenderer.h"
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SVGFileManager"
 
 SVGFileManager::SVGFileManager()
 	: fOpenPanel(NULL),
@@ -57,7 +61,7 @@ SVGFileManager::_LoadHVIFFile(const char* filePath, HVIFView* iconView, BString&
 	hvif::HVIFParser parser;
 	if (!parser.ParseFile(filePath)) {
 		BString error;
-		error.SetToFormat("Error parsing HVIF file: %s", parser.GetLastError().c_str());
+		error.SetToFormat(B_TRANSLATE("Error parsing HVIF file: %s"), parser.GetLastError().c_str());
 		_ShowError(error.String());
 		return false;
 	}
@@ -85,7 +89,7 @@ SVGFileManager::_LoadSVGFile(const char* filePath, SVGView* svgView, HVIFView* i
 	status_t result = svgView->LoadFromFile(filePath);
 	if (result != B_OK) {
 		BString error;
-		error.SetToFormat("Error loading SVG file: %s", filePath);
+		error.SetToFormat(B_TRANSLATE("Error loading SVG file: %s"), filePath);
 		_ShowError(error.String());
 		return false;
 	}
@@ -107,7 +111,7 @@ SVGFileManager::_LoadFromFileAttributes(const char* filePath, HVIFView* iconView
 	BEntry entry(filePath, true);
 	if (entry.InitCheck() != B_OK) {
 		BString error;
-		error.SetToFormat("Error accessing file: %s", filePath);
+		error.SetToFormat(B_TRANSLATE("Error accessing file: %s"), filePath);
 		_ShowError(error.String());
 		return false;
 	}
@@ -115,7 +119,7 @@ SVGFileManager::_LoadFromFileAttributes(const char* filePath, HVIFView* iconView
 	BNode node(&entry);
 	if (node.InitCheck() != B_OK) {
 		BString error;
-		error.SetToFormat("Error importing HVIF icon from file: %s", filePath);
+		error.SetToFormat(B_TRANSLATE("Error importing HVIF icon from file: %s"), filePath);
 		_ShowError(error.String());
 		return false;
 	}
@@ -123,7 +127,7 @@ SVGFileManager::_LoadFromFileAttributes(const char* filePath, HVIFView* iconView
 	attr_info info;
 	if (node.GetAttrInfo("BEOS:ICON", &info) != B_OK) {
 		BString error;
-		error.SetToFormat("Error getting HVIF icon info from file: %s", filePath);
+		error.SetToFormat(B_TRANSLATE("Error getting HVIF icon info from file: %s"), filePath);
 		_ShowError(error.String());
 		return false;
 	}
@@ -134,14 +138,14 @@ SVGFileManager::_LoadFromFileAttributes(const char* filePath, HVIFView* iconView
 
 	if (read != static_cast<ssize_t>(data.size())) {
 		BString error;
-		error.SetToFormat("Error reading HVIF icon data from file: %s", filePath);
+		error.SetToFormat(B_TRANSLATE("Error reading HVIF icon data from file: %s"), filePath);
 		_ShowError(error.String());
 		return false;
 	}
 
 	hvif::HVIFParser parser;
 	if (!parser.ParseData(data, filePath)) {
-		_ShowError("Error parsing HVIF data from file attributes");
+		_ShowError(B_TRANSLATE("Error parsing HVIF data from file attributes"));
 		return false;
 	}
 
@@ -230,7 +234,7 @@ SVGFileManager::SaveCurrentFile(const BString& currentPath, const BString& sourc
 	status_t result = SaveFile(currentPath.String(), source, "image/svg+xml");
 	if (result != B_OK) {
 		BString error;
-		error.SetToFormat("Error saving file: %s", strerror(result));
+		error.SetToFormat(B_TRANSLATE("Error saving file: %s"), strerror(result));
 		_ShowError(error.String());
 		return false;
 	}
@@ -303,7 +307,7 @@ SVGFileManager::_EnsureSVGExtension(BString& filePath) const
 void
 SVGFileManager::_ShowError(const char* message)
 {
-	BAlert* alert = new BAlert("Error", message, "OK", NULL, NULL,
+	BAlert* alert = new BAlert(B_TRANSLATE("Error"), message, B_TRANSLATE("OK"), NULL, NULL,
 							  B_WIDTH_AS_USUAL, B_STOP_ALERT);
 	alert->Go();
 }

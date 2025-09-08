@@ -1,0 +1,89 @@
+1	Russian	application/x-vnd.svgear	389243951
+File saved successfully	SVGMainWindow		Файл успешно сохранён
+Failed to save file	SVGMainWindow		Не удалось сохранить файл
+Outline	SVGMainWindow		Контур
+Error saving file: %s	SVGFileManager		Ошибка сохранения файла: %s
+Save As…	SVGMenuManager		Сохранить как…
+Quit	SVGMenuManager		Выход
+C++ array…	SVGMenuManager		Массив C++…
+Text wrap	SVGMainWindow		Перенос текста
+OK	SVGFileManager		OK
+Show Bounding Box	SVGMainWindow		Показать ограничивающую рамку
+Zoom out	SVGMainWindow		Уменьшить
+View	SVGMenuManager		Вид
+Outline	SVGMenuManager		Контур
+Error reading HVIF icon data from file: %s	SVGFileManager		Ошибка чтения данных HVIF иконки из файла: %s
+Cut	SVGMainWindow		Вырезать
+Redo	SVGMainWindow		Повторить
+File	SVGMenuManager		Файл
+Unknown	SVGMainWindow		Неизвестно
+HVIF Icon…	SVGMenuManager		Иконка HVIF…
+Paste	SVGMainWindow		Вставить
+Show Source Code	SVGMainWindow		Показать исходный код
+Error parsing HVIF data from file attributes	SVGFileManager		Ошибка разбора данных HVIF из атрибутов файла
+Zoom In	SVGMenuManager		Увеличить
+Transparent Gray	SVGMenuManager		Прозрачный серый
+Zoom Out	SVGMenuManager		Уменьшить
+Bounding Box	SVGMenuManager		Ограничивающая рамка
+Display Mode	SVGMenuManager		Режим отображения
+OK	SVGMainWindow		OK
+Save	SVGMenuManager		Сохранить
+Error	SVGMainWindow		Ошибка
+Error accessing file: %s	SVGFileManager		Ошибка доступа к файлу: %s
+RDef resource…	SVGMenuManager		Ресурс RDef…
+New	SVGMenuManager		Создать
+Save as…	SVGMenuManager		Сохранить как…
+File path not specified	SVGFileManager		Путь к файлу не указан
+ Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Размер: %.0fx%.0f | Масштаб: %.1f%% | Режим: %s | Рамка: %s
+Apply	SVGMainWindow		Применить
+Stroke Only	SVGMainWindow		Только обводка
+Center	SVGMenuManager		По центру
+Export	SVGMenuManager		Экспорт
+Fill Only	SVGMainWindow		Только заливка
+No SVG loaded	SVGMainWindow		SVG не загружен
+Open	SVGMainWindow		Открыть
+Gray	SVGMainWindow		Серый
+Show Transparency Grid	SVGMenuManager		Показать сетку прозрачности
+Error	SVGFileManager		Ошибка
+No HVIF data available for export	SVGMainWindow		Нет данных HVIF для экспорта
+Document	SVGMainWindow		Документ
+Zoom original	SVGMainWindow		Исходный масштаб
+Error reading SVG file	SVGFileManager		Ошибка чтения файла SVG
+None	SVGMenuManager		Нет
+Save	SVGMainWindow		Сохранить
+Invalid file path	SVGMainWindow		Неверный путь к файлу
+No HVIF data available	SVGMainWindow		Нет доступных данных HVIF
+Copy	SVGMainWindow		Копировать
+File exported successfully	SVGMainWindow		Файл успешно экспортирован
+Zoom in	SVGMainWindow		Увеличить
+None	SVGMainWindow		Нет
+Failed to export file	SVGMainWindow		Не удалось экспортировать файл
+Document Style	SVGMenuManager		Стиль документа
+Open…	SVGMenuManager		Открыть…
+Error getting HVIF icon info from file: %s	SVGFileManager		Ошибка получения информации об иконке HVIF из файла: %s
+Best fit	SVGMainWindow		По размеру окна
+Reload from Source	SVGMenuManager		Перезагрузить из исходника
+Error loading SVG file: %s	SVGFileManager		Ошибка загрузки файла SVG: %s
+Normal	SVGMainWindow		Обычный
+Source code is empty.	SVGMainWindow		Исходный код пуст.
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Ошибка разбора SVG из исходного кода. Проверьте синтаксис.
+Could not get export file information	SVGMainWindow		Не удалось получить информацию о файле экспорта
+Could not find directory reference	SVGMainWindow		Не удалось найти ссылку на каталог
+New	SVGMainWindow		Создать
+Simple Frame	SVGMenuManager		Простая рамка
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear предоставляет интуитивный интерфейс для просмотра и работы с файлами SVG (масштабируемая векторная графика). \nПриложение поддерживает операции преобразования форматов, позволяя пользователям преобразовывать файлы SVG в другие векторные форматы, такие как HVIF (формат векторных иконок Haiku).
+Stroke Only	SVGMenuManager		Только обводка
+About SVGear…	SVGMenuManager		О программе SVGear…
+Fit to Window	SVGMenuManager		По размеру окна
+Undo	SVGMainWindow		Отменить
+Fill Only	SVGMenuManager		Только заливка
+Reset View	SVGMenuManager		Сбросить вид
+Ready	SVGMainWindow		Готово
+Help	SVGMenuManager		Справка
+Show Source Code	SVGMenuManager		Показать исходный код
+Simple	SVGMainWindow		Простой
+Normal	SVGMenuManager		Обычный
+Zoom Original	SVGMenuManager		Исходный масштаб
+Error importing HVIF icon from file: %s	SVGFileManager		Ошибка импорта иконки HVIF из файла: %s
+Could not find file name	SVGMainWindow		Не удалось найти имя файла
+Error parsing HVIF file: %s	SVGFileManager		Ошибка разбора файла HVIF: %s

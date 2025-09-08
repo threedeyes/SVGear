@@ -15,6 +15,7 @@
 #include <TextView.h>
 #include <Directory.h>
 #include <GroupView.h>
+#include <Catalog.h>
 
 #include <private/interface/AboutWindow.h>
 
@@ -32,6 +33,9 @@
 #include "HVIFWriter.h"
 #include "SVGParser.h"
 #include "SVGRenderer.h"
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SVGMainWindow"
 
 SVGMainWindow::SVGMainWindow(const char* filePath)
 	: BWindow(gSettings->GetRect(kWindowFrame, BRect(100, 100, 1200, 800)),
@@ -122,30 +126,30 @@ void
 SVGMainWindow::_BuildToolBars()
 {
 	fToolBar = new SVGToolBar();
-	fToolBar->AddAction(MSG_NEW_FILE, this, SVGApplication::GetIcon("document-new", TOOLBAR_ICON_SIZE), "New");
-	fToolBar->AddAction(MSG_OPEN_FILE, this, SVGApplication::GetIcon("document-open", TOOLBAR_ICON_SIZE), "Open");
-	fToolBar->AddAction(MSG_SAVE_FILE, this, SVGApplication::GetIcon("document-save", TOOLBAR_ICON_SIZE), "Save");
+	fToolBar->AddAction(MSG_NEW_FILE, this, SVGApplication::GetIcon("document-new", TOOLBAR_ICON_SIZE), B_TRANSLATE("New"));
+	fToolBar->AddAction(MSG_OPEN_FILE, this, SVGApplication::GetIcon("document-open", TOOLBAR_ICON_SIZE), B_TRANSLATE("Open"));
+	fToolBar->AddAction(MSG_SAVE_FILE, this, SVGApplication::GetIcon("document-save", TOOLBAR_ICON_SIZE), B_TRANSLATE("Save"));
 	fToolBar->AddSeparator();
-	fToolBar->AddAction(MSG_ZOOM_IN, this, SVGApplication::GetIcon("zoom-in", TOOLBAR_ICON_SIZE), "Zoom in");
-	fToolBar->AddAction(MSG_ZOOM_OUT, this, SVGApplication::GetIcon("zoom-out", TOOLBAR_ICON_SIZE), "Zoom out");
-	fToolBar->AddAction(MSG_ZOOM_ORIGINAL, this, SVGApplication::GetIcon("zoom-original", TOOLBAR_ICON_SIZE), "Zoom original");
-	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), "Best fit");
+	fToolBar->AddAction(MSG_ZOOM_IN, this, SVGApplication::GetIcon("zoom-in", TOOLBAR_ICON_SIZE), B_TRANSLATE("Zoom in"));
+	fToolBar->AddAction(MSG_ZOOM_OUT, this, SVGApplication::GetIcon("zoom-out", TOOLBAR_ICON_SIZE), B_TRANSLATE("Zoom out"));
+	fToolBar->AddAction(MSG_ZOOM_ORIGINAL, this, SVGApplication::GetIcon("zoom-original", TOOLBAR_ICON_SIZE), B_TRANSLATE("Zoom original"));
+	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), B_TRANSLATE("Best fit"));
 	fToolBar->AddSeparator();
-	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), "Show Bounding Box");
-	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), "Show Source Code");
+	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Bounding Box"));
+	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
 	fToolBar->AddGlue();
 
 	fEditToolBar = new SVGToolBar();
-	fEditToolBar->AddAction(B_UNDO, this, SVGApplication::GetIcon("edit-undo", TOOLBAR_ICON_SIZE), "Undo");
-	fEditToolBar->AddAction(B_REDO, this, SVGApplication::GetIcon("edit-redo", TOOLBAR_ICON_SIZE), "Redo");
+	fEditToolBar->AddAction(B_UNDO, this, SVGApplication::GetIcon("edit-undo", TOOLBAR_ICON_SIZE), B_TRANSLATE("Undo"));
+	fEditToolBar->AddAction(B_REDO, this, SVGApplication::GetIcon("edit-redo", TOOLBAR_ICON_SIZE), B_TRANSLATE("Redo"));
 	fEditToolBar->AddSeparator();
-	fEditToolBar->AddAction(MSG_EDIT_COPY, this, SVGApplication::GetIcon("edit-copy", TOOLBAR_ICON_SIZE), "Copy");
-	fEditToolBar->AddAction(MSG_EDIT_PASTE, this, SVGApplication::GetIcon("edit-paste", TOOLBAR_ICON_SIZE), "Paste");
-	fEditToolBar->AddAction(MSG_EDIT_CUT, this, SVGApplication::GetIcon("edit-cut", TOOLBAR_ICON_SIZE), "Cut");
+	fEditToolBar->AddAction(MSG_EDIT_COPY, this, SVGApplication::GetIcon("edit-copy", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy"));
+	fEditToolBar->AddAction(MSG_EDIT_PASTE, this, SVGApplication::GetIcon("edit-paste", TOOLBAR_ICON_SIZE), B_TRANSLATE("Paste"));
+	fEditToolBar->AddAction(MSG_EDIT_CUT, this, SVGApplication::GetIcon("edit-cut", TOOLBAR_ICON_SIZE), B_TRANSLATE("Cut"));
 	fEditToolBar->AddSeparator();
-	fEditToolBar->AddAction(MSG_EDIT_WORD_WRAP, this, SVGApplication::GetIcon("text-wrap", TOOLBAR_ICON_SIZE), "Text wrap");
+	fEditToolBar->AddAction(MSG_EDIT_WORD_WRAP, this, SVGApplication::GetIcon("text-wrap", TOOLBAR_ICON_SIZE), B_TRANSLATE("Text wrap"));
 	fEditToolBar->AddSeparator();
-	fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), "Apply");
+	fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), B_TRANSLATE("Apply"));
 	fEditToolBar->AddGlue();
 }
 
@@ -220,7 +224,7 @@ SVGMainWindow::_BuildMainView()
 void
 SVGMainWindow::_BuildStatusBar()
 {
-	fStatusView = new BStringView("status", "Ready");
+	fStatusView = new BStringView("status", B_TRANSLATE("Ready"));
 	BFont font;
 	if (fSVGView) {
 		fSVGView->GetFont(&font);
@@ -376,7 +380,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 
 	if (message->FindRef("directory", &dirRef) != B_OK ||
 		message->FindString("name", &fileName) != B_OK) {
-		_ShowError("Could not get export file information");
+		_ShowError(B_TRANSLATE("Could not get export file information"));
 		fCurrentExportType = 0;
 		return;
 	}
@@ -393,7 +397,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 		case MSG_EXPORT_HVIF:
 		{
 			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-				_ShowError("No HVIF data available");
+				_ShowError(B_TRANSLATE("No HVIF data available"));
 				break;
 			}
 
@@ -407,7 +411,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 		case MSG_EXPORT_RDEF:
 		{
 			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-				_ShowError("No HVIF data available");
+				_ShowError(B_TRANSLATE("No HVIF data available"));
 				break;
 			}
 
@@ -422,7 +426,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 		case MSG_EXPORT_CPP:
 		{
 			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-				_ShowError("No HVIF data available");
+				_ShowError(B_TRANSLATE("No HVIF data available"));
 				break;
 			}
 
@@ -440,7 +444,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 		_ShowSuccess(MSG_FILE_EXPORTED);
 	} else {
 		BString error;
-		error.SetToFormat("%s: %s", ERROR_EXPORT_FAILED, strerror(result));
+		error.SetToFormat("%s: %s", B_TRANSLATE("Failed to export file"), strerror(result));
 		_ShowError(error.String());
 	}
 
@@ -768,12 +772,12 @@ SVGMainWindow::_UpdateStatus()
 		float width = fSVGView->SVGWidth();
 		float height = fSVGView->SVGHeight();
 
-		status.SetToFormat(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s",
+		status.SetToFormat(B_TRANSLATE(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s"),
 				width, height, scale * 100.0f, 
 				_GetDisplayModeName().String(), 
 				_GetBoundingBoxStyleName().String());
 	} else {
-		status = "No SVG loaded";
+		status = B_TRANSLATE("No SVG loaded");
 	}
 
 	if (fStatusView)
@@ -820,19 +824,19 @@ BString
 SVGMainWindow::_GetDisplayModeName() const
 {
 	if (!fSVGView)
-		return "Unknown";
+		return B_TRANSLATE("Unknown");
 
 	switch (fSVGView->DisplayMode()) {
 		case SVG_DISPLAY_NORMAL:
-			return "Normal";
+			return B_TRANSLATE("Normal");
 		case SVG_DISPLAY_OUTLINE:
-			return "Outline";
+			return B_TRANSLATE("Outline");
 		case SVG_DISPLAY_FILL_ONLY:
-			return "Fill Only";
+			return B_TRANSLATE("Fill Only");
 		case SVG_DISPLAY_STROKE_ONLY:
-			return "Stroke Only";
+			return B_TRANSLATE("Stroke Only");
 		default:
-			return "Unknown";
+			return B_TRANSLATE("Unknown");
 	}
 }
 
@@ -840,19 +844,19 @@ BString
 SVGMainWindow::_GetBoundingBoxStyleName() const
 {
 	if (!fSVGView)
-		return "Unknown";
+		return B_TRANSLATE("Unknown");
 
 	switch (fSVGView->BoundingBoxStyle()) {
 		case SVG_BBOX_NONE:
-			return "None";
+			return B_TRANSLATE("None");
 		case SVG_BBOX_DOCUMENT:
-			return "Document";
+			return B_TRANSLATE("Document");
 		case SVG_BBOX_SIMPLE_FRAME:
-			return "Simple";
+			return B_TRANSLATE("Simple");
 		case SVG_BBOX_TRANSPARENT_GRAY:
-			return "Gray";
+			return B_TRANSLATE("Gray");
 		default:
-			return "Unknown";
+			return B_TRANSLATE("Unknown");
 	}
 }
 
@@ -861,12 +865,12 @@ SVGMainWindow::_ShowAbout()
 {
 	BAboutWindow* about = new BAboutWindow("SVGear", APP_SIGNATURE);
 	about->AddCopyright(2025, "Gerasim Troeglazov (3dEyes**)");
-	about->AddDescription(
+	about->AddDescription(B_TRANSLATE(
 		"SVGear provides an intuitive interface for viewing and manipulating "
 		"SVG (Scalable Vector Graphics) files. \n"
 		"The application supports format conversion operations, enabling "
 		"users to transform SVG files into other vector formats such as "
-		"HVIF (Haiku Vector Icon Format).");
+		"HVIF (Haiku Vector Icon Format)."));
 	about->Show();
 }
 
@@ -907,7 +911,7 @@ SVGMainWindow::_UpdateRDefTab()
 {
 	if (!fRDefTextView || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
 		if (fRDefTextView)
-			fRDefTextView->SetText("No HVIF data available");
+			fRDefTextView->SetText(B_TRANSLATE("No HVIF data available"));
 		return;
 	}
 
@@ -920,7 +924,7 @@ SVGMainWindow::_UpdateCPPTab()
 {
 	if (!fCPPTextView || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
 		if (fCPPTextView)
-			fCPPTextView->SetText("No HVIF data available");
+			fCPPTextView->SetText(B_TRANSLATE("No HVIF data available"));
 		return;
 	}
 		
@@ -964,7 +968,7 @@ SVGMainWindow::_ReloadFromSource()
 void
 SVGMainWindow::_ShowError(const char* message)
 {
-	BAlert* alert = new BAlert("Error", message, "OK", NULL, NULL,
+	BAlert* alert = new BAlert(B_TRANSLATE("Error"), message, B_TRANSLATE("OK"), NULL, NULL,
 							  B_WIDTH_AS_USUAL, B_STOP_ALERT);
 	alert->Go();
 }
@@ -1014,12 +1018,12 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 	BString fileName;
 
 	if (message->FindRef("directory", &dirRef) != B_OK) {
-		_ShowError("Could not find directory reference");
+		_ShowError(B_TRANSLATE("Could not find directory reference"));
 		return;
 	}
 
 	if (message->FindString("name", &fileName) != B_OK) {
-		_ShowError("Could not find file name");
+		_ShowError(B_TRANSLATE("Could not find file name"));
 		return;
 	}
 
@@ -1064,7 +1068,7 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 		_UpdateFileMenu();
 	} else {
 		BString error;
-		error.SetToFormat("%s: %s", ERROR_SAVE_FAILED, strerror(result));
+		error.SetToFormat("%s: %s", B_TRANSLATE("Failed to save file"), strerror(result));
 		_ShowError(error.String());
 	}
 }
@@ -1120,7 +1124,7 @@ void
 SVGMainWindow::_ExportHVIF()
 {
 	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError("No HVIF data available for export");
+		_ShowError(B_TRANSLATE("No HVIF data available for export"));
 		return;
 	}
 
@@ -1131,7 +1135,7 @@ void
 SVGMainWindow::_ExportRDef()
 {
 	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError("No HVIF data available for export");
+		_ShowError(B_TRANSLATE("No HVIF data available for export"));
 		return;
 	}
 
@@ -1142,7 +1146,7 @@ void
 SVGMainWindow::_ExportCPP()
 {
 	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError("No HVIF data available for export");
+		_ShowError(B_TRANSLATE("No HVIF data available for export"));
 		return;
 	}
 

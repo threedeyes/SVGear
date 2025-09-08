@@ -1,0 +1,89 @@
+1	English	application/x-vnd.svgear	389243951
+File saved successfully	SVGMainWindow		File saved successfully
+Failed to save file	SVGMainWindow		Failed to save file
+Outline	SVGMainWindow		Outline
+Error saving file: %s	SVGFileManager		Error saving file: %s
+Save As…	SVGMenuManager		Save As…
+Quit	SVGMenuManager		Quit
+C++ array…	SVGMenuManager		C++ array…
+Text wrap	SVGMainWindow		Text wrap
+OK	SVGFileManager		OK
+Show Bounding Box	SVGMainWindow		Show Bounding Box
+Zoom out	SVGMainWindow		Zoom out
+View	SVGMenuManager		View
+Outline	SVGMenuManager		Outline
+Error reading HVIF icon data from file: %s	SVGFileManager		Error reading HVIF icon data from file: %s
+Cut	SVGMainWindow		Cut
+Redo	SVGMainWindow		Redo
+File	SVGMenuManager		File
+Unknown	SVGMainWindow		Unknown
+HVIF Icon…	SVGMenuManager		HVIF Icon…
+Paste	SVGMainWindow		Paste
+Show Source Code	SVGMainWindow		Show Source Code
+Error parsing HVIF data from file attributes	SVGFileManager		Error parsing HVIF data from file attributes
+Zoom In	SVGMenuManager		Zoom In
+Transparent Gray	SVGMenuManager		Transparent Gray
+Zoom Out	SVGMenuManager		Zoom Out
+Bounding Box	SVGMenuManager		Bounding Box
+Display Mode	SVGMenuManager		Display Mode
+OK	SVGMainWindow		OK
+Save	SVGMenuManager		Save
+Error	SVGMainWindow		Error
+Error accessing file: %s	SVGFileManager		Error accessing file: %s
+RDef resource…	SVGMenuManager		RDef resource…
+New	SVGMenuManager		New
+Save as…	SVGMenuManager		Save as…
+File path not specified	SVGFileManager		File path not specified
+ Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s
+Apply	SVGMainWindow		Apply
+Stroke Only	SVGMainWindow		Stroke Only
+Center	SVGMenuManager		Center
+Export	SVGMenuManager		Export
+Fill Only	SVGMainWindow		Fill Only
+No SVG loaded	SVGMainWindow		No SVG loaded
+Open	SVGMainWindow		Open
+Gray	SVGMainWindow		Gray
+Show Transparency Grid	SVGMenuManager		Show Transparency Grid
+Error	SVGFileManager		Error
+No HVIF data available for export	SVGMainWindow		No HVIF data available for export
+Document	SVGMainWindow		Document
+Zoom original	SVGMainWindow		Zoom original
+Error reading SVG file	SVGFileManager		Error reading SVG file
+None	SVGMenuManager		None
+Save	SVGMainWindow		Save
+Invalid file path	SVGMainWindow		Invalid file path
+No HVIF data available	SVGMainWindow		No HVIF data available
+Copy	SVGMainWindow		Copy
+File exported successfully	SVGMainWindow		File exported successfully
+Zoom in	SVGMainWindow		Zoom in
+None	SVGMainWindow		None
+Failed to export file	SVGMainWindow		Failed to export file
+Document Style	SVGMenuManager		Document Style
+Open…	SVGMenuManager		Open…
+Error getting HVIF icon info from file: %s	SVGFileManager		Error getting HVIF icon info from file: %s
+Best fit	SVGMainWindow		Best fit
+Reload from Source	SVGMenuManager		Reload from Source
+Error loading SVG file: %s	SVGFileManager		Error loading SVG file: %s
+Normal	SVGMainWindow		Normal
+Source code is empty.	SVGMainWindow		Source code is empty.
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Error parsing SVG from source code. Please check the syntax.
+Could not get export file information	SVGMainWindow		Could not get export file information
+Could not find directory reference	SVGMainWindow		Could not find directory reference
+New	SVGMainWindow		New
+Simple Frame	SVGMenuManager		Simple Frame
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).
+Stroke Only	SVGMenuManager		Stroke Only
+About SVGear…	SVGMenuManager		About SVGear…
+Fit to Window	SVGMenuManager		Fit to Window
+Undo	SVGMainWindow		Undo
+Fill Only	SVGMenuManager		Fill Only
+Reset View	SVGMenuManager		Reset View
+Ready	SVGMainWindow		Ready
+Help	SVGMenuManager		Help
+Show Source Code	SVGMenuManager		Show Source Code
+Simple	SVGMainWindow		Simple
+Normal	SVGMenuManager		Normal
+Zoom Original	SVGMenuManager		Zoom Original
+Error importing HVIF icon from file: %s	SVGFileManager		Error importing HVIF icon from file: %s
+Could not find file name	SVGMainWindow		Could not find file name
+Error parsing HVIF file: %s	SVGFileManager		Error parsing HVIF file: %s
