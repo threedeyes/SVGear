@@ -1,4 +1,4 @@
-1	Russian	application/x-vnd.svgear	389243951
+1	Russian	application/x-vnd.svgear	458115997
 File saved successfully	SVGMainWindow		Файл успешно сохранён
 Failed to save file	SVGMainWindow		Не удалось сохранить файл
 Outline	SVGMainWindow		Контур
@@ -76,6 +76,7 @@ Stroke Only	SVGMenuManager		Только обводка
 About SVGear…	SVGMenuManager		О программе SVGear…
 Fit to Window	SVGMenuManager		По размеру окна
 Undo	SVGMainWindow		Отменить
+Drop here a file containing vector icon	SVGView		Перетащите сюда файл с векторной иконкой
 Fill Only	SVGMenuManager		Только заливка
 Reset View	SVGMenuManager		Сбросить вид
 Ready	SVGMainWindow		Готово

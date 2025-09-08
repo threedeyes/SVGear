@@ -1,4 +1,4 @@
-1	English	application/x-vnd.svgear	389243951
+1	English	application/x-vnd.svgear	458115997
 File saved successfully	SVGMainWindow		File saved successfully
 Failed to save file	SVGMainWindow		Failed to save file
 Outline	SVGMainWindow		Outline
@@ -76,6 +76,7 @@ Stroke Only	SVGMenuManager		Stroke Only
 About SVGear…	SVGMenuManager		About SVGear…
 Fit to Window	SVGMenuManager		Fit to Window
 Undo	SVGMainWindow		Undo
+Drop here a file containing vector icon	SVGView		Drop here a file containing vector icon
 Fill Only	SVGMenuManager		Fill Only
 Reset View	SVGMenuManager		Reset View
 Ready	SVGMainWindow		Ready
