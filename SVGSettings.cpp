@@ -14,7 +14,6 @@
 
 #include <stdio.h>
 
-// Settings keys
 const char* const kWindowFrame = "window_frame";
 const char* const kSourceViewCollapsed = "source_view_collapsed";
 const char* const kMainViewWeight = "main_view_weight";
@@ -26,9 +25,7 @@ const char* const kWordWrap = "word_wrap";
 const char* const kLastOpenPath = "last_open_path";
 const char* const kLastSavePath = "last_save_path";
 const char* const kLastExportPath = "last_export_path";
-const char* const kTabSelection = "tab_selection";
 
-// Global instance
 SVGSettings* gSettings = NULL;
 
 SVGSettings::SVGSettings()
@@ -57,7 +54,6 @@ SVGSettings::Load()
 	BFile file(path.Path(), B_READ_ONLY);
 	result = file.InitCheck();
 	if (result != B_OK) {
-		// Settings file doesn't exist yet, use defaults
 		_InitializeDefaults();
 		return B_OK;
 	}
@@ -65,12 +61,10 @@ SVGSettings::Load()
 	BMessage loaded;
 	result = loaded.Unflatten(&file);
 	if (result != B_OK) {
-		// Failed to read settings, use defaults
 		_InitializeDefaults();
 		return B_OK;
 	}
 
-	// Copy loaded settings to our message
 	delete fSettings;
 	fSettings = new BMessage(loaded);
 
@@ -160,9 +154,7 @@ SVGSettings::GetRect(const char* name, const BRect& defaultValue) const
 
 	BRect value;
 	if (fSettings->FindRect(name, &value) == B_OK) {
-		// Validate rect is reasonable
 		if (value.IsValid()) {
-			// For window frame, check if it's on screen
 			if (strcmp(name, kWindowFrame) == 0) {
 				BScreen screen;
 				BRect screenFrame = screen.Frame();
@@ -265,30 +257,23 @@ SVGSettings::_InitializeDefaults()
 	if (!fSettings)
 		return;
 
-	// Default window frame
-	fSettings->AddRect(kWindowFrame, BRect(100, 100, 1200, 800));
+	fSettings->AddRect(kWindowFrame, BRect(50, 50, 900, 700));
 	
-	// Default split view settings
 	fSettings->AddBool(kSourceViewCollapsed, true);
 	fSettings->AddFloat(kMainViewWeight, 0.7f);
 	fSettings->AddFloat(kSourceViewWeight, 0.3f);
 	
-	// Default display settings (using enum values)
-	fSettings->AddInt32(kDisplayMode, 0);  // SVG_DISPLAY_NORMAL
+	fSettings->AddInt32(kDisplayMode, 0);
 	fSettings->AddBool(kShowTransparency, true);
-	fSettings->AddInt32(kBoundingBoxStyle, 0);  // SVG_BBOX_NONE
+	fSettings->AddInt32(kBoundingBoxStyle, 0);
 	
-	// Default editor settings
 	fSettings->AddBool(kWordWrap, true);
-	fSettings->AddInt32(kTabSelection, 0);
 	
-	// Default paths
 	fSettings->AddString(kLastOpenPath, "");
 	fSettings->AddString(kLastSavePath, "");
 	fSettings->AddString(kLastExportPath, "");
 }
 
-// Global functions
 status_t
 InitializeSettings()
 {

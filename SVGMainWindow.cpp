@@ -1290,10 +1290,6 @@ SVGMainWindow::_SaveSettings()
 		gSettings->SetBool(kWordWrap, fSVGTextView->DoesWordWrap());
 	}
 
-	if (fTabView) {
-		gSettings->SetInt32(kTabSelection, fTabView->Selection());
-	}
-
 	gSettings->Save();
 }
 
@@ -1329,13 +1325,6 @@ SVGMainWindow::_RestoreSettings()
 	if (fSVGTextView) {
 		bool wordWrap = gSettings->GetBool(kWordWrap, true);
 		fSVGTextView->SetWordWrap(wordWrap);
-	}
-
-	if (fTabView) {
-		int32 selection = gSettings->GetInt32(kTabSelection, 0);
-		if (selection >= 0 && selection < fTabView->CountTabs()) {
-			fTabView->Select(selection);
-		}
 	}
 
 	BString lastOpenPath = gSettings->GetString(kLastOpenPath);
