@@ -85,7 +85,6 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 	viewMenu->AddItem(new BMenuItem("Reset View", new BMessage(MSG_RESET_VIEW), '0'));
 	viewMenu->AddSeparatorItem();
 
-	// Display mode submenu
 	fDisplaySubMenu = new BMenu("Display Mode");
 
 	fNormalItem = new BMenuItem("Normal", new BMessage(MSG_DISPLAY_NORMAL));
@@ -104,14 +103,7 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 	fDisplaySubMenu->SetTargetForItems(target);
 	viewMenu->AddItem(fDisplaySubMenu);
 
-	viewMenu->AddSeparatorItem();
-
-	fTransparencyItem = new BMenuItem("Show Transparency Grid", new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
-	fTransparencyItem->SetMarked(true);
-	viewMenu->AddItem(fTransparencyItem);
-
-	// BoundingBox style submenu
-	fBoundingBoxSubMenu = new BMenu("Bounding Box Style");
+	fBoundingBoxSubMenu = new BMenu("Bounding Box");
 
 	fBBoxNoneItem = new BMenuItem("None", new BMessage(MSG_BBOX_NONE));
 	fBBoxNoneItem->SetMarked(true);
@@ -128,6 +120,12 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	fBoundingBoxSubMenu->SetTargetForItems(target);
 	viewMenu->AddItem(fBoundingBoxSubMenu);
+
+	viewMenu->AddSeparatorItem();
+
+	fTransparencyItem = new BMenuItem("Show Transparency Grid", new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
+	fTransparencyItem->SetMarked(true);
+	viewMenu->AddItem(fTransparencyItem);
 
 	viewMenu->AddSeparatorItem();
 
