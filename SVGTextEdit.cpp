@@ -37,7 +37,9 @@ SVGTextEdit::SVGTextEdit(const char* name)
 	  fLastOperationTime(0),
 	  fMergeTimeLimit(2000000),
 	  fLastWasTyping(false),
-	  fSyntaxType(SYNTAX_NONE)
+	  fSyntaxType(SYNTAX_NONE),
+	  fHighlightRunner(NULL),
+	  fLastTextChange(0)
 {
 	SetWordWrap(false);
 	MakeEditable(true);
@@ -54,6 +56,7 @@ SVGTextEdit::SVGTextEdit(const char* name)
 
 SVGTextEdit::~SVGTextEdit()
 {
+	delete fHighlightRunner;
 	ClearUndoHistory();
 }
 
@@ -71,6 +74,16 @@ SVGTextEdit::MessageReceived(BMessage* message)
 		case B_PASTE:
 			fLastWasTyping = false;
 			BreakUndoGroup();
+			break;
+		case MSG_DELAYED_HIGHLIGHTING:
+			{
+				bigtime_t msgTime;
+				if (message->FindInt64("time", &msgTime) == B_OK) {
+					if (msgTime == fLastTextChange) {
+						_ApplySyntaxHighlighting();
+					}
+				}
+			}
 			break;
 		default:
 			break;
@@ -98,7 +111,7 @@ SVGTextEdit::InsertText(const char* text, int32 length, int32 offset, const text
 	BTextView::InsertText(text, length, offset, runs);
 
 	if (!_IsInUndoRedoMode()) {
-		_ApplySyntaxHighlighting();
+		_ApplySyntaxHighlightingAsync();
 	}
 }
 
@@ -131,7 +144,7 @@ SVGTextEdit::DeleteText(int32 start, int32 finish)
 	BTextView::DeleteText(start, finish);
 
 	if (!_IsInUndoRedoMode()) {
-		_ApplySyntaxHighlighting();
+		_ApplySyntaxHighlightingAsync();
 	}
 }
 
@@ -247,6 +260,19 @@ SVGTextEdit::_ApplySyntaxHighlighting()
 			}
 			break;
 	}
+}
+
+void
+SVGTextEdit::_ApplySyntaxHighlightingAsync()
+{
+	fLastTextChange = system_time();
+
+	delete fHighlightRunner;
+
+	BMessage msg(MSG_DELAYED_HIGHLIGHTING);
+	msg.AddInt64("time", fLastTextChange);
+
+	fHighlightRunner = new BMessageRunner(BMessenger(this), &msg, 300000, 1);
 }
 
 syntax_type

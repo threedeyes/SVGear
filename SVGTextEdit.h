@@ -11,6 +11,7 @@
 #include <TextView.h>
 #include <List.h>
 #include <OS.h>
+#include <MessageRunner.h>
 
 enum command_type {
 	CMD_INSERT_TEXT,
@@ -40,6 +41,10 @@ struct UndoCommand {
 	~UndoCommand();
 };
 
+enum {
+	MSG_DELAYED_HIGHLIGHTING = 'dlhl'
+};
+
 class SVGTextEdit : public BTextView {
 public:
 	SVGTextEdit(const char* name);
@@ -63,6 +68,7 @@ public:
 
 private:
 	void _ApplySyntaxHighlighting();
+	void _ApplySyntaxHighlightingAsync();
 	syntax_type _DetectSyntaxType(const char* filename = NULL);
 	syntax_type _DetectSyntaxFromContent();
 
@@ -89,6 +95,9 @@ private:
 	bigtime_t fMergeTimeLimit;
 	bool fLastWasTyping;
 	syntax_type fSyntaxType;
+
+	BMessageRunner* fHighlightRunner;
+	bigtime_t fLastTextChange;
 };
 
 #endif
