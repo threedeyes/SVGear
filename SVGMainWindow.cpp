@@ -64,6 +64,8 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fExportPanel(NULL),
 	fCurrentExportType(0)
 {
+	SetSizeLimits(600, 16384, 450, 16384);
+
 	fMenuManager = new SVGMenuManager();
 	fFileManager = new SVGFileManager();
 
