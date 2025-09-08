@@ -10,6 +10,8 @@
 #include <NodeInfo.h>
 #include <Window.h>
 #include <Screen.h>
+#include <InterfaceKit.h>
+#include <Catalog.h>
 
 #include <fs_attr.h>
 #include <stdio.h>
@@ -17,17 +19,70 @@
 
 #include "SVGView.h"
 #include "SVGConstants.h"
+#include "SVGApplication.h"
 
 const float SVGView::kMinScale = 0.01f;
 const float SVGView::kMaxScale = 500.0f;
 const float SVGView::kScaleStep = 1.2f;
 
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SVGView"
+
 SVGView::SVGView(const char* name)
 	: BSVGView(name),
 	  fIsDragging(false),
-	  fTarget(NULL)
+	  fTarget(NULL),
+	  fPlaceholderIcon(NULL)
 {
-	SetExplicitMinSize(BSize(32, 32));
+	SetExplicitMinSize(BSize(256, 192));
+	SetFlags(Flags() | B_FULL_UPDATE_ON_RESIZE);
+	fPlaceholderIcon = SVGApplication::GetIcon(NULL, 128);
+}
+
+SVGView::~SVGView()
+{
+	delete fPlaceholderIcon;
+}
+
+void
+SVGView::Draw(BRect updateRect)
+{
+	if (IsLoaded()) {
+		BSVGView::Draw(updateRect);
+	} else {
+		_DrawPlaceholder();
+	}
+}
+
+void
+SVGView::_DrawPlaceholder()
+{
+	BRect bounds = Bounds();
+
+	SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+	FillRect(bounds);
+
+	if (fPlaceholderIcon) {
+		BRect iconBounds = fPlaceholderIcon->Bounds();
+		float iconX = (bounds.Width() - iconBounds.Width()) / 2.0f;
+		float iconY = (bounds.Height() - iconBounds.Height()) / 2.0f - 12.0f;
+
+		SetDrawingMode(B_OP_ALPHA);
+		DrawBitmap(fPlaceholderIcon, BPoint(iconX, iconY));
+		SetDrawingMode(B_OP_COPY);
+	}
+
+	const char* text = B_TRANSLATE("Drop here a file containing vector icon");
+
+	font_height height;
+	GetFontHeight(&height);
+
+	float textWidth = StringWidth(text);
+	float textX = (bounds.Width() - textWidth) / 2.0f;
+	float textY = bounds.Height() / 2.0f + 80.0f;
+
+	SetHighColor(ui_color(B_PANEL_TEXT_COLOR));
+	DrawString(text, BPoint(textX, textY));
 }
 
 void

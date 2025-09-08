@@ -7,14 +7,16 @@
 #define SVG_VIEW_H
 
 #include <Invoker.h>
+#include <Bitmap.h>
 
 #include "BSVGView.h"
 
 class SVGView : public BSVGView {
 public:
 	SVGView(const char* name = "main_svg_view");
-	virtual ~SVGView() { };
+	virtual ~SVGView();
 
+	virtual void Draw(BRect updateRect);
 	virtual void MouseDown(BPoint where);
 	virtual void MouseUp(BPoint where);
 	virtual void MouseMoved(BPoint where, uint32 code, const BMessage* dragMessage);
@@ -35,11 +37,13 @@ public:
 private:
 	void _UpdateStatus();
 	void _ZoomAtPoint(float newScale, BPoint zoomCenter);
+	void _DrawPlaceholder();
 
 private:
 	bool		fIsDragging;
 	BPoint		fLastMousePosition;
 	BHandler*	fTarget;
+	BBitmap*	fPlaceholderIcon;
 
 	static const float kMinScale;
 	static const float kMaxScale;
