@@ -504,35 +504,34 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			break;
 
 		case MSG_TOGGLE_BOUNDINGBOX:
-			if (fSVGView->BoundingBoxStyle() == SVG_BBOX_NONE) {
-				fSVGView->SetBoundingBoxStyle(SVG_BBOX_DOCUMENT);
-			} else {
-				fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
-			}
+			fShowBoundingBox = !fShowBoundingBox;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			break;
 
 		case MSG_BBOX_NONE:
-			fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
+			fShowBoundingBox = false;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			break;
 
 		case MSG_BBOX_DOCUMENT:
-			fSVGView->SetBoundingBoxStyle(SVG_BBOX_DOCUMENT);
+			fShowBoundingBox = true;
+			fBoundingBoxStyle = SVG_BBOX_DOCUMENT;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			break;
 
 		case MSG_BBOX_SIMPLE_FRAME:
-			fSVGView->SetBoundingBoxStyle(SVG_BBOX_SIMPLE_FRAME);
+			fShowBoundingBox = true;
+			fBoundingBoxStyle = SVG_BBOX_SIMPLE_FRAME;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			break;
 
 		case MSG_BBOX_TRANSPARENT_GRAY:
-			fSVGView->SetBoundingBoxStyle(SVG_BBOX_TRANSPARENT_GRAY);
+			fShowBoundingBox = true;
+			fBoundingBoxStyle = SVG_BBOX_TRANSPARENT_GRAY;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			break;
@@ -800,8 +799,10 @@ SVGMainWindow::_UpdateDisplayModeMenu()
 void
 SVGMainWindow::_UpdateBoundingBoxMenu()
 {
+	fSVGView->SetBoundingBoxStyle(fShowBoundingBox ? (svg_boundingbox_style)fBoundingBoxStyle : SVG_BBOX_NONE);
+
 	if (fMenuManager && fSVGView)
-		fMenuManager->UpdateBoundingBoxStyle(fSVGView->BoundingBoxStyle());
+		fMenuManager->UpdateBoundingBoxStyle(fShowBoundingBox ? (svg_boundingbox_style)fBoundingBoxStyle : SVG_BBOX_NONE);
 }
 
 void
@@ -1283,7 +1284,8 @@ SVGMainWindow::_SaveSettings()
 	if (fSVGView) {
 		gSettings->SetInt32(kDisplayMode, (int32)fSVGView->DisplayMode());
 		gSettings->SetBool(kShowTransparency, fSVGView->ShowTransparency());
-		gSettings->SetInt32(kBoundingBoxStyle, (int32)fSVGView->BoundingBoxStyle());
+		gSettings->SetBool(kShowBoundingBox, fShowBoundingBox);
+		gSettings->SetInt32(kBoundingBoxStyle, fBoundingBoxStyle);
 	}
 
 	if (fSVGTextView) {
@@ -1318,8 +1320,9 @@ SVGMainWindow::_RestoreSettings()
 		bool showTransparency = gSettings->GetBool(kShowTransparency, true);
 		fSVGView->SetShowTransparency(showTransparency);
 
-		int32 bboxStyle = gSettings->GetInt32(kBoundingBoxStyle, 0);
-		fSVGView->SetBoundingBoxStyle((svg_boundingbox_style)bboxStyle);
+		fShowBoundingBox = gSettings->GetBool(kShowBoundingBox, false);
+		fBoundingBoxStyle = gSettings->GetInt32(kBoundingBoxStyle, 1);
+		fSVGView->SetBoundingBoxStyle(fShowBoundingBox ? (svg_boundingbox_style)fBoundingBoxStyle : SVG_BBOX_NONE);
 	}
 
 	if (fSVGTextView) {

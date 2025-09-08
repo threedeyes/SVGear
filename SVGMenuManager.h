@@ -35,7 +35,6 @@ private:
     BMenuItem* fFillOnlyItem;
     BMenuItem* fStrokeOnlyItem;
     BMenuItem* fTransparencyItem;
-    BMenuItem* fBoundingBoxItem;
     BMenuItem* fBBoxNoneItem;
     BMenuItem* fBBoxDocumentItem;
     BMenuItem* fBBoxSimpleFrameItem;

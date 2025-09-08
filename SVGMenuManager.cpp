@@ -13,7 +13,6 @@ SVGMenuManager::SVGMenuManager()
 	fFillOnlyItem(NULL),
 	fStrokeOnlyItem(NULL),
 	fTransparencyItem(NULL),
-	fBoundingBoxItem(NULL),
 	fBBoxNoneItem(NULL),
 	fBBoxDocumentItem(NULL),
 	fBBoxSimpleFrameItem(NULL),
@@ -58,9 +57,9 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 	fileMenu->AddSeparatorItem();
 
 	fExportSubMenu = new BMenu("Export");
-	fExportSubMenu->AddItem(new BMenuItem("HVIF" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_HVIF)));
-	fExportSubMenu->AddItem(new BMenuItem("RDef" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_RDEF)));
-	fExportSubMenu->AddItem(new BMenuItem("C++" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_CPP)));
+	fExportSubMenu->AddItem(new BMenuItem("HVIF Icon" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_HVIF)));
+	fExportSubMenu->AddItem(new BMenuItem("RDef resource" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_RDEF)));
+	fExportSubMenu->AddItem(new BMenuItem("C++ array" B_UTF8_ELLIPSIS, new BMessage(MSG_EXPORT_CPP)));
 	fExportSubMenu->SetTargetForItems(target);
 
 	fileMenu->AddItem(fExportSubMenu);
@@ -111,9 +110,6 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 	fTransparencyItem->SetMarked(true);
 	viewMenu->AddItem(fTransparencyItem);
 
-	fBoundingBoxItem = new BMenuItem("Show Bounding Box", new BMessage(MSG_TOGGLE_BOUNDINGBOX), 'B');
-	viewMenu->AddItem(fBoundingBoxItem);
-
 	// BoundingBox style submenu
 	fBoundingBoxSubMenu = new BMenu("Bounding Box Style");
 
@@ -159,6 +155,7 @@ SVGMenuManager::_AddShortcuts(BHandler* target)
 	BWindow* window = dynamic_cast<BWindow*>(target);
 	if (window) {
 		window->AddShortcut('T', B_COMMAND_KEY, new BMessage(MSG_EASTER_EGG));
+		window->AddShortcut('B', B_COMMAND_KEY, new BMessage(MSG_TOGGLE_BOUNDINGBOX));
 		window->AddShortcut('Z', B_COMMAND_KEY, new BMessage(B_UNDO));
 		window->AddShortcut('Z', B_COMMAND_KEY | B_SHIFT_KEY, new BMessage(B_REDO));
 	}
@@ -195,8 +192,6 @@ SVGMenuManager::UpdateViewOptions(bool showTransparency, bool showSource, bool s
 		fTransparencyItem->SetMarked(showTransparency);
 	if (fSourceViewItem)
 		fSourceViewItem->SetMarked(showSource);
-	if (fBoundingBoxItem)
-		fBoundingBoxItem->SetMarked(showBoundingBox);
 }
 
 void

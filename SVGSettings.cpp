@@ -20,6 +20,7 @@ const char* const kMainViewWeight = "main_view_weight";
 const char* const kSourceViewWeight = "source_view_weight";
 const char* const kDisplayMode = "display_mode";
 const char* const kShowTransparency = "show_transparency";
+const char* const kShowBoundingBox = "show_bounding_box";
 const char* const kBoundingBoxStyle = "bounding_box_style";
 const char* const kWordWrap = "word_wrap";
 const char* const kLastOpenPath = "last_open_path";
@@ -258,17 +259,18 @@ SVGSettings::_InitializeDefaults()
 		return;
 
 	fSettings->AddRect(kWindowFrame, BRect(50, 50, 900, 700));
-	
+
 	fSettings->AddBool(kSourceViewCollapsed, true);
 	fSettings->AddFloat(kMainViewWeight, 0.7f);
 	fSettings->AddFloat(kSourceViewWeight, 0.3f);
-	
+
 	fSettings->AddInt32(kDisplayMode, 0);
 	fSettings->AddBool(kShowTransparency, true);
-	fSettings->AddInt32(kBoundingBoxStyle, 0);
-	
+	fSettings->AddBool(kShowBoundingBox, false);
+	fSettings->AddInt32(kBoundingBoxStyle, 1);
+
 	fSettings->AddBool(kWordWrap, true);
-	
+
 	fSettings->AddString(kLastOpenPath, "");
 	fSettings->AddString(kLastSavePath, "");
 	fSettings->AddString(kLastExportPath, "");

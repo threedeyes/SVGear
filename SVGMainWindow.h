@@ -136,6 +136,8 @@ private:
     BString          fCurrentSource;
     BString          fCurrentFilePath;
     bool             fDocumentModified;
+    bool             fShowBoundingBox;
+    int32            fBoundingBoxStyle;
 
     // Current HVIF data for export
     unsigned char*   fCurrentHVIFData;
