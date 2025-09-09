@@ -866,7 +866,7 @@ SVGMainWindow::_UpdateViewMenu()
 {
 	if (fMenuManager && fSVGView && fSplitView) {
 		bool showTransparency = fSVGView->ShowTransparency();
-		bool showSource = !fSplitView->IsItemCollapsed(1);
+		bool showSource = fSplitView->IsItemCollapsed(1);
 		bool showBoundingBox = fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE;
 		fMenuManager->UpdateViewOptions(showTransparency, showSource, showBoundingBox);
 	}
