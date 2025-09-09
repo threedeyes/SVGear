@@ -59,6 +59,13 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fToolBar(NULL),
 	fEditToolBar(NULL),
 	fDocumentModified(false),
+	fShowBoundingBox(false),
+	fBoundingBoxStyle(1),
+	fCurrentUIState(0),
+	fStateUpdateRunner(NULL),
+	fClipboardHasData(false),
+	fTextHasSelection(false),
+	fOriginalSourceText(),
 	fCurrentHVIFData(NULL),
 	fCurrentHVIFSize(0),
 	fExportPanel(NULL),
@@ -73,6 +80,8 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 
 	_RestoreSettings();
 
+	_StartStateMonitoring();
+
 	if (filePath)
 		LoadFile(filePath);
 
@@ -80,10 +89,12 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 		fSVGView->SetTarget(this);
 
 	_UpdateStatus();
+	_UpdateUIState();
 }
 
 SVGMainWindow::~SVGMainWindow()
 {
+	_StopStateMonitoring();
 	_SaveSettings();
 	delete fMenuManager;
 	delete fFileManager;
@@ -307,6 +318,20 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			_HandleEditMessages(message);
 			break;
 
+		case MSG_STATE_UPDATE:
+			_CheckClipboardState();
+			_CheckTextSelectionState();
+			_UpdateUIState();
+			break;
+
+		case MSG_TEXT_MODIFIED:
+			_OnTextModified();
+			break;
+
+		case MSG_SELECTION_CHANGED:
+			_OnSelectionChanged();
+			break;
+
 		case MSG_ABOUT:
 			_ShowAbout();
 			break;
@@ -513,12 +538,14 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			fShowBoundingBox = !fShowBoundingBox;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
+			_UpdateUIState();
 			break;
 
 		case MSG_BBOX_NONE:
 			fShowBoundingBox = false;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
+			_UpdateUIState();
 			break;
 
 		case MSG_BBOX_DOCUMENT:
@@ -526,6 +553,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			fBoundingBoxStyle = SVG_BBOX_DOCUMENT;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
+			_UpdateUIState();
 			break;
 
 		case MSG_BBOX_SIMPLE_FRAME:
@@ -533,6 +561,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			fBoundingBoxStyle = SVG_BBOX_SIMPLE_FRAME;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
+			_UpdateUIState();
 			break;
 
 		case MSG_BBOX_TRANSPARENT_GRAY:
@@ -540,6 +569,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			fBoundingBoxStyle = SVG_BBOX_TRANSPARENT_GRAY;
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
+			_UpdateUIState();
 			break;
 
 		case MSG_TOGGLE_SOURCE_VIEW:
@@ -595,8 +625,9 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 			break;
 
 		case MSG_EDIT_WORD_WRAP:
-			if (currentTextView)
+			if (currentTextView) {
 				currentTextView->SetWordWrap(!currentTextView->DoesWordWrap());
+			}
 			break;
 
 		case MSG_EDIT_APPLY:
@@ -604,6 +635,8 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 			_ReloadFromSource();
 			break;
 	}
+
+	_UpdateUIState();
 }
 
 void
@@ -631,6 +664,7 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 		hvif::SVGRenderer renderer;
 		std::string svg = renderer.RenderIcon(icon, 64, 64);
 		fCurrentSource.SetTo(svg.c_str());
+		fOriginalSourceText = fCurrentSource;
 
 		_UpdateStatus();
 		_UpdateAllTabs();
@@ -657,11 +691,12 @@ SVGMainWindow::_LoadNewFile()
 	fCurrentHVIFSize = 0;
 
 	fCurrentFilePath = "";
-	fDocumentModified = false;
+	fOriginalSourceText = fCurrentSource;
+
 	if (fFileManager) {
 		fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
 	}
-	_UpdateFileMenu();
+	_UpdateUIState();
 }
 
 void
@@ -682,17 +717,21 @@ SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 
 	data[size] = 0;
 	fCurrentSource.SetTo(data);
+	fOriginalSourceText = fCurrentSource;
 
 	if (fSVGView)
 		fSVGView->LoadFromMemory(fCurrentSource.String());
 
 	_UpdateStatus();
 	_UpdateAllTabs();
-	fSVGTextView->ClearUndoHistory();
+	if (fSVGTextView)
+		fSVGTextView->ClearUndoHistory();
 
 	BString windowTitle("SVGear - ");
 	windowTitle << title;
 	SetTitle(windowTitle.String());
+
+	_UpdateUIState();
 }
 
 void
@@ -726,14 +765,15 @@ SVGMainWindow::LoadFile(const char* filePath)
 		fSVGView->ResetView();
 		fCurrentFilePath = filePath;
 		fDocumentModified = false;
+		fOriginalSourceText = fCurrentSource;
 
 		_GenerateHVIFFromSVG();
 
 		_UpdateStatus();
 		_UpdateAllTabs();
 		_ReloadFromSource();
-		_UpdateFileMenu();
 		fSVGTextView->ClearUndoHistory();
+		_UpdateUIState();
 	}
 }
 
@@ -809,6 +849,8 @@ SVGMainWindow::_UpdateBoundingBoxMenu()
 
 	if (fMenuManager && fSVGView)
 		fMenuManager->UpdateBoundingBoxStyle(fShowBoundingBox ? (svg_boundingbox_style)fBoundingBoxStyle : SVG_BBOX_NONE);
+
+	_UpdateToggleButtonStates();
 }
 
 void
@@ -893,16 +935,21 @@ SVGMainWindow::_ToggleSourceView()
 
 	_UpdateViewMenu();
 	_UpdateStatus();
+	_UpdateUIState();
 }
 
 void
 SVGMainWindow::_UpdateAllTabs()
 {
-	if (fSVGTextView && !fCurrentSource.IsEmpty())
+	if (fSVGTextView && !fCurrentSource.IsEmpty()) {
 		fSVGTextView->SetText(fCurrentSource.String());
+		fOriginalSourceText = fCurrentSource;
+	}
 
 	_UpdateRDefTab();
 	_UpdateCPPTab();
+
+	_UpdateUIState();
 }
 
 void
@@ -952,15 +999,16 @@ SVGMainWindow::_ReloadFromSource()
 	if (result != B_OK) {
 		_ShowError(ERROR_PARSING_SVG);
 	} else {
-		if (fCurrentSource != sourceText) {
+		if (fCurrentSource != sourceText)
 			fDocumentModified = true;
-			fCurrentSource = sourceText;
-			_GenerateHVIFFromSVG();
-			_UpdateRDefTab();
-			_UpdateCPPTab();
-		}
+
+		fCurrentSource = sourceText;
+
+		_GenerateHVIFFromSVG();
+		_UpdateRDefTab();
+		_UpdateCPPTab();
 		_UpdateStatus();
-		_UpdateFileMenu();
+		_UpdateUIState();
 	}
 }
 
@@ -986,9 +1034,17 @@ SVGMainWindow::_SaveFile()
 
 	if (fFileManager->CanDirectSave(fCurrentFilePath)) {
 		if (fFileManager->SaveCurrentFile(fCurrentFilePath, currentSource)) {
-			fDocumentModified = false;
+			fOriginalSourceText = currentSource;
+			if (fSVGTextView && !fSplitView->IsItemCollapsed(1)) {
+				BString editorText = fSVGTextView->Text();
+				if (editorText == currentSource) {
+					fCurrentSource = currentSource;
+				}
+			} else {
+				fCurrentSource = currentSource;
+			}
 			_ShowSuccess(MSG_FILE_SAVED);
-			_UpdateFileMenu();
+			_UpdateUIState();
 		}
 	} else {
 		_SaveAsFile();
@@ -1057,14 +1113,15 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 
 	if (result == B_OK) {
 		fCurrentFilePath = fullPath;
-		fDocumentModified = false;
+		fOriginalSourceText = currentSource;
+		fCurrentSource = currentSource;
 		if (fFileManager) {
 			fFileManager->SetLastLoadedFileType(FILE_TYPE_SVG);
 		}
 
 		_UpdateTitleAfterSave(fullPath.String());
 		_ShowSuccess(MSG_FILE_SAVED);
-		_UpdateFileMenu();
+		_UpdateUIState();
 	} else {
 		BString error;
 		error.SetToFormat("%s: %s", B_TRANSLATE("Failed to save file"), strerror(result));
@@ -1108,14 +1165,6 @@ SVGMainWindow::_ShowSuccess(const char* message)
 
 		BMessage restoreMsg(MSG_SVG_STATUS_UPDATE);
 		BMessageRunner* runner = new BMessageRunner(this, &restoreMsg, 3000000, 1);
-	}
-}
-
-void
-SVGMainWindow::_UpdateFileMenu()
-{
-	if (fMenuManager) {
-		// TODO: Add method to SVGMenuManager for menu item states update
 	}
 }
 
@@ -1269,6 +1318,282 @@ SVGMainWindow::_ConvertToCPP(const unsigned char* data, size_t size)
 }
 
 void
+SVGMainWindow::_UpdateUIState()
+{
+	uint32 newState = _CalculateCurrentUIState();
+	fCurrentUIState = newState;
+	_UpdateToolBarStates();
+	_UpdateMenuStates();
+}
+
+uint32
+SVGMainWindow::_CalculateCurrentUIState() const
+{
+	uint32 state = UI_STATE_NO_DOCUMENT;
+
+	if (!fCurrentFilePath.IsEmpty() || !fCurrentSource.IsEmpty())
+		state |= UI_STATE_DOCUMENT_LOADED;
+
+	if (!fOriginalSourceText.IsEmpty() && fCurrentSource != fOriginalSourceText)
+		state |= UI_STATE_DOCUMENT_MODIFIED;
+
+	if (_HasUnAppliedEditorChanges())
+		state |= UI_STATE_HAS_UNAPPLIED_CHANGES;
+
+	if (fCurrentHVIFData && fCurrentHVIFSize > 0)
+		state |= UI_STATE_HAS_HVIF_DATA;
+
+	if (fSplitView && !fSplitView->IsItemCollapsed(1))
+		state |= UI_STATE_SOURCE_VIEW_VISIBLE;
+
+	if (fFileManager && fFileManager->CanDirectSave(fCurrentFilePath))
+		state |= UI_STATE_CAN_SAVE_DIRECT;
+
+	if (fSVGTextView && (state & UI_STATE_SOURCE_VIEW_VISIBLE)) {
+		if (fSVGTextView->CanUndo())
+			state |= UI_STATE_CAN_UNDO;
+
+		if (fSVGTextView->CanRedo())
+			state |= UI_STATE_CAN_REDO;
+	}
+
+	if (fTextHasSelection)
+		state |= UI_STATE_HAS_SELECTION;
+
+	if (fClipboardHasData)
+		state |= UI_STATE_HAS_CLIPBOARD_DATA;
+
+	return state;
+}
+
+void
+SVGMainWindow::_UpdateToolBarStates()
+{
+	bool hasDocument = (fCurrentUIState & UI_STATE_DOCUMENT_LOADED) != 0;
+	bool isModified = (fCurrentUIState & UI_STATE_DOCUMENT_MODIFIED) != 0;
+	bool canSaveDirect = (fCurrentUIState & UI_STATE_CAN_SAVE_DIRECT) != 0;
+	bool sourceVisible = (fCurrentUIState & UI_STATE_SOURCE_VIEW_VISIBLE) != 0;
+	bool hasSelection = (fCurrentUIState & UI_STATE_HAS_SELECTION) != 0;
+	bool hasClipboardData = (fCurrentUIState & UI_STATE_HAS_CLIPBOARD_DATA) != 0;
+	bool canUndo = (fCurrentUIState & UI_STATE_CAN_UNDO) != 0;
+	bool canRedo = (fCurrentUIState & UI_STATE_CAN_REDO) != 0;
+	bool hasUnappliedChanges = (fCurrentUIState & UI_STATE_HAS_UNAPPLIED_CHANGES) != 0;
+
+	if (fToolBar) {
+		_SetToolBarItemEnabled(fToolBar, MSG_SAVE_FILE, hasDocument && (isModified || canSaveDirect));
+		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_IN, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_OUT, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_ORIGINAL, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_FIT_WINDOW, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_BOUNDINGBOX, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_SOURCE_VIEW, hasDocument);
+	}
+
+	if (fEditToolBar) {
+		_SetToolBarItemEnabled(fEditToolBar, B_UNDO, sourceVisible && canUndo);
+		_SetToolBarItemEnabled(fEditToolBar, B_REDO, sourceVisible && canRedo);
+		_SetToolBarItemEnabled(fEditToolBar, MSG_EDIT_COPY, sourceVisible && hasSelection);
+		_SetToolBarItemEnabled(fEditToolBar, MSG_EDIT_CUT, sourceVisible && hasSelection);
+		_SetToolBarItemEnabled(fEditToolBar, MSG_EDIT_PASTE, sourceVisible && hasClipboardData);
+		_SetToolBarItemEnabled(fEditToolBar, MSG_EDIT_WORD_WRAP, sourceVisible);
+		_SetToolBarItemEnabled(fEditToolBar, MSG_EDIT_APPLY, sourceVisible && hasDocument && hasUnappliedChanges);
+	}
+
+	_UpdateToggleButtonStates();
+}
+
+void
+SVGMainWindow::_UpdateMenuStates()
+{
+	bool hasDocument = (fCurrentUIState & UI_STATE_DOCUMENT_LOADED) != 0;
+	bool isModified = (fCurrentUIState & UI_STATE_DOCUMENT_MODIFIED) != 0;
+	bool canSaveDirect = (fCurrentUIState & UI_STATE_CAN_SAVE_DIRECT) != 0;
+	bool hasHVIF = (fCurrentUIState & UI_STATE_HAS_HVIF_DATA) != 0;
+	bool sourceVisible = (fCurrentUIState & UI_STATE_SOURCE_VIEW_VISIBLE) != 0;
+
+	if (fMenuManager) {
+		fMenuManager->UpdateFileMenu(canSaveDirect, isModified);
+		fMenuManager->UpdateExportMenu(hasHVIF);
+
+		_SetMenuItemEnabled(MSG_ZOOM_IN, hasDocument);
+		_SetMenuItemEnabled(MSG_ZOOM_OUT, hasDocument);
+		_SetMenuItemEnabled(MSG_ZOOM_ORIGINAL, hasDocument);
+		_SetMenuItemEnabled(MSG_FIT_WINDOW, hasDocument);
+		_SetMenuItemEnabled(MSG_CENTER, hasDocument);
+		_SetMenuItemEnabled(MSG_RESET_VIEW, hasDocument);
+		_SetMenuItemEnabled(MSG_DISPLAY_NORMAL, hasDocument);
+		_SetMenuItemEnabled(MSG_DISPLAY_OUTLINE, hasDocument);
+		_SetMenuItemEnabled(MSG_DISPLAY_FILL_ONLY, hasDocument);
+		_SetMenuItemEnabled(MSG_DISPLAY_STROKE_ONLY, hasDocument);
+		_SetMenuItemEnabled(MSG_TOGGLE_TRANSPARENCY, hasDocument);
+		_SetMenuItemEnabled(MSG_TOGGLE_BOUNDINGBOX, hasDocument);
+		_SetMenuItemEnabled(MSG_BBOX_NONE, hasDocument);
+		_SetMenuItemEnabled(MSG_BBOX_DOCUMENT, hasDocument);
+		_SetMenuItemEnabled(MSG_BBOX_SIMPLE_FRAME, hasDocument);
+		_SetMenuItemEnabled(MSG_BBOX_TRANSPARENT_GRAY, hasDocument);
+		_SetMenuItemEnabled(MSG_TOGGLE_SOURCE_VIEW, hasDocument);
+		_SetMenuItemEnabled(MSG_RELOAD_FROM_SOURCE, sourceVisible && hasDocument);
+	}
+}
+
+void
+SVGMainWindow::_SetToolBarItemEnabled(SVGToolBar* toolbar, uint32 command, bool enabled)
+{
+	if (!toolbar)
+		return;
+
+	for (int32 i = 0; i < toolbar->CountChildren(); i++) {
+		BView* child = toolbar->ChildAt(i);
+		if (!child)
+			continue;
+
+		BControl* control = dynamic_cast<BControl*>(child);
+		if (control) {
+			BMessage* message = control->Message();
+			if (message && message->what == command) {
+				control->SetEnabled(enabled);
+				break;
+			}
+		}
+	}
+}
+
+void
+SVGMainWindow::_SetMenuItemEnabled(uint32 command, bool enabled)
+{
+	if (!fMenuBar)
+		return;
+
+	BMenuItem* item = _FindMenuItem(fMenuBar, command);
+	if (item)
+		item->SetEnabled(enabled);
+}
+
+BMenuItem*
+SVGMainWindow::_FindMenuItem(BMenu* menu, uint32 command)
+{
+	if (!menu)
+		return NULL;
+
+	for (int32 i = 0; i < menu->CountItems(); i++) {
+		BMenuItem* item = menu->ItemAt(i);
+		if (!item)
+			continue;
+
+		if (item->Command() == command)
+			return item;
+
+		if (item->Submenu()) {
+			BMenuItem* found = _FindMenuItem(item->Submenu(), command);
+			if (found)
+				return found;
+		}
+	}
+
+	return NULL;
+}
+
+void
+SVGMainWindow::_StartStateMonitoring()
+{
+	BMessage updateMsg(MSG_STATE_UPDATE);
+	fStateUpdateRunner = new BMessageRunner(BMessenger(this), &updateMsg, 500000, -1);
+}
+
+void
+SVGMainWindow::_StopStateMonitoring()
+{
+	delete fStateUpdateRunner;
+	fStateUpdateRunner = NULL;
+}
+
+void
+SVGMainWindow::_CheckClipboardState()
+{
+	bool hasData = false;
+
+	if (be_clipboard->Lock()) {
+		BMessage* clipData = be_clipboard->Data();
+		hasData = clipData && (clipData->HasString("text/plain") ||
+			  clipData->HasData("text/plain", B_MIME_TYPE));
+		be_clipboard->Unlock();
+	}
+
+	if (hasData != fClipboardHasData)
+		fClipboardHasData = hasData;
+}
+
+void
+SVGMainWindow::_CheckTextSelectionState()
+{
+	bool hasSelection = false;
+
+	if (fSVGTextView && fSplitView && !fSplitView->IsItemCollapsed(1)) {
+		int32 selStart, selEnd;
+		fSVGTextView->GetSelection(&selStart, &selEnd);
+		hasSelection = (selStart != selEnd);
+	}
+
+	if (hasSelection != fTextHasSelection)
+		fTextHasSelection = hasSelection;
+}
+
+void
+SVGMainWindow::_OnTextModified()
+{
+	_UpdateUIState();
+}
+
+void
+SVGMainWindow::_OnSelectionChanged()
+{
+	_CheckTextSelectionState();
+	_UpdateUIState();
+}
+
+void
+SVGMainWindow::_SetToolBarButtonPressed(SVGToolBar* toolbar, uint32 command, bool pressed)
+{
+	if (!toolbar)
+		return;
+
+	for (int32 i = 0; i < toolbar->CountChildren(); i++) {
+		BView* child = toolbar->ChildAt(i);
+		if (!child)
+			continue;
+
+		BControl* control = dynamic_cast<BControl*>(child);
+		if (control) {
+			BMessage* message = control->Message();
+			if (message && message->what == command) {
+				if (control->Value() != (pressed ? B_CONTROL_ON : B_CONTROL_OFF)) {
+					control->SetValue(pressed ? B_CONTROL_ON : B_CONTROL_OFF);
+					control->Invalidate();
+				}
+				break;
+			}
+		}
+	}
+}
+
+void
+SVGMainWindow::_UpdateToggleButtonStates()
+{
+	if (fToolBar) {
+		bool sourceVisible = fSplitView && !fSplitView->IsItemCollapsed(1);
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_SOURCE_VIEW, sourceVisible);
+
+		bool boundingBoxVisible = fSVGView && (fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE);
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_BOUNDINGBOX, boundingBoxVisible);
+	}
+
+	if (fEditToolBar && fSVGTextView) {
+		bool wordWrapEnabled = fSVGTextView->DoesWordWrap();
+		_SetToolBarButtonPressed(fEditToolBar, MSG_EDIT_WORD_WRAP, wordWrapEnabled);
+	}
+}
+
+void
 SVGMainWindow::_SaveSettings()
 {
 	if (!gSettings)
@@ -1331,6 +1656,10 @@ SVGMainWindow::_RestoreSettings()
 	if (fSVGTextView) {
 		bool wordWrap = gSettings->GetBool(kWordWrap, true);
 		fSVGTextView->SetWordWrap(wordWrap);
+		if (fRDefTextView)
+			fRDefTextView->SetWordWrap(wordWrap);
+		if (fCPPTextView)
+			fCPPTextView->SetWordWrap(wordWrap);
 	}
 
 	BString lastOpenPath = gSettings->GetString(kLastOpenPath);
@@ -1356,4 +1685,15 @@ SVGMainWindow::_RestoreSettings()
 	}
 
 	_UpdateInterface();
+	_UpdateUIState();
+}
+
+bool
+SVGMainWindow::_HasUnAppliedEditorChanges() const
+{
+	if (!fSVGTextView || fSplitView->IsItemCollapsed(1))
+		return false;
+
+	BString editorText = fSVGTextView->Text();
+	return (editorText != fCurrentSource);
 }

@@ -22,6 +22,9 @@ SVGMenuManager::SVGMenuManager()
 	fBBoxSimpleFrameItem(NULL),
 	fBBoxTransparentGrayItem(NULL),
 	fSourceViewItem(NULL),
+	fSaveItem(NULL),
+	fSaveAsItem(NULL),
+	fExportSubMenu(NULL),
 	fDisplaySubMenu(NULL),
 	fBoundingBoxSubMenu(NULL)
 {
@@ -212,4 +215,53 @@ SVGMenuManager::UpdateFileMenu(bool canSave, bool isModified)
 
 	if (fSaveAsItem)
 		fSaveAsItem->SetEnabled(true);
+}
+
+void
+SVGMenuManager::UpdateExportMenu(bool hasHVIFData)
+{
+	if (fExportSubMenu) {
+		fExportSubMenu->SetEnabled(hasHVIFData);
+		for (int32 i = 0; i < fExportSubMenu->CountItems(); i++) {
+			BMenuItem* item = fExportSubMenu->ItemAt(i);
+			if (item) {
+				item->SetEnabled(hasHVIFData);
+			}
+		}
+	}
+}
+
+void
+SVGMenuManager::SetMenuItemEnabled(uint32 command, bool enabled)
+{
+	if (!fMenuBar)
+		return;
+
+	BMenuItem* item = _FindMenuItem(fMenuBar, command);
+	if (item)
+		item->SetEnabled(enabled);
+}
+
+BMenuItem*
+SVGMenuManager::_FindMenuItem(BMenu* menu, uint32 command)
+{
+	if (!menu)
+		return NULL;
+
+	for (int32 i = 0; i < menu->CountItems(); i++) {
+		BMenuItem* item = menu->ItemAt(i);
+		if (!item)
+			continue;
+
+		if (item->Command() == command)
+			return item;
+
+		if (item->Submenu()) {
+			BMenuItem* found = _FindMenuItem(item->Submenu(), command);
+			if (found)
+				return found;
+		}
+	}
+
+	return NULL;
 }

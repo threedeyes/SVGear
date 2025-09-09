@@ -68,6 +68,11 @@ const uint32 MSG_WINDOW_CLOSED = 'CWIN';
 const uint32 MSG_EASTER_EGG = 'EEGG';
 const uint32 MSG_SVG_STATUS_UPDATE = 'svsu';
 
+// State monitoring messages
+const uint32 MSG_STATE_UPDATE = 'stup';
+const uint32 MSG_TEXT_MODIFIED = 'txmd';
+const uint32 MSG_SELECTION_CHANGED = 'slch';
+
 // UI Constants
 const int32 TOOLBAR_ICON_SIZE = 24;
 const float SOURCE_VIEW_WEIGHT = 0.3f;
@@ -80,7 +85,7 @@ enum {
     TAB_CPP = 2
 };
 
-// Макросы для локализованных строк
+// Global error messages
 #define ERROR_FILE_NOT_SPECIFIED B_TRANSLATE("File path not specified")
 #define ERROR_READING_SVG B_TRANSLATE("Error reading SVG file")
 #define ERROR_PARSING_SVG B_TRANSLATE("Error parsing SVG from source code. Please check the syntax.")
@@ -89,7 +94,7 @@ enum {
 #define ERROR_INVALID_PATH B_TRANSLATE("Invalid file path")
 #define ERROR_EXPORT_FAILED B_TRANSLATE("Failed to export file")
 
-// Success messages
+// Global success messages
 #define MSG_FILE_SAVED B_TRANSLATE("File saved successfully")
 #define MSG_FILE_EXPORTED B_TRANSLATE("File exported successfully")
 

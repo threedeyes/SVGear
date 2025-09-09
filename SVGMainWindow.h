@@ -14,6 +14,9 @@
 #include <ScrollView.h>
 #include <TabView.h>
 #include <FilePanel.h>
+#include <MenuItem.h>
+#include <Menu.h>
+#include <MessageRunner.h>
 
 #include "SVGConstants.h"
 #include "BSVGView.h"
@@ -37,6 +40,21 @@ public:
 
     virtual bool QuitRequested();
     virtual void MessageReceived(BMessage* message);
+
+    // UI States
+    enum ui_state {
+        UI_STATE_NO_DOCUMENT = 0,
+        UI_STATE_DOCUMENT_LOADED = 1,
+        UI_STATE_DOCUMENT_MODIFIED = 2,
+        UI_STATE_HAS_HVIF_DATA = 4,
+        UI_STATE_SOURCE_VIEW_VISIBLE = 8,
+        UI_STATE_HAS_SELECTION = 16,
+        UI_STATE_CAN_UNDO = 32,
+        UI_STATE_CAN_REDO = 64,
+        UI_STATE_CAN_SAVE_DIRECT = 128,
+        UI_STATE_HAS_CLIPBOARD_DATA = 256,
+        UI_STATE_HAS_UNAPPLIED_CHANGES = 512
+    };
 
 private:
     // UI Building
@@ -76,7 +94,6 @@ private:
     void _UpdateDisplayModeMenu();
     void _UpdateBoundingBoxMenu();
     void _UpdateViewMenu();
-    void _UpdateFileMenu();
 
     // Tab management
     void _UpdateAllTabs();
@@ -96,6 +113,26 @@ private:
     // Settings management
     void _SaveSettings();
     void _RestoreSettings();
+
+    // UI State management
+    void _UpdateUIState();
+    void _UpdateToolBarStates();
+    void _UpdateMenuStates();
+    uint32 _CalculateCurrentUIState() const;
+    void _SetToolBarItemEnabled(SVGToolBar* toolbar, uint32 command, bool enabled);
+    void _SetMenuItemEnabled(uint32 command, bool enabled);
+    BMenuItem* _FindMenuItem(BMenu* menu, uint32 command);
+
+    // State monitoring
+    void _StartStateMonitoring();
+    void _StopStateMonitoring();
+    void _CheckClipboardState();
+    void _CheckTextSelectionState();
+    void _UpdateToggleButtonStates();
+    void _SetToolBarButtonPressed(SVGToolBar* toolbar, uint32 command, bool pressed);
+    void _OnTextModified();
+    void _OnSelectionChanged();
+    bool _HasUnAppliedEditorChanges() const;
 
     // Utility functions
     BString _GetDisplayModeName() const;
@@ -138,6 +175,13 @@ private:
     bool             fDocumentModified;
     bool             fShowBoundingBox;
     int32            fBoundingBoxStyle;
+    uint32           fCurrentUIState;
+
+    // State monitoring
+    BMessageRunner*  fStateUpdateRunner;
+    bool             fClipboardHasData;
+    bool             fTextHasSelection;
+    BString          fOriginalSourceText;
 
     // Current HVIF data for export
     unsigned char*   fCurrentHVIFData;

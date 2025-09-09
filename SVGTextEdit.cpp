@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <Clipboard.h>
 
+#include "SVGConstants.h"
 #include "SVGTextEdit.h"
 #include "SVGTextEdit_Highlighters.h"
 
@@ -293,6 +294,17 @@ SVGTextEdit::MessageReceived(BMessage* message)
 }
 
 void
+SVGTextEdit::Select(int32 startOffset, int32 endOffset)
+{
+	BTextView::Select(startOffset, endOffset);
+	BWindow* window = Window();
+	if (window) {
+		BMessage msg(MSG_SELECTION_CHANGED);
+		window->PostMessage(&msg);
+	}
+}
+
+void
 SVGTextEdit::SetText(const char* text, const text_run_array* runs)
 {
 	fLastHighlightedText.SetTo("");
@@ -323,8 +335,15 @@ SVGTextEdit::InsertText(const char* text, int32 length, int32 offset, const text
 
 	BTextView::InsertText(text, length, offset, runs);
 
-	if (!_IsInUndoRedoMode())
+	if (!_IsInUndoRedoMode()) {
 		_RequestAsyncHighlighting();
+
+		BWindow* window = Window();
+		if (window) {
+			BMessage msg(MSG_TEXT_MODIFIED);
+			window->PostMessage(&msg);
+		}
+	}
 }
 
 void
@@ -356,8 +375,15 @@ SVGTextEdit::DeleteText(int32 start, int32 finish)
 
 	BTextView::DeleteText(start, finish);
 
-	if (!_IsInUndoRedoMode())
+	if (!_IsInUndoRedoMode()) {
 		_RequestAsyncHighlighting();
+
+		BWindow* window = Window();
+		if (window) {
+			BMessage msg(MSG_TEXT_MODIFIED);
+			window->PostMessage(&msg);
+		}
+	}
 }
 
 void
@@ -383,6 +409,13 @@ SVGTextEdit::Undo(BClipboard* clipboard)
 
 	_RequestAsyncHighlighting();
 
+	// Уведомляем об изменении текста после undo
+	BWindow* window = Window();
+	if (window) {
+		BMessage msg(MSG_TEXT_MODIFIED);
+		window->PostMessage(&msg);
+	}
+
 	BreakUndoGroup();
 }
 
@@ -403,6 +436,12 @@ SVGTextEdit::Redo()
 	_SetUndoRedoMode(false);
 
 	_RequestAsyncHighlighting();
+
+	BWindow* window = Window();
+	if (window) {
+		BMessage msg(MSG_TEXT_MODIFIED);
+		window->PostMessage(&msg);
+	}
 
 	BreakUndoGroup();
 }
@@ -433,6 +472,12 @@ SVGTextEdit::ClearUndoHistory()
 	fRedoStack.MakeEmpty();
 
 	fLastOperationTime = 0;
+
+	BWindow* window = Window();
+	if (window) {
+		BMessage msg(MSG_TEXT_MODIFIED);
+		window->PostMessage(&msg);
+	}
 }
 
 void

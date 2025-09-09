@@ -15,6 +15,7 @@
 #include <Looper.h>
 #include <Messenger.h>
 #include <String.h>
+#include <Window.h>
 
 enum command_type {
 	CMD_INSERT_TEXT,
@@ -117,6 +118,7 @@ public:
 	virtual void Undo(BClipboard* clipboard);
 	virtual void KeyDown(const char* bytes, int32 numBytes);
 	virtual void MessageReceived(BMessage* message);
+	virtual void Select(int32 startOffset, int32 endOffset);
 
 	void SetText(const char* text, const text_run_array* runs = NULL);
 
