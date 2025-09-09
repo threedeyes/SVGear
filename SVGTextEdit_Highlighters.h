@@ -8,6 +8,7 @@
 
 #include <TextView.h>
 #include <Font.h>
+#include <List.h>
 
 struct ColorScheme {
 	rgb_color text;
@@ -21,7 +22,7 @@ struct ColorScheme {
 	rgb_color preprocessor;
 };
 
-const ColorScheme kLightColors = {
+static const ColorScheme kLightColors = {
 	{0, 0, 0, 255},         // text
 	{0, 0, 255, 255},       // keyword
 	{0, 128, 0, 255},       // string
@@ -33,7 +34,7 @@ const ColorScheme kLightColors = {
 	{128, 0, 255, 255}      // preprocessor
 };
 
-const ColorScheme kDarkColors = {
+static const ColorScheme kDarkColors = {
 	{220, 220, 220, 255},   // text
 	{100, 150, 255, 255},   // keyword
 	{150, 255, 150, 255},   // string
@@ -46,6 +47,7 @@ const ColorScheme kDarkColors = {
 };
 
 enum syntax_type;
+class HighlightWorker;
 
 bool IsBackgroundDark(BTextView* view);
 const ColorScheme& GetColorScheme(BTextView* view);
@@ -69,14 +71,9 @@ inline void SetColorRange(BTextView* view, int32 start, int32 end, const rgb_col
 	view->SetFontAndColor(start, end, &font, B_FONT_ALL, &color);
 }
 
-
 #define DECLARE_HIGHLIGHTER(name, type) \
-	void Apply##name##Highlighting(BTextView* view); \
 	syntax_type Detect##name##FromFilename(const char* filename); \
 	syntax_type Detect##name##FromContent(const char* text, int32 length);
-
-#define REGISTER_HIGHLIGHTER(type, name) \
-	case type: Apply##name##Highlighting(this); break;
 
 #define REGISTER_FILENAME_DETECTOR(name) \
 	{ \

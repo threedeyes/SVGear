@@ -49,19 +49,21 @@ DetectSVGFromContent(const char* text, int32 length)
 }
 
 static void
-_HighlightXMLTag(BTextView* view, int32 start, int32 end, const ColorScheme& colors)
+_AnalyzeXMLTag(const char* text, int32 start, int32 end, BList* ranges)
 {
-	const char* text = view->Text();
+	// Add < and >
+	HighlightRange* range1 = new HighlightRange(start, start + 1, HIGHLIGHT_TAG);
+	if (range1) ranges->AddItem(range1);
 
-	// Highlight < and >
-	SetColorRange(view, start, start + 1, colors.tag);
-	SetColorRange(view, end - 1, end, colors.tag);
+	HighlightRange* range2 = new HighlightRange(end - 1, end, HIGHLIGHT_TAG);
+	if (range2) ranges->AddItem(range2);
 
 	int32 pos = start + 1;
 
 	// Handle closing tags
 	if (pos < end && text[pos] == '/') {
-		SetColorRange(view, pos, pos + 1, colors.tag);
+		HighlightRange* slashRange = new HighlightRange(pos, pos + 1, HIGHLIGHT_TAG);
+		if (slashRange) ranges->AddItem(slashRange);
 		pos++;
 	}
 
@@ -72,7 +74,8 @@ _HighlightXMLTag(BTextView* view, int32 start, int32 end, const ColorScheme& col
 	}
 
 	if (pos > tagNameStart) {
-		SetColorRange(view, tagNameStart, pos, colors.tag);
+		HighlightRange* tagRange = new HighlightRange(tagNameStart, pos, HIGHLIGHT_TAG);
+		if (tagRange) ranges->AddItem(tagRange);
 	}
 
 	// Self-closing tag
@@ -99,7 +102,8 @@ _HighlightXMLTag(BTextView* view, int32 start, int32 end, const ColorScheme& col
 		}
 
 		if (pos > attrStart) {
-			SetColorRange(view, attrStart, pos, colors.attribute);
+			HighlightRange* attrRange = new HighlightRange(attrStart, pos, HIGHLIGHT_ATTRIBUTE);
+			if (attrRange) ranges->AddItem(attrRange);
 		}
 
 		// Skip whitespace and =
@@ -119,70 +123,66 @@ _HighlightXMLTag(BTextView* view, int32 start, int32 end, const ColorScheme& col
 
 			if (pos < end - 1) {
 				pos++;
-				SetColorRange(view, valueStart, pos, colors.string);
+				HighlightRange* valueRange = new HighlightRange(valueStart, pos, HIGHLIGHT_STRING);
+				if (valueRange) ranges->AddItem(valueRange);
 			}
 		}
 	}
 
 	// Handle self-closing tag
 	if (selfClosing && end >= 2) {
-		SetColorRange(view, end - 2, end - 1, colors.tag);
+		HighlightRange* closeRange = new HighlightRange(end - 2, end - 1, HIGHLIGHT_TAG);
+		if (closeRange) ranges->AddItem(closeRange);
 	}
 }
 
 void
-ApplySVGHighlighting(BTextView* view)
+HighlightWorker::_AnalyzeSVGSyntax(const char* text, int32 length, BList* ranges)
 {
-	const char* text = view->Text();
-	int32 length = view->TextLength();
-
-	if (length == 0)
+	if (!text || length == 0 || !ranges)
 		return;
 
-	const ColorScheme& colors = GetColorScheme(view);
-
-	SetColorRange(view, 0, length, colors.text);
-
 	int32 pos = 0;
-	while (pos < length) {
+
+	while (pos < length && !fShutdown) {
 		// XML Comments
-		if (pos + 3 < length && strncmp(&text[pos], "<!--", 4) == 0) {
+		if (pos + 4 <= length && strncmp(&text[pos], "<!--", 4) == 0) {
 			int32 commentEnd = pos + 4;
-			while (commentEnd + 2 < length && strncmp(&text[commentEnd], "-->", 3) != 0) {
+			while (commentEnd + 3 <= length && strncmp(&text[commentEnd], "-->", 3) != 0) {
 				commentEnd++;
 			}
-			if (commentEnd + 2 < length) {
+			if (commentEnd + 3 <= length) {
 				commentEnd += 3;
 			}
-			SetColorRange(view, pos, commentEnd, colors.comment);
+			_AddRange(ranges, pos, commentEnd, HIGHLIGHT_COMMENT);
 			pos = commentEnd;
 			continue;
 		}
 
 		// XML Declaration
-		if (pos + 1 < length && strncmp(&text[pos], "<?", 2) == 0) {
+		if (pos + 2 <= length && strncmp(&text[pos], "<?", 2) == 0) {
 			int32 declEnd = pos + 2;
-			while (declEnd + 1 < length && strncmp(&text[declEnd], "?>", 2) != 0) {
+			while (declEnd + 2 <= length && strncmp(&text[declEnd], "?>", 2) != 0) {
 				declEnd++;
 			}
-			if (declEnd + 1 < length) {
+			if (declEnd + 2 <= length) {
 				declEnd += 2;
 			}
-			SetColorRange(view, pos, declEnd, colors.preprocessor);
+			_AddRange(ranges, pos, declEnd, HIGHLIGHT_PREPROCESSOR);
 			pos = declEnd;
 			continue;
 		}
 
 		// CDATA sections
-		if (pos + 8 < length && strncmp(&text[pos], "<![CDATA[", 9) == 0) {
+		if (pos + 9 <= length && strncmp(&text[pos], "<![CDATA[", 9) == 0) {
 			int32 cdataEnd = pos + 9;
-			while (cdataEnd + 2 < length && strncmp(&text[cdataEnd], "]]>", 3) != 0) {
+			while (cdataEnd + 3 <= length && strncmp(&text[cdataEnd], "]]>", 3) != 0) {
 				cdataEnd++;
 			}
-			if (cdataEnd + 2 < length) {
+			if (cdataEnd + 3 <= length) {
 				cdataEnd += 3;
 			}
-			SetColorRange(view, pos, cdataEnd, colors.string);
+			_AddRange(ranges, pos, cdataEnd, HIGHLIGHT_STRING);
 			pos = cdataEnd;
 			continue;
 		}
@@ -196,7 +196,7 @@ ApplySVGHighlighting(BTextView* view)
 
 			if (tagEnd < length) {
 				tagEnd++;
-				_HighlightXMLTag(view, pos, tagEnd, colors);
+				_AnalyzeXMLTag(text, pos, tagEnd, ranges);
 				pos = tagEnd;
 			} else {
 				pos++;

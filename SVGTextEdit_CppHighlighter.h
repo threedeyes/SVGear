@@ -23,8 +23,7 @@ DetectCppFromFilename(const char* filename)
 
 	if (strcmp(ext, ".cpp") == 0 || strcmp(ext, ".h") == 0 ||
 		strcmp(ext, ".cc") == 0 || strcmp(ext, ".cxx") == 0 ||
-		strcmp(ext, ".hpp") == 0 || strcmp(ext, ".c") == 0 ||
-		strcmp(ext, ".C") == 0 || strcmp(ext, ".hh") == 0)
+		strcmp(ext, ".hpp") == 0 || strcmp(ext, ".c") == 0)
 		return SYNTAX_CPP;
 
 	return SYNTAX_NONE;
@@ -36,98 +35,44 @@ DetectCppFromContent(const char* text, int32 length)
 	if (!text || length == 0)
 		return SYNTAX_NONE;
 
-	if (strstr(text, "#include") != NULL)
+	if (strstr(text, "const") != NULL && strstr(text, "[]") != NULL)
 		return SYNTAX_CPP;
-	if (strstr(text, "#define") != NULL)
-		return SYNTAX_CPP;
-	if (strstr(text, "#ifndef") != NULL)
-		return SYNTAX_CPP;
-
-	if (strstr(text, "class ") != NULL)
-		return SYNTAX_CPP;
-	if (strstr(text, "namespace ") != NULL)
-		return SYNTAX_CPP;
-	if (strstr(text, "template") != NULL)
-		return SYNTAX_CPP;
-
-	if (strstr(text, "const ") != NULL)
-		return SYNTAX_CPP;
-	if (strstr(text, "struct ") != NULL)
-		return SYNTAX_CPP;
-	if (strstr(text, "typedef ") != NULL)
-		return SYNTAX_CPP;
-
-	if (strstr(text, "void ") != NULL && strstr(text, "(") != NULL)
+	if (strstr(text, "0x") != NULL)
 		return SYNTAX_CPP;
 
 	return SYNTAX_NONE;
 }
 
 static bool
-_IsCppKeyword(const char* word, int32 length)
+_IsKeyword(const char* word, int32 length)
 {
 	static const char* keywords[] = {
-		"auto", "break", "case", "char", "const", "continue", "default", "do",
-		"double", "else", "enum", "extern", "float", "for", "goto", "if",
-		"int", "long", "register", "return", "short", "signed", "sizeof", "static",
-		"struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
-		"class", "private", "protected", "public", "friend", "inline", "operator",
-		"overload", "template", "this", "virtual", "bool", "true", "false", "new",
-		"delete", "namespace", "using", "try", "catch", "throw", "const_cast",
-		"dynamic_cast", "reinterpret_cast", "static_cast", "typeid", "typename",
-		"explicit", "export", "mutable", "wchar_t", "size_t", "NULL",
-		NULL
+		"const", "unsigned", "char", "size_t", "int", "long",
+		"short", "static", "extern", NULL
 	};
 
 	for (int i = 0; keywords[i]; i++) {
-		if (strlen(keywords[i]) == (size_t)length &&
+		if ((int32)strlen(keywords[i]) == length &&
 			strncmp(word, keywords[i], length) == 0)
 			return true;
 	}
 	return false;
 }
 
-static bool
-_IsCppType(const char* word, int32 length)
-{
-	static const char* types[] = {
-		"int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64",
-		"bigtime_t", "thread_id", "area_id", "port_id", "sem_id", "team_id",
-		"status_t", "type_code", "ssize_t", "off_t", "dev_t", "ino_t",
-		"BString", "BMessage", "BView", "BWindow", "BApplication", "BRect",
-		"BPoint", "BSize", "rgb_color", "pattern", "drawing_mode",
-		NULL
-	};
-
-	for (int i = 0; types[i]; i++) {
-		if (strlen(types[i]) == (size_t)length &&
-			strncmp(word, types[i], length) == 0)
-			return true;
-	}
-	return false;
-}
-
 void
-ApplyCppHighlighting(BTextView* view)
+HighlightWorker::_AnalyzeCppSyntax(const char* text, int32 length, BList* ranges)
 {
-	const char* text = view->Text();
-	int32 length = view->TextLength();
-
-	if (length == 0)
+	if (!text || length == 0 || !ranges)
 		return;
-
-	const ColorScheme& colors = GetColorScheme(view);
-
-	SetColorRange(view, 0, length, colors.text);
 
 	int32 pos = 0;
 
-	while (pos < length) {
+	while (pos < length && !fShutdown) {
 		// Skip whitespace
-		while (pos < length && isspace(text[pos])) {
+		while (pos < length && isspace((unsigned char)text[pos])) {
 			pos++;
 		}
-		if (pos >= length) break;
+		if (pos >= length || fShutdown) break;
 
 		// Single line comments
 		if (pos + 1 < length && text[pos] == '/' && text[pos + 1] == '/') {
@@ -135,144 +80,60 @@ ApplyCppHighlighting(BTextView* view)
 			while (lineEnd < length && text[lineEnd] != '\n') {
 				lineEnd++;
 			}
-			SetColorRange(view, pos, lineEnd, colors.comment);
+			_AddRange(ranges, pos, lineEnd, HIGHLIGHT_COMMENT);
 			pos = lineEnd;
 			continue;
 		}
 
-		// Multi-line comments
-		if (pos + 1 < length && text[pos] == '/' && text[pos + 1] == '*') {
-			int32 commentEnd = pos + 2;
-			while (commentEnd + 1 < length && 
-				   !(text[commentEnd] == '*' && text[commentEnd + 1] == '/')) {
-				commentEnd++;
-			}
-			if (commentEnd + 1 < length) {
-				commentEnd += 2;
-			}
-			SetColorRange(view, pos, commentEnd, colors.comment);
-			pos = commentEnd;
-			continue;
-		}
+		// Array data block
+		if (text[pos] == '{') {
+			int32 blockEnd = pos + 1;
+			int32 braceCount = 1;
 
-		// Preprocessor directives
-		if (text[pos] == '#') {
-			int32 lineEnd = pos;
-			while (lineEnd < length && text[lineEnd] != '\n') {
-				lineEnd++;
-			}
-			SetColorRange(view, pos, lineEnd, colors.preprocessor);
-			pos = lineEnd;
-			continue;
-		}
-
-		// String literals
-		if (text[pos] == '"') {
-			int32 stringEnd = pos + 1;
-			while (stringEnd < length && text[stringEnd] != '"') {
-				if (text[stringEnd] == '\\' && stringEnd + 1 < length) {
-					stringEnd += 2;
-				} else {
-					stringEnd++;
+			while (blockEnd < length && braceCount > 0 && !fShutdown) {
+				if (text[blockEnd] == '{') {
+					braceCount++;
+				} else if (text[blockEnd] == '}') {
+					braceCount--;
 				}
+				blockEnd++;
 			}
-			if (stringEnd < length) {
-				stringEnd++;
-			}
-			SetColorRange(view, pos, stringEnd, colors.string);
-			pos = stringEnd;
-			continue;
-		}
 
-		// Character literals
-		if (text[pos] == '\'') {
-			int32 charEnd = pos + 1;
-			while (charEnd < length && text[charEnd] != '\'') {
-				if (text[charEnd] == '\\' && charEnd + 1 < length) {
-					charEnd += 2;
-				} else {
-					charEnd++;
-				}
+			// Add ranges for braces and content
+			_AddRange(ranges, pos, pos + 1, HIGHLIGHT_OPERATOR);
+			if (blockEnd > pos + 2) {
+				_AddRange(ranges, pos + 1, blockEnd - 1, HIGHLIGHT_NUMBER);
 			}
-			if (charEnd < length) {
-				charEnd++;
+			if (blockEnd > pos + 1) {
+				_AddRange(ranges, blockEnd - 1, blockEnd, HIGHLIGHT_OPERATOR);
 			}
-			SetColorRange(view, pos, charEnd, colors.string);
-			pos = charEnd;
-			continue;
-		}
 
-		// Hexadecimal numbers
-		if (pos + 1 < length && text[pos] == '0' &&
-			(text[pos + 1] == 'x' || text[pos + 1] == 'X')) {
-			int32 numEnd = pos + 2;
-			while (numEnd < length &&
-				   (isdigit(text[numEnd]) || 
-					(text[numEnd] >= 'a' && text[numEnd] <= 'f') ||
-					(text[numEnd] >= 'A' && text[numEnd] <= 'F'))) {
-				numEnd++;
-			}
-			if (numEnd < length && (text[numEnd] == 'L' || text[numEnd] == 'l')) {
-				numEnd++;
-			}
-			if (numEnd < length && (text[numEnd] == 'U' || text[numEnd] == 'u')) {
-				numEnd++;
-			}
-			SetColorRange(view, pos, numEnd, colors.number);
-			pos = numEnd;
-			continue;
-		}
-
-		// Decimal numbers
-		if (isdigit(text[pos])) {
-			int32 numEnd = pos;
-			while (numEnd < length && (isdigit(text[numEnd]) || text[numEnd] == '.')) {
-				numEnd++;
-			}
-			if (numEnd < length && (text[numEnd] == 'e' || text[numEnd] == 'E')) {
-				numEnd++;
-				if (numEnd < length && (text[numEnd] == '+' || text[numEnd] == '-')) {
-					numEnd++;
-				}
-				while (numEnd < length && isdigit(text[numEnd])) {
-					numEnd++;
-				}
-			}
-			if (numEnd < length && (text[numEnd] == 'f' || text[numEnd] == 'F' ||
-									text[numEnd] == 'L' || text[numEnd] == 'l')) {
-				numEnd++;
-			}
-			SetColorRange(view, pos, numEnd, colors.number);
-			pos = numEnd;
+			pos = blockEnd;
 			continue;
 		}
 
 		// Keywords and identifiers
-		if (isalpha(text[pos]) || text[pos] == '_') {
+		if (isalpha((unsigned char)text[pos]) || text[pos] == '_') {
 			int32 wordEnd = pos;
-			while (wordEnd < length && (isalnum(text[wordEnd]) || text[wordEnd] == '_')) {
+			while (wordEnd < length && !fShutdown) {
+				unsigned char ch = (unsigned char)text[wordEnd];
+				if (!(isalnum(ch) || ch == '_')) {
+					break;
+				}
 				wordEnd++;
 			}
 
-			if (_IsCppKeyword(text + pos, wordEnd - pos)) {
-				SetColorRange(view, pos, wordEnd, colors.keyword);
-			} else if (_IsCppType(text + pos, wordEnd - pos)) {
-				SetColorRange(view, pos, wordEnd, colors.attribute);
+			if (_IsKeyword(text + pos, wordEnd - pos)) {
+				_AddRange(ranges, pos, wordEnd, HIGHLIGHT_KEYWORD);
 			}
 			pos = wordEnd;
 			continue;
 		}
 
-		// Operators
-		if (text[pos] == '{' || text[pos] == '}' || text[pos] == '[' ||
-			text[pos] == ']' || text[pos] == '(' || text[pos] == ')' ||
-			text[pos] == ',' || text[pos] == ';' || text[pos] == '=' ||
-			text[pos] == '+' || text[pos] == '-' || text[pos] == '*' ||
-			text[pos] == '/' || text[pos] == '%' || text[pos] == '&' ||
-			text[pos] == '|' || text[pos] == '^' || text[pos] == '!' ||
-			text[pos] == '<' || text[pos] == '>' || text[pos] == '?' ||
-			text[pos] == ':' || text[pos] == '~') {
-			SetColorRange(view, pos, pos + 1, colors.operator_color);
+		// Simple operators and separators
+		if (text[pos] == '[' || text[pos] == ']' || text[pos] == '=' ||
+			text[pos] == ',' || text[pos] == ';') {
+			_AddRange(ranges, pos, pos + 1, HIGHLIGHT_OPERATOR);
 		}
 
 		pos++;

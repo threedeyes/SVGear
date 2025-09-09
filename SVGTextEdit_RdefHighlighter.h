@@ -61,7 +61,7 @@ _IsRdefKeyword(const char* word, int32 length)
 	};
 
 	for (int i = 0; keywords[i]; i++) {
-		if (strlen(keywords[i]) == (size_t)length &&
+		if ((int32)strlen(keywords[i]) == length &&
 			strncmp(word, keywords[i], length) == 0)
 			return true;
 	}
@@ -79,7 +79,7 @@ _IsRdefType(const char* word, int32 length)
 	};
 
 	for (int i = 0; types[i]; i++) {
-		if (strlen(types[i]) == (size_t)length &&
+		if ((int32)strlen(types[i]) == length &&
 			strncmp(word, types[i], length) == 0)
 			return true;
 	}
@@ -87,39 +87,32 @@ _IsRdefType(const char* word, int32 length)
 }
 
 void
-ApplyRdefHighlighting(BTextView* view)
+HighlightWorker::_AnalyzeRdefSyntax(const char* text, int32 length, BList* ranges)
 {
-	const char* text = view->Text();
-	int32 length = view->TextLength();
-
-	if (length == 0)
+	if (!text || length == 0 || !ranges)
 		return;
-
-	const ColorScheme& colors = GetColorScheme(view);
-
-	SetColorRange(view, 0, length, colors.text);
 
 	int32 pos = 0;
 
-	while (pos < length) {
+	while (pos < length && !fShutdown) {
 		// Skip whitespace
-		while (pos < length && isspace(text[pos])) {
+		while (pos < length && isspace((unsigned char)text[pos])) {
 			pos++;
 		}
-		if (pos >= length) break;
+		if (pos >= length || fShutdown) break;
 
-		// Comments
+		// Line comments
 		if (pos + 1 < length && text[pos] == '/' && text[pos + 1] == '/') {
 			int32 lineEnd = pos;
 			while (lineEnd < length && text[lineEnd] != '\n') {
 				lineEnd++;
 			}
-			SetColorRange(view, pos, lineEnd, colors.comment);
+			_AddRange(ranges, pos, lineEnd, HIGHLIGHT_COMMENT);
 			pos = lineEnd;
 			continue;
 		}
 
-		// Multi-line comments
+		// Block comments
 		if (pos + 1 < length && text[pos] == '/' && text[pos + 1] == '*') {
 			int32 commentEnd = pos + 2;
 			while (commentEnd + 1 < length && 
@@ -129,25 +122,21 @@ ApplyRdefHighlighting(BTextView* view)
 			if (commentEnd + 1 < length) {
 				commentEnd += 2;
 			}
-			SetColorRange(view, pos, commentEnd, colors.comment);
+			_AddRange(ranges, pos, commentEnd, HIGHLIGHT_COMMENT);
 			pos = commentEnd;
 			continue;
 		}
 
-		// Resource strings ($"string")
-		if (text[pos] == '$' && pos + 1 < length && text[pos + 1] == '"') {
+		// Hex strings: $"..."
+		if (pos + 1 < length && text[pos] == '$' && text[pos + 1] == '"') {
 			int32 stringEnd = pos + 2;
 			while (stringEnd < length && text[stringEnd] != '"') {
-				if (text[stringEnd] == '\\' && stringEnd + 1 < length) {
-					stringEnd += 2;
-				} else {
-					stringEnd++;
-				}
-			}
-			if (stringEnd < length) {
 				stringEnd++;
 			}
-			SetColorRange(view, pos, stringEnd, colors.string);
+			if (stringEnd < length) {
+				stringEnd++; // Include closing quote
+			}
+			_AddRange(ranges, pos, stringEnd, HIGHLIGHT_STRING);
 			pos = stringEnd;
 			continue;
 		}
@@ -157,119 +146,81 @@ ApplyRdefHighlighting(BTextView* view)
 			int32 stringEnd = pos + 1;
 			while (stringEnd < length && text[stringEnd] != '"') {
 				if (text[stringEnd] == '\\' && stringEnd + 1 < length) {
-					stringEnd += 2;
+					stringEnd += 2; // Skip escaped character
 				} else {
 					stringEnd++;
 				}
 			}
 			if (stringEnd < length) {
-				stringEnd++;
+				stringEnd++; // Include closing quote
 			}
-			SetColorRange(view, pos, stringEnd, colors.string);
+			_AddRange(ranges, pos, stringEnd, HIGHLIGHT_STRING);
 			pos = stringEnd;
 			continue;
 		}
 
-		// Type codes (#'TYPE')
-		if (text[pos] == '#' && pos + 1 < length && text[pos + 1] == '\'') {
+		// Resource type: #'TYPE'
+		if (pos + 2 < length && text[pos] == '#' && text[pos + 1] == '\'') {
 			int32 typeEnd = pos + 2;
 			while (typeEnd < length && text[typeEnd] != '\'') {
 				typeEnd++;
 			}
 			if (typeEnd < length) {
-				typeEnd++;
+				typeEnd++; // Include closing quote
 			}
-			SetColorRange(view, pos, typeEnd, colors.number);
+			_AddRange(ranges, pos, typeEnd, HIGHLIGHT_PREPROCESSOR);
 			pos = typeEnd;
 			continue;
 		}
 
-		// Hexadecimal numbers
-		if (pos + 1 < length && text[pos] == '0' &&
-			(text[pos + 1] == 'x' || text[pos + 1] == 'X')) {
-			int32 numEnd = pos + 2;
-			while (numEnd < length &&
-				   (isdigit(text[numEnd]) || 
-					(text[numEnd] >= 'a' && text[numEnd] <= 'f') ||
-					(text[numEnd] >= 'A' && text[numEnd] <= 'F'))) {
-				numEnd++;
-			}
-			SetColorRange(view, pos, numEnd, colors.number);
-			pos = numEnd;
-			continue;
-		}
-
-		// Decimal numbers and floats
-		if (isdigit(text[pos]) || (text[pos] == '.' && pos + 1 < length && isdigit(text[pos + 1]))) {
+		// Numbers
+		if (isdigit((unsigned char)text[pos]) || 
+			(text[pos] == '0' && pos + 1 < length &&
+			 (text[pos + 1] == 'x' || text[pos + 1] == 'X'))) {
 			int32 numEnd = pos;
-			bool hasDecimal = false;
 			
-			while (numEnd < length && (isdigit(text[numEnd]) || 
-				   (!hasDecimal && text[numEnd] == '.'))) {
-				if (text[numEnd] == '.') {
-					hasDecimal = true;
-				}
-				numEnd++;
-			}
-			
-			// Handle scientific notation
-			if (numEnd < length && (text[numEnd] == 'e' || text[numEnd] == 'E')) {
-				numEnd++;
-				if (numEnd < length && (text[numEnd] == '+' || text[numEnd] == '-')) {
+			if (text[pos] == '0' && pos + 1 < length &&
+				(text[pos + 1] == 'x' || text[pos + 1] == 'X')) {
+				numEnd += 2; // Skip 0x
+				while (numEnd < length && isxdigit((unsigned char)text[numEnd])) {
 					numEnd++;
 				}
-				while (numEnd < length && isdigit(text[numEnd])) {
+			} else {
+				while (numEnd < length && isdigit((unsigned char)text[numEnd])) {
 					numEnd++;
 				}
 			}
 			
-			// Handle float suffix
-			if (numEnd < length && (text[numEnd] == 'f' || text[numEnd] == 'F')) {
-				numEnd++;
-			}
-			
-			SetColorRange(view, pos, numEnd, colors.number);
+			_AddRange(ranges, pos, numEnd, HIGHLIGHT_NUMBER);
 			pos = numEnd;
-			continue;
-		}
-
-		// Resource IDs and constants
-		if (text[pos] == 'R' && pos + 1 < length && text[pos + 1] == '_') {
-			int32 idEnd = pos;
-			while (idEnd < length && (isalnum(text[idEnd]) || text[idEnd] == '_')) {
-				idEnd++;
-			}
-			SetColorRange(view, pos, idEnd, colors.preprocessor);
-			pos = idEnd;
 			continue;
 		}
 
 		// Keywords and identifiers
-		if (isalpha(text[pos]) || text[pos] == '_') {
+		if (isalpha((unsigned char)text[pos]) || text[pos] == '_') {
 			int32 wordEnd = pos;
-			while (wordEnd < length && (isalnum(text[wordEnd]) || text[wordEnd] == '_')) {
+			while (wordEnd < length && !fShutdown) {
+				unsigned char ch = (unsigned char)text[wordEnd];
+				if (!(isalnum(ch) || ch == '_')) {
+					break;
+				}
 				wordEnd++;
 			}
 
 			if (_IsRdefKeyword(text + pos, wordEnd - pos)) {
-				SetColorRange(view, pos, wordEnd, colors.keyword);
+				_AddRange(ranges, pos, wordEnd, HIGHLIGHT_KEYWORD);
 			} else if (_IsRdefType(text + pos, wordEnd - pos)) {
-				SetColorRange(view, pos, wordEnd, colors.attribute);
+				_AddRange(ranges, pos, wordEnd, HIGHLIGHT_PREPROCESSOR);
 			}
 			pos = wordEnd;
 			continue;
 		}
 
-		// Operators and punctuation
+		// Operators and delimiters
 		if (text[pos] == '{' || text[pos] == '}' || text[pos] == '(' || 
 			text[pos] == ')' || text[pos] == '[' || text[pos] == ']' ||
-			text[pos] == ',' || text[pos] == ';' || text[pos] == '=' ||
-			text[pos] == '+' || text[pos] == '-' || text[pos] == '*' ||
-			text[pos] == '/' || text[pos] == '%' || text[pos] == '&' ||
-			text[pos] == '|' || text[pos] == '^' || text[pos] == '!' ||
-			text[pos] == '<' || text[pos] == '>' || text[pos] == '?' ||
-			text[pos] == ':' || text[pos] == '~') {
-			SetColorRange(view, pos, pos + 1, colors.operator_color);
+			text[pos] == ',' || text[pos] == ';' || text[pos] == '=') {
+			_AddRange(ranges, pos, pos + 1, HIGHLIGHT_OPERATOR);
 		}
 
 		pos++;
