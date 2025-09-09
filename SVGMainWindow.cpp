@@ -147,6 +147,7 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddAction(MSG_ZOOM_OUT, this, SVGApplication::GetIcon("zoom-out", TOOLBAR_ICON_SIZE), B_TRANSLATE("Zoom out"));
 	fToolBar->AddAction(MSG_ZOOM_ORIGINAL, this, SVGApplication::GetIcon("zoom-original", TOOLBAR_ICON_SIZE), B_TRANSLATE("Zoom original"));
 	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), B_TRANSLATE("Best fit"));
+	fToolBar->AddAction(MSG_CENTER, this, SVGApplication::GetIcon("go-center", TOOLBAR_ICON_SIZE), B_TRANSLATE("Center"));
 	fToolBar->AddSeparator();
 	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Bounding Box"));
 	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
@@ -1393,6 +1394,7 @@ SVGMainWindow::_UpdateToolBarStates()
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_IN, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_OUT, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_ORIGINAL, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_CENTER, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_FIT_WINDOW, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_BOUNDINGBOX, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_SOURCE_VIEW, hasDocument);
