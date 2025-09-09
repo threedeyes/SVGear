@@ -885,7 +885,6 @@ SVGMainWindow::_ToggleSourceView()
 	fSplitView->SetItemCollapsed(1, !fSplitView->IsItemCollapsed(1));
 
 	if (!fSplitView->IsItemCollapsed(1)) {
-		_UpdateAllTabs();
 		float mainWeight = gSettings->GetFloat(kMainViewWeight, 0.7f);
 		float sourceWeight = gSettings->GetFloat(kSourceViewWeight, 0.3f);
 		fSplitView->SetItemWeight(0, mainWeight, false);
@@ -899,11 +898,9 @@ SVGMainWindow::_ToggleSourceView()
 void
 SVGMainWindow::_UpdateAllTabs()
 {
-	if (fSVGTextView && !fCurrentSource.IsEmpty()) {
+	if (fSVGTextView && !fCurrentSource.IsEmpty())
 		fSVGTextView->SetText(fCurrentSource.String());
-		fSVGTextView->ApplySyntaxHighlighting();
-	}
-	
+
 	_UpdateRDefTab();
 	_UpdateCPPTab();
 }
@@ -929,7 +926,7 @@ SVGMainWindow::_UpdateCPPTab()
 			fCPPTextView->SetText(B_TRANSLATE("No HVIF data available"));
 		return;
 	}
-		
+
 	BString cppContent = _ConvertToCPP(fCurrentHVIFData, fCurrentHVIFSize);
 	fCPPTextView->SetText(cppContent.String());
 }
