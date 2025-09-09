@@ -202,17 +202,8 @@ SVGMenuManager::UpdateViewOptions(bool showTransparency, bool showSource, bool s
 void
 SVGMenuManager::UpdateFileMenu(bool canSave, bool isModified)
 {
-	if (fSaveItem) {
+	if (fSaveItem)
 		fSaveItem->SetEnabled(canSave || isModified);
-		if (isModified && canSave) {
-			fSaveItem->SetLabel(B_TRANSLATE("Save"));
-		} else if (isModified && !canSave) {
-			fSaveItem->SetLabel(B_TRANSLATE("Save As" B_UTF8_ELLIPSIS));
-		} else {
-			fSaveItem->SetLabel(B_TRANSLATE("Save"));
-		}
-	}
-
 	if (fSaveAsItem)
 		fSaveAsItem->SetEnabled(true);
 }

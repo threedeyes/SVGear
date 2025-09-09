@@ -692,6 +692,9 @@ SVGMainWindow::_LoadNewFile()
 
 	fCurrentFilePath = "";
 	fOriginalSourceText = fCurrentSource;
+	fDocumentModified = true;
+
+	_GenerateHVIFFromSVG();
 
 	if (fFileManager) {
 		fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
@@ -711,7 +714,7 @@ SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 		return;
 
 	size_t size;
-	char* data = (char*)res.LoadResource('rSTL', resourceName, &size);
+	char* data = (char*)res.LoadResource('rSVG', resourceName, &size);
 	if (data == NULL || size <= 0)
 		return;
 
@@ -722,8 +725,10 @@ SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 	if (fSVGView)
 		fSVGView->LoadFromMemory(fCurrentSource.String());
 
+	_GenerateHVIFFromSVG();
 	_UpdateStatus();
 	_UpdateAllTabs();
+
 	if (fSVGTextView)
 		fSVGTextView->ClearUndoHistory();
 
@@ -1043,6 +1048,7 @@ SVGMainWindow::_SaveFile()
 			} else {
 				fCurrentSource = currentSource;
 			}
+			fDocumentModified = false;
 			_ShowSuccess(MSG_FILE_SAVED);
 			_UpdateUIState();
 		}
@@ -1118,7 +1124,7 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 		if (fFileManager) {
 			fFileManager->SetLastLoadedFileType(FILE_TYPE_SVG);
 		}
-
+		fDocumentModified = false;
 		_UpdateTitleAfterSave(fullPath.String());
 		_ShowSuccess(MSG_FILE_SAVED);
 		_UpdateUIState();
@@ -1334,7 +1340,7 @@ SVGMainWindow::_CalculateCurrentUIState() const
 	if (!fCurrentFilePath.IsEmpty() || !fCurrentSource.IsEmpty())
 		state |= UI_STATE_DOCUMENT_LOADED;
 
-	if (!fOriginalSourceText.IsEmpty() && fCurrentSource != fOriginalSourceText)
+	if ((!fOriginalSourceText.IsEmpty() && fCurrentSource != fOriginalSourceText) || fDocumentModified)
 		state |= UI_STATE_DOCUMENT_MODIFIED;
 
 	if (_HasUnAppliedEditorChanges())
@@ -1380,7 +1386,7 @@ SVGMainWindow::_UpdateToolBarStates()
 	bool hasUnappliedChanges = (fCurrentUIState & UI_STATE_HAS_UNAPPLIED_CHANGES) != 0;
 
 	if (fToolBar) {
-		_SetToolBarItemEnabled(fToolBar, MSG_SAVE_FILE, hasDocument && (isModified || canSaveDirect));
+		_SetToolBarItemEnabled(fToolBar, MSG_SAVE_FILE, hasDocument && (isModified || fDocumentModified));
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_IN, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_OUT, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_ORIGINAL, hasDocument);
@@ -1412,7 +1418,7 @@ SVGMainWindow::_UpdateMenuStates()
 	bool sourceVisible = (fCurrentUIState & UI_STATE_SOURCE_VIEW_VISIBLE) != 0;
 
 	if (fMenuManager) {
-		fMenuManager->UpdateFileMenu(canSaveDirect, isModified);
+		fMenuManager->UpdateFileMenu(canSaveDirect, isModified || fDocumentModified);
 		fMenuManager->UpdateExportMenu(hasHVIF);
 
 		_SetMenuItemEnabled(MSG_ZOOM_IN, hasDocument);

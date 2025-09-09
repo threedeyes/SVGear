@@ -554,5 +554,5 @@ resource(90, "Icon-O-Matic") #'VICN' array {
 	$"D413BED4133ED4133ED41347F4A24A588915FF"
 };
 
-resource(100, "Teapot.svg") 			#'rSTL' import "Icons/Teapot.svg" ;
-resource(101, "Untitled.svg") 			#'rSTL' import "Icons/Untitled.svg" ;
+resource(100, "Teapot.svg") 			#'rSVG' import "Icons/Teapot.svg" ;
+resource(101, "Untitled.svg") 			#'rSVG' import "Icons/Untitled.svg" ;
