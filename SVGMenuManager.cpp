@@ -136,9 +136,8 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	viewMenu->AddSeparatorItem();
 
-	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Source Code"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'S');
+	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Source Code"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'U');
 	viewMenu->AddItem(fSourceViewItem);
-	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Reload from Source"), new BMessage(MSG_RELOAD_FROM_SOURCE), 'R'));
 
 	viewMenu->SetTargetForItems(target);
 	fMenuBar->AddItem(viewMenu);
@@ -163,6 +162,7 @@ SVGMenuManager::_AddShortcuts(BHandler* target)
 		window->AddShortcut('B', B_COMMAND_KEY, new BMessage(MSG_TOGGLE_BOUNDINGBOX));
 		window->AddShortcut('Z', B_COMMAND_KEY, new BMessage(B_UNDO));
 		window->AddShortcut('Z', B_COMMAND_KEY | B_SHIFT_KEY, new BMessage(B_REDO));
+		window->AddShortcut(B_ENTER, B_COMMAND_KEY, new BMessage(MSG_RELOAD_FROM_SOURCE));
 	}
 }
 

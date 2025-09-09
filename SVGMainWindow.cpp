@@ -162,7 +162,7 @@ SVGMainWindow::_BuildToolBars()
 	fEditToolBar->AddSeparator();
 	fEditToolBar->AddAction(MSG_EDIT_WORD_WRAP, this, SVGApplication::GetIcon("text-wrap", TOOLBAR_ICON_SIZE), B_TRANSLATE("Text wrap"));
 	fEditToolBar->AddSeparator();
-	fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), B_TRANSLATE("Apply"));
+	fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), B_TRANSLATE("Apply (Alt+Enter)"));
 	fEditToolBar->AddGlue();
 }
 
