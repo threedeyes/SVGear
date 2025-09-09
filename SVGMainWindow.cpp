@@ -665,10 +665,13 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 		std::string svg = renderer.RenderIcon(icon, 64, 64);
 		fCurrentSource.SetTo(svg.c_str());
 		fOriginalSourceText = fCurrentSource;
+		fDocumentModified = true;
 
 		_UpdateStatus();
 		_UpdateAllTabs();
 		_ReloadFromSource();
+		_UpdateUIState();
+
 		fSVGTextView->ClearUndoHistory();
 
 		SetTitle("SVGear - Untitled.svg");
@@ -769,7 +772,7 @@ SVGMainWindow::LoadFile(const char* filePath)
 
 		fSVGView->ResetView();
 		fCurrentFilePath = filePath;
-		fDocumentModified = false;
+		fDocumentModified = fFileManager->GetLastLoadedFileType() != FILE_TYPE_SVG;
 		fOriginalSourceText = fCurrentSource;
 
 		_GenerateHVIFFromSVG();
