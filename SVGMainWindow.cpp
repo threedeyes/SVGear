@@ -54,11 +54,13 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fMenuBar(NULL),
 	fMenuContainer(NULL),
 	fEditorContainer(NULL),
+	fViewerContainer(NULL),
 	fStatusView(NULL),
 	fSplitView(NULL),
 	fToolBar(NULL),
 	fEditToolBar(NULL),
 	fDocumentModified(false),
+	fShowStatView(false),
 	fShowBoundingBox(false),
 	fBoundingBoxStyle(1),
 	fCurrentUIState(0),
@@ -151,6 +153,7 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddSeparator();
 	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Bounding Box"));
 	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
+	fToolBar->AddAction(MSG_TOGGLE_STAT, this, SVGApplication::GetIcon("info", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show statistics"));
 	fToolBar->AddGlue();
 
 	fEditToolBar = new SVGToolBar();
@@ -219,8 +222,13 @@ SVGMainWindow::_BuildTabView()
 void
 SVGMainWindow::_BuildMainView()
 {
+	fViewerContainer = new BGroupView(B_HORIZONTAL, 0);
 	fSVGView = new SVGView("svg_view");
 	fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
+	fViewerContainer->GroupLayout()->AddView(fSVGView);
+	fStatView = new SVGStatView("stat_view");
+	fViewerContainer->GroupLayout()->AddView(fStatView);
+	fStatView->Hide();
 
 	_BuildTabView();
 
@@ -228,7 +236,7 @@ SVGMainWindow::_BuildMainView()
 	fEditorContainer->GroupLayout()->AddView(fTabView);
 
 	fSplitView = new BSplitView(B_VERTICAL);
-	fSplitView->AddChild(fSVGView);
+	fSplitView->AddChild(fViewerContainer);
 	fSplitView->AddChild(fEditorContainer);
 	fSplitView->SetCollapsible(1, true);
 	fSplitView->SetCollapsible(0, false);
@@ -305,6 +313,7 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case MSG_BBOX_SIMPLE_FRAME:
 		case MSG_BBOX_TRANSPARENT_GRAY:
 		case MSG_TOGGLE_SOURCE_VIEW:
+		case MSG_TOGGLE_STAT:
 			_HandleViewMessages(message);
 			break;
 
@@ -576,6 +585,18 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 		case MSG_TOGGLE_SOURCE_VIEW:
 			_ToggleSourceView();
 			break;
+
+		case MSG_TOGGLE_STAT:
+			fShowStatView = !fShowStatView;
+
+			if (fStatView->IsHidden())
+				fStatView->Show();
+			else
+				fStatView->Hide();
+
+			_UpdateToolBarStates();
+			_UpdateUIState();
+			break;
 	}
 }
 
@@ -672,6 +693,7 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 		_UpdateAllTabs();
 		_ReloadFromSource();
 		_UpdateUIState();
+		_UpdateStatView();
 
 		fSVGTextView->ClearUndoHistory();
 
@@ -704,6 +726,8 @@ SVGMainWindow::_LoadNewFile()
 		fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
 	}
 	_UpdateUIState();
+	_UpdateStatView();
+	_UpdateStatView();
 }
 
 void
@@ -741,6 +765,7 @@ SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 	SetTitle(windowTitle.String());
 
 	_UpdateUIState();
+	_UpdateStatView();
 }
 
 void
@@ -783,6 +808,7 @@ SVGMainWindow::LoadFile(const char* filePath)
 		_ReloadFromSource();
 		fSVGTextView->ClearUndoHistory();
 		_UpdateUIState();
+		_UpdateStatView();
 	}
 }
 
@@ -842,6 +868,14 @@ SVGMainWindow::_UpdateInterface()
 	_UpdateBoundingBoxMenu();
 	_UpdateViewMenu();
 	_UpdateStatus();
+}
+
+void
+SVGMainWindow::_UpdateStatView()
+{
+	fStatView->SetSVGImage(fSVGView->SVGImage());
+	fStatView->SetIntValue("svg-size", fCurrentSource.Length());
+	fStatView->SetIntValue("hvif-size", fCurrentHVIFSize);
 }
 
 void
@@ -1019,6 +1053,9 @@ SVGMainWindow::_ReloadFromSource()
 		_UpdateStatus();
 		_UpdateUIState();
 	}
+
+	fStatView->SetSVGImage(fSVGView->SVGImage());
+	_UpdateStatView();
 }
 
 void
@@ -1397,7 +1434,6 @@ SVGMainWindow::_UpdateToolBarStates()
 		_SetToolBarItemEnabled(fToolBar, MSG_CENTER, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_FIT_WINDOW, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_BOUNDINGBOX, hasDocument);
-		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_SOURCE_VIEW, hasDocument);
 	}
 
 	if (fEditToolBar) {
@@ -1596,6 +1632,9 @@ SVGMainWindow::_UpdateToggleButtonStates()
 
 		bool boundingBoxVisible = fSVGView && (fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE);
 		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_BOUNDINGBOX, boundingBoxVisible);
+
+		bool statViewVisible = fStatView && !fStatView->IsHidden();
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_STAT, statViewVisible);
 	}
 
 	if (fEditToolBar && fSVGTextView) {
@@ -1623,6 +1662,7 @@ SVGMainWindow::_SaveSettings()
 	if (fSVGView) {
 		gSettings->SetInt32(kDisplayMode, (int32)fSVGView->DisplayMode());
 		gSettings->SetBool(kShowTransparency, fSVGView->ShowTransparency());
+		gSettings->SetBool(kShowStatView, fShowStatView);
 		gSettings->SetBool(kShowBoundingBox, fShowBoundingBox);
 		gSettings->SetInt32(kBoundingBoxStyle, fBoundingBoxStyle);
 	}
@@ -1662,6 +1702,14 @@ SVGMainWindow::_RestoreSettings()
 		fShowBoundingBox = gSettings->GetBool(kShowBoundingBox, false);
 		fBoundingBoxStyle = gSettings->GetInt32(kBoundingBoxStyle, 1);
 		fSVGView->SetBoundingBoxStyle(fShowBoundingBox ? (svg_boundingbox_style)fBoundingBoxStyle : SVG_BBOX_NONE);
+	}
+
+	if (fStatView) {
+		fShowStatView = gSettings->GetBool(kShowStatView, false);
+		if (fShowStatView && fStatView->IsHidden())
+			fStatView->Show();
+		if (!fShowStatView && !fStatView->IsHidden())
+			fStatView->Hide();
 	}
 
 	if (fSVGTextView) {

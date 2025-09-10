@@ -19,6 +19,7 @@
 #include <MessageRunner.h>
 
 #include "SVGConstants.h"
+#include "SVGStatView.h"
 #include "BSVGView.h"
 
 class SVGView;
@@ -91,6 +92,7 @@ private:
     // UI Updates
     void _UpdateStatus();
     void _UpdateInterface();
+    void _UpdateStatView();
     void _UpdateDisplayModeMenu();
     void _UpdateBoundingBoxMenu();
     void _UpdateViewMenu();
@@ -164,15 +166,18 @@ private:
     BMenuBar*        fMenuBar;
     BGroupView*      fMenuContainer;
     BGroupView*      fEditorContainer;
+    BGroupView*      fViewerContainer;
     BStringView*     fStatusView;
     BSplitView*      fSplitView;
     SVGToolBar*      fToolBar;
     SVGToolBar*      fEditToolBar;
+    SVGStatView*     fStatView;
 
     // State
     BString          fCurrentSource;
     BString          fCurrentFilePath;
     bool             fDocumentModified;
+    bool             fShowStatView;
     bool             fShowBoundingBox;
     int32            fBoundingBoxStyle;
     uint32           fCurrentUIState;

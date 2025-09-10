@@ -10,6 +10,7 @@ SRCS = \
 	SVGFileManager.cpp \
 	SVGMenuManager.cpp \
 	SVGSettings.cpp \
+	SVGStatView.cpp \
 	External/BSVGView/BSVGView.cpp \
 	External/HVIF-Tools/src/hvif2svg/HVIFParser.cpp \
 	External/HVIF-Tools/src/hvif2svg/SVGRenderer.cpp \
