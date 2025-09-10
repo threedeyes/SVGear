@@ -825,9 +825,10 @@ SVGMainWindow::_GenerateHVIFFromSVG()
 		if (parser.ParseString(fCurrentSource.String(), writer)) {
 			std::vector<uint8_t> hvifData = writer.WriteToBuffer();
 
+			delete[] fCurrentHVIFData;
+			fCurrentHVIFData = NULL;
+			fCurrentHVIFSize = hvifData.size();
 			if (!hvifData.empty()) {
-				delete[] fCurrentHVIFData;
-				fCurrentHVIFSize = hvifData.size();
 				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
 				memcpy(fCurrentHVIFData, &hvifData[0], fCurrentHVIFSize);
 			}
