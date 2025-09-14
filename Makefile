@@ -11,6 +11,7 @@ SRCS = \
 	SVGMenuManager.cpp \
 	SVGSettings.cpp \
 	SVGStatView.cpp \
+	SVGListItem.cpp \
 	SVGStructureView.cpp \
 	External/BSVGView/BSVGView.cpp \
 	External/HVIF-Tools/src/hvif2svg/HVIFParser.cpp \

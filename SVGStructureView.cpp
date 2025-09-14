@@ -11,232 +11,38 @@
 #include "SVGConstants.h"
 #include "SVGStructureView.h"
 #include "SVGView.h"
+#include "SVGApplication.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "SVGStructureView"
 
-SVGShapeItem::SVGShapeItem(NSVGshape* shape, int32 index)
-	: BListItem(), fShape(shape), fIndex(index), fHeight(0)
-{
-}
-
-SVGShapeItem::~SVGShapeItem()
-{
-}
-
-void
-SVGShapeItem::DrawItem(BView* owner, BRect frame, bool complete)
-{
-	if (!fShape) return;
-	
-	rgb_color backgroundColor;
-	rgb_color textColor;
-	
-	if (IsSelected()) {
-		backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
-		textColor = ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR);
-	} else {
-		backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
-		textColor = ui_color(B_LIST_ITEM_TEXT_COLOR);
-	}
-
-	owner->SetHighColor(backgroundColor);
-	owner->FillRect(frame);
-	owner->SetHighColor(textColor);
-
-	BString text;
-	text.SetToFormat("Shape %ld", fIndex);
-
-	if (fShape->id && strlen(fShape->id) > 0)
-		text << " (" << fShape->id << ")";
-
-	font_height fh;
-	owner->GetFontHeight(&fh);
-	float textY = frame.top + (frame.Height() + fh.ascent - fh.descent) / 2;
-
-	owner->DrawString(text.String(), BPoint(frame.left + 4, textY));
-
-	if (fShape->fill.type != NSVG_PAINT_NONE) {
-		BRect colorRect(frame.right - 20, frame.top + 2, frame.right - 2, frame.bottom - 2);
-
-		if (fShape->fill.type == NSVG_PAINT_COLOR) {
-			unsigned int color = fShape->fill.color;
-			rgb_color fillColor;
-			fillColor.red = (color >> 0) & 0xFF;
-			fillColor.green = (color >> 8) & 0xFF;
-			fillColor.blue = (color >> 16) & 0xFF;
-			fillColor.alpha = 255;
-
-			owner->SetHighColor(fillColor);
-			owner->FillRect(colorRect);
-		} else {
-			owner->SetHighColor(128, 128, 128);
-			for (int i = 0; i < colorRect.IntegerWidth(); i += 2) {
-				owner->StrokeLine(
-					BPoint(colorRect.left + i, colorRect.top),
-					BPoint(colorRect.left + i, colorRect.bottom)
-				);
-			}
-		}
-
-		owner->SetHighColor(0, 0, 0);
-		owner->StrokeRect(colorRect);
-	}
-}
-
-void
-SVGShapeItem::Update(BView* owner, const BFont* font)
-{
-	font_height fh;
-	font->GetHeight(&fh);
-	fHeight = fh.ascent + fh.descent + fh.leading + 4;
-	SetHeight(fHeight);
-}
-
-SVGPathItem::SVGPathItem(NSVGpath* path, int32 shapeIndex, int32 pathIndex)
-	: BListItem(), fPath(path), fShapeIndex(shapeIndex), fPathIndex(pathIndex), fHeight(0)
-{
-}
-
-SVGPathItem::~SVGPathItem()
-{
-}
-
-void
-SVGPathItem::DrawItem(BView* owner, BRect frame, bool complete)
-{
-	if (!fPath) return;
-
-	rgb_color backgroundColor;
-	rgb_color textColor;
-
-	if (IsSelected()) {
-		backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
-		textColor = ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR);
-	} else {
-		backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
-		textColor = ui_color(B_LIST_ITEM_TEXT_COLOR);
-	}
-
-	owner->SetHighColor(backgroundColor);
-	owner->FillRect(frame);
-	owner->SetHighColor(textColor);
-
-	BString text;
-	text.SetToFormat("Path %ld.%ld (%d pts)", fShapeIndex, fPathIndex, fPath->npts);
-
-	if (fPath->closed)
-		text << " [closed]";
-
-	font_height fh;
-	owner->GetFontHeight(&fh);
-	float textY = frame.top + (frame.Height() + fh.ascent - fh.descent) / 2;
-	
-	owner->DrawString(text.String(), BPoint(frame.left + 8, textY));
-}
-
-void
-SVGPathItem::Update(BView* owner, const BFont* font)
-{
-	font_height fh;
-	font->GetHeight(&fh);
-	fHeight = fh.ascent + fh.descent + fh.leading + 4;
-	SetHeight(fHeight);
-}
-
-SVGPaintItem::SVGPaintItem(NSVGpaint* paint, const char* name, int32 shapeIndex, bool isStroke)
-	: BListItem(), fPaint(paint), fName(name), fShapeIndex(shapeIndex), fIsStroke(isStroke), fHeight(0)
-{
-}
-
-SVGPaintItem::~SVGPaintItem()
-{
-}
-
-void
-SVGPaintItem::DrawItem(BView* owner, BRect frame, bool complete)
-{
-	if (!fPaint) return;
-
-	rgb_color backgroundColor;
-	rgb_color textColor;
-
-	if (IsSelected()) {
-		backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
-		textColor = ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR);
-	} else {
-		backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
-		textColor = ui_color(B_LIST_ITEM_TEXT_COLOR);
-	}
-
-	owner->SetHighColor(backgroundColor);
-	owner->FillRect(frame);
-	owner->SetHighColor(textColor);
-
-	font_height fh;
-	owner->GetFontHeight(&fh);
-	float textY = frame.top + (frame.Height() + fh.ascent - fh.descent) / 2;
-
-	owner->DrawString(fName.String(), BPoint(frame.left + 4, textY));
-
-	BRect colorRect(frame.right - 20, frame.top + 2, frame.right - 2, frame.bottom - 2);
-
-	if (fPaint->type == NSVG_PAINT_COLOR) {
-		unsigned int color = fPaint->color;
-		rgb_color paintColor;
-		paintColor.red = (color >> 0) & 0xFF;
-		paintColor.green = (color >> 8) & 0xFF;
-		paintColor.blue = (color >> 16) & 0xFF;
-		paintColor.alpha = 255;
-
-		owner->SetHighColor(paintColor);
-		owner->FillRect(colorRect);
-	} else if (fPaint->type == NSVG_PAINT_LINEAR_GRADIENT || 
-			   fPaint->type == NSVG_PAINT_RADIAL_GRADIENT) {
-		for (int i = 0; i < colorRect.IntegerWidth(); i++) {
-			float t = (float)i / colorRect.Width();
-			int grayLevel = (int)(128 + 64 * sin(t * 6.28));
-			owner->SetHighColor(grayLevel, grayLevel, grayLevel);
-			owner->StrokeLine(
-				BPoint(colorRect.left + i, colorRect.top),
-				BPoint(colorRect.left + i, colorRect.bottom)
-			);
-		}
-	}
-
-	owner->SetHighColor(0, 0, 0);
-	owner->StrokeRect(colorRect);
-}
-
-void
-SVGPaintItem::Update(BView* owner, const BFont* font)
-{
-	font_height fh;
-	font->GetHeight(&fh);
-	fHeight = fh.ascent + fh.descent + fh.leading + 4;
-	SetHeight(fHeight);
-}
-
 SVGStructureView::SVGStructureView(const char* name)
 	: BView(name, B_WILL_DRAW),
-	  fTabView(NULL),
-	  fShapesList(NULL),
-	  fPathsList(NULL),
-	  fPaintsList(NULL),
-	  fShapesScroll(NULL),
-	  fPathsScroll(NULL),
-	  fPaintsScroll(NULL),
-	  fSVGImage(NULL),
-	  fSVGView(NULL),
-	  fSelectedShape(-1),
-	  fSelectedPath(-1)
+	fTabView(NULL),
+	fShapesList(NULL),
+	fPathsList(NULL),
+	fPaintsList(NULL),
+	fShapesScroll(NULL),
+	fPathsScroll(NULL),
+	fPaintsScroll(NULL),
+	fSVGImage(NULL),
+	fSVGView(NULL),
+	fShapeIcon(NULL),
+	fPathIcon(NULL),
+	fColorIcon(NULL),
+	fLinearGradientIcon(NULL),
+	fRadialGradientIcon(NULL),
+	fSelectedShape(-1),
+	fSelectedPath(-1)
 {
 	SetExplicitMaxSize(BSize(256, B_SIZE_UNSET));
+	SetExplicitMinSize(BSize(256, B_SIZE_UNSET));
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 
 	GetFont(&fFont);
 	fFont.SetSize(fFont.Size() * 0.9);
 
+	_LoadIcons();
 	_BuildInterface();
 }
 
@@ -245,6 +51,96 @@ SVGStructureView::~SVGStructureView()
 	_ClearListItems(fShapesList);
 	_ClearListItems(fPathsList);
 	_ClearListItems(fPaintsList);
+
+	_DeleteIcons();
+}
+
+void
+SVGStructureView::_LoadIcons()
+{
+	font_height fh;
+	fFont.GetHeight(&fh);
+	int32 iconSize = (int32)(fh.ascent + fh.descent + fh.leading);
+
+	if (iconSize < 12) iconSize = 12;
+	if (iconSize > 32) iconSize = 32;
+
+	fShapeIcon = SVGApplication::GetIcon("draw-shape", iconSize);
+	fPathIcon = SVGApplication::GetIcon("draw-path", iconSize);
+	fColorIcon = SVGApplication::GetIcon("colors", iconSize);
+	fLinearGradientIcon = SVGApplication::GetIcon("linear-gradients", iconSize);
+	fRadialGradientIcon = SVGApplication::GetIcon("radial-gradients", iconSize);
+}
+
+void
+SVGStructureView::_DeleteIcons()
+{
+	delete fShapeIcon;
+	delete fPathIcon;
+	delete fColorIcon;
+	delete fLinearGradientIcon;
+	delete fRadialGradientIcon;
+
+	fShapeIcon = NULL;
+	fPathIcon = NULL;
+	fColorIcon = NULL;
+	fLinearGradientIcon = NULL;
+	fRadialGradientIcon = NULL;
+}
+
+void
+SVGStructureView::UpdateIcons()
+{
+	_DeleteIcons();
+	_LoadIcons();
+
+	if (fShapesList) {
+		for (int32 i = 0; i < fShapesList->CountItems(); i++) {
+			SVGListItem* item = dynamic_cast<SVGListItem*>(fShapesList->ItemAt(i));
+			if (item && item->GetType() == SVG_ITEM_SHAPE) {
+				item->SetIcon(fShapeIcon);
+			}
+		}
+		fShapesList->Invalidate();
+	}
+
+	if (fPathsList) {
+		for (int32 i = 0; i < fPathsList->CountItems(); i++) {
+			SVGListItem* item = dynamic_cast<SVGListItem*>(fPathsList->ItemAt(i));
+			if (item && item->GetType() == SVG_ITEM_PATH) {
+				item->SetIcon(fPathIcon);
+			}
+		}
+		fPathsList->Invalidate();
+	}
+
+	if (fPaintsList) {
+		for (int32 i = 0; i < fPaintsList->CountItems(); i++) {
+			SVGListItem* item = dynamic_cast<SVGListItem*>(fPaintsList->ItemAt(i));
+			if (item && item->GetType() == SVG_ITEM_PAINT) {
+				item->SetIcon(_GetPaintIcon(item->GetPaint()));
+			}
+		}
+		fPaintsList->Invalidate();
+	}
+}
+
+BBitmap*
+SVGStructureView::_GetPaintIcon(NSVGpaint* paint)
+{
+	if (!paint)
+		return fColorIcon;
+
+	switch (paint->type) {
+		case NSVG_PAINT_COLOR:
+			return fColorIcon;
+		case NSVG_PAINT_LINEAR_GRADIENT:
+			return fLinearGradientIcon;
+		case NSVG_PAINT_RADIAL_GRADIENT:
+			return fRadialGradientIcon;
+		default:
+			return fColorIcon;
+	}
 }
 
 void
@@ -343,10 +239,10 @@ SVGStructureView::UpdateStructure()
 	_ClearListItems(fShapesList);
 	_ClearListItems(fPathsList);
 	_ClearListItems(fPaintsList);
-	
+
 	if (!fSVGImage)
 		return;
-	
+
 	_PopulateShapesList();
 	_PopulatePathsList();
 	_PopulatePaintsList();
@@ -362,7 +258,8 @@ SVGStructureView::_PopulateShapesList()
 	NSVGshape* shape = fSVGImage->shapes;
 
 	while (shape) {
-		SVGShapeItem* item = new SVGShapeItem(shape, shapeIndex);
+		SVGListItem* item = new SVGListItem(shape, shapeIndex);
+		item->SetIcon(fShapeIcon);
 		fShapesList->AddItem(item);
 		shapeIndex++;
 		shape = shape->next;
@@ -385,7 +282,8 @@ SVGStructureView::_PopulatePathsList()
 		NSVGpath* path = shape->paths;
 
 		while (path) {
-			SVGPathItem* item = new SVGPathItem(path, shapeIndex, pathIndex);
+			SVGListItem* item = new SVGListItem(path, shapeIndex, pathIndex);
+			item->SetIcon(fPathIcon);
 			fPathsList->AddItem(item);
 			pathIndex++;
 			path = path->next;
@@ -410,15 +308,17 @@ SVGStructureView::_PopulatePaintsList()
 	while (shape) {
 		if (shape->fill.type != NSVG_PAINT_NONE) {
 			BString name;
-			name.SetToFormat("Shape %ld Fill (%s)", shapeIndex, _GetPaintTypeName(shape->fill.type));
-			SVGPaintItem* item = new SVGPaintItem(&shape->fill, name.String(), shapeIndex, false);
+			name.SetToFormat("Shape %ld Fill", shapeIndex);
+			SVGListItem* item = new SVGListItem(&shape->fill, name.String(), shapeIndex, false);
+			item->SetIcon(_GetPaintIcon(&shape->fill));
 			fPaintsList->AddItem(item);
 		}
 
 		if (shape->stroke.type != NSVG_PAINT_NONE) {
 			BString name;
-			name.SetToFormat("Shape %ld Stroke (%s)", shapeIndex, _GetPaintTypeName(shape->stroke.type));
-			SVGPaintItem* item = new SVGPaintItem(&shape->stroke, name.String(), shapeIndex, true);
+			name.SetToFormat("Shape %ld Stroke", shapeIndex);
+			SVGListItem* item = new SVGListItem(&shape->stroke, name.String(), shapeIndex, true);
+			item->SetIcon(_GetPaintIcon(&shape->stroke));
 			fPaintsList->AddItem(item);
 		}
 
@@ -434,7 +334,7 @@ SVGStructureView::_ClearListItems(BListView* listView)
 {
 	if (!listView)
 		return;
-	
+
 	int32 count = listView->CountItems();
 	for (int32 i = 0; i < count; i++) {
 		BListItem* item = listView->ItemAt(i);
@@ -450,8 +350,8 @@ SVGStructureView::_HandleShapeSelection(BMessage* message)
 	if (selection < 0)
 		return;
 
-	SVGShapeItem* item = dynamic_cast<SVGShapeItem*>(fShapesList->ItemAt(selection));
-	if (!item)
+	SVGListItem* item = dynamic_cast<SVGListItem*>(fShapesList->ItemAt(selection));
+	if (!item || item->GetType() != SVG_ITEM_SHAPE)
 		return;
 
 	fSelectedShape = item->GetIndex();
@@ -468,8 +368,8 @@ SVGStructureView::_HandlePathSelection(BMessage* message)
 	if (selection < 0)
 		return;
 
-	SVGPathItem* item = dynamic_cast<SVGPathItem*>(fPathsList->ItemAt(selection));
-	if (!item)
+	SVGListItem* item = dynamic_cast<SVGListItem*>(fPathsList->ItemAt(selection));
+	if (!item || item->GetType() != SVG_ITEM_PATH)
 		return;
 
 	fSelectedShape = item->GetShapeIndex();
@@ -486,8 +386,8 @@ SVGStructureView::_HandlePaintSelection(BMessage* message)
 	if (selection < 0)
 		return;
 
-	SVGPaintItem* item = dynamic_cast<SVGPaintItem*>(fPaintsList->ItemAt(selection));
-	if (!item)
+	SVGListItem* item = dynamic_cast<SVGListItem*>(fPaintsList->ItemAt(selection));
+	if (!item || item->GetType() != SVG_ITEM_PAINT)
 		return;
 
 	fSelectedShape = item->GetShapeIndex();
@@ -528,19 +428,4 @@ SVGStructureView::_GetPaintTypeName(int paintType)
 		default:
 			return B_TRANSLATE("None");
 	}
-}
-
-rgb_color
-SVGStructureView::_GetPaintColor(NSVGpaint* paint)
-{
-	rgb_color color = { 0, 0, 0, 255 };
-
-	if (paint && paint->type == NSVG_PAINT_COLOR) {
-		unsigned int c = paint->color;
-		color.red = (c >> 0) & 0xFF;
-		color.green = (c >> 8) & 0xFF;
-		color.blue = (c >> 16) & 0xFF;
-	}
-
-	return color;
 }
