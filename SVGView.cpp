@@ -30,9 +30,9 @@ const float SVGView::kScaleStep = 1.2f;
 
 SVGView::SVGView(const char* name)
 	: BSVGView(name),
-	  fIsDragging(false),
-	  fTarget(NULL),
-	  fPlaceholderIcon(NULL)
+	fIsDragging(false),
+	fTarget(NULL),
+	fPlaceholderIcon(NULL)
 {
 	SetExplicitMinSize(BSize(256, 192));
 	SetFlags(Flags() | B_FULL_UPDATE_ON_RESIZE);
@@ -47,11 +47,10 @@ SVGView::~SVGView()
 void
 SVGView::Draw(BRect updateRect)
 {
-	if (IsLoaded()) {
+	if (IsLoaded())
 		BSVGView::Draw(updateRect);
-	} else {
+	else
 		_DrawPlaceholder();
-	}
 }
 
 void
@@ -127,6 +126,35 @@ void
 SVGView::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
+		case MSG_SHAPE_SELECTED: {
+			int32 shapeIndex;
+			if (message->FindInt32("shape_index", &shapeIndex) == B_OK) {
+				SetHighlightedShape(shapeIndex);
+			}
+			break;
+		}
+		case MSG_PATH_SELECTED: {
+			int32 shapeIndex, pathIndex;
+			if (message->FindInt32("shape_index", &shapeIndex) == B_OK &&
+				message->FindInt32("path_index", &pathIndex) == B_OK) {
+				SetHighlightedPath(shapeIndex, pathIndex);
+			}
+			break;
+		}
+		case MSG_CONTROL_POINTS_SELECTED: {
+			int32 shapeIndex, pathIndex;
+			bool showBezierHandles = false;
+			if (message->FindInt32("shape_index", &shapeIndex) == B_OK &&
+				message->FindInt32("path_index", &pathIndex) == B_OK) {
+				message->FindBool("show_bezier_handles", &showBezierHandles);
+				SetHighlightControlPoints(shapeIndex, pathIndex, showBezierHandles);
+			}
+			break;
+		}
+		case MSG_CLEAR_SELECTION: {
+			ClearHighlight();
+			break;
+		}
 		case B_MOUSE_WHEEL_CHANGED: {
 			if (!fSVGImage)
 				break;
@@ -158,7 +186,6 @@ SVGView::MessageReceived(BMessage* message)
 			}
 			break;
 		}
-
 		default:
 			BSVGView::MessageReceived(message);
 			break;
@@ -168,42 +195,42 @@ SVGView::MessageReceived(BMessage* message)
 bool
 SVGView::IsSVGFile(const char* filePath)
 {
-    if (!filePath)
-        return false;
-        
-    BFile file(filePath, B_READ_ONLY);
-    if (file.InitCheck() != B_OK)
-        return false;
-    
-    BNodeInfo nodeInfo(&file);
-    if (nodeInfo.InitCheck() == B_OK) {
-        char mimeType[B_MIME_TYPE_LENGTH];
-        if (nodeInfo.GetType(mimeType) == B_OK) {
-            if (strcmp(mimeType, "image/svg+xml") == 0)
-                return true;
-        }
-    }
-    
-    char buffer[512];
-    ssize_t bytesRead = file.Read(buffer, sizeof(buffer) - 1);
-    if (bytesRead <= 0)
-        return false;
-        
-    buffer[bytesRead] = '\0';
-    
-    BString content(buffer);
-    content.ToLower();
-    
-    if (content.FindFirst("<?xml") != B_ERROR && 
-        content.FindFirst("<svg") != B_ERROR) {
-        return true;
-    }
-    
-    if (content.FindFirst("<svg") != B_ERROR) {
-        return true;
-    }
-    
-    return false;
+	if (!filePath)
+		return false;
+
+	BFile file(filePath, B_READ_ONLY);
+	if (file.InitCheck() != B_OK)
+		return false;
+
+	BNodeInfo nodeInfo(&file);
+	if (nodeInfo.InitCheck() == B_OK) {
+		char mimeType[B_MIME_TYPE_LENGTH];
+		if (nodeInfo.GetType(mimeType) == B_OK) {
+			if (strcmp(mimeType, "image/svg+xml") == 0)
+				return true;
+		}
+	}
+
+	char buffer[512];
+	ssize_t bytesRead = file.Read(buffer, sizeof(buffer) - 1);
+	if (bytesRead <= 0)
+		return false;
+
+	buffer[bytesRead] = '\0';
+
+	BString content(buffer);
+	content.ToLower();
+
+	if (content.FindFirst("<?xml") != B_ERROR &&
+		content.FindFirst("<svg") != B_ERROR) {
+		return true;
+	}
+
+	if (content.FindFirst("<svg") != B_ERROR) {
+		return true;
+	}
+
+	return false;
 }
 
 status_t
@@ -212,7 +239,7 @@ SVGView::LoadFromFile(const char* filename, const char* units, float dpi)
 	if (!IsSVGFile(filename))
 		return B_ERROR;
 
-	return BSVGView::LoadFromFile(filename);
+	return BSVGView::LoadFromFile(filename, units, dpi);
 }
 
 void

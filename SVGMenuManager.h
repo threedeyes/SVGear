@@ -18,40 +18,43 @@
 
 class SVGMenuManager {
 public:
-    SVGMenuManager();
-    ~SVGMenuManager();
+	SVGMenuManager();
+	~SVGMenuManager();
 
-    BMenuBar* CreateMenuBar(BHandler* target);
-    void UpdateDisplayMode(svg_display_mode mode);
-    void UpdateViewOptions(bool showTransparency, bool showSource, bool showBoundingBox);
-    void UpdateBoundingBoxStyle(svg_boundingbox_style style);
-    void UpdateFileMenu(bool canSave, bool isModified);
-    void UpdateExportMenu(bool hasHVIFData);
-    void SetMenuItemEnabled(uint32 command, bool enabled);
+	BMenuBar* CreateMenuBar(BHandler* target);
+	void UpdateDisplayMode(svg_display_mode mode);
+	void UpdateViewOptions(bool showTransparency, bool showSource,
+						bool showBoundingBox, bool showStructure, bool showStat);
+	void UpdateBoundingBoxStyle(svg_boundingbox_style style);
+	void UpdateFileMenu(bool canSave, bool isModified);
+	void UpdateExportMenu(bool hasHVIFData);
+	void SetMenuItemEnabled(uint32 command, bool enabled);
 
 private:
-    BMenuBar* fMenuBar;
-    BMenuItem* fNormalItem;
-    BMenuItem* fOutlineItem;
-    BMenuItem* fFillOnlyItem;
-    BMenuItem* fStrokeOnlyItem;
-    BMenuItem* fTransparencyItem;
-    BMenuItem* fBBoxNoneItem;
-    BMenuItem* fBBoxDocumentItem;
-    BMenuItem* fBBoxSimpleFrameItem;
-    BMenuItem* fBBoxTransparentGrayItem;
-    BMenuItem* fSourceViewItem;
-    BMenuItem* fSaveItem;
-    BMenuItem* fSaveAsItem;
-    BMenu* fExportSubMenu;
-    BMenu* fDisplaySubMenu;
-    BMenu* fBoundingBoxSubMenu;
+	BMenuBar* fMenuBar;
+	BMenuItem* fNormalItem;
+	BMenuItem* fOutlineItem;
+	BMenuItem* fFillOnlyItem;
+	BMenuItem* fStrokeOnlyItem;
+	BMenuItem* fTransparencyItem;
+	BMenuItem* fBBoxNoneItem;
+	BMenuItem* fBBoxDocumentItem;
+	BMenuItem* fBBoxSimpleFrameItem;
+	BMenuItem* fBBoxTransparentGrayItem;
+	BMenuItem* fSourceViewItem;
+	BMenuItem* fSaveItem;
+	BMenuItem* fSaveAsItem;
+	BMenuItem* fStructureViewItem;
+	BMenuItem* fStatViewItem;
+	BMenu* fExportSubMenu;
+	BMenu* fDisplaySubMenu;
+	BMenu* fBoundingBoxSubMenu;
 
-    void _CreateFileMenu(BHandler* target);
-    void _CreateViewMenu(BHandler* target);
-    void _CreateHelpMenu(BHandler* target);
-    void _AddShortcuts(BHandler* target);
-    BMenuItem* _FindMenuItem(BMenu* menu, uint32 command);
+	void _CreateFileMenu(BHandler* target);
+	void _CreateViewMenu(BHandler* target);
+	void _CreateHelpMenu(BHandler* target);
+	void _AddShortcuts(BHandler* target);
+	BMenuItem* _FindMenuItem(BMenu* menu, uint32 command);
 };
 
 #endif

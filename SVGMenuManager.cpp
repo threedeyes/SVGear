@@ -22,6 +22,8 @@ SVGMenuManager::SVGMenuManager()
 	fBBoxSimpleFrameItem(NULL),
 	fBBoxTransparentGrayItem(NULL),
 	fSourceViewItem(NULL),
+	fStructureViewItem(NULL),
+	fStatViewItem(NULL),
 	fSaveItem(NULL),
 	fSaveAsItem(NULL),
 	fExportSubMenu(NULL),
@@ -136,8 +138,15 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	viewMenu->AddSeparatorItem();
 
-	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Source Code"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'U');
+	// Панели
+	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Sources Panel"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'U');
 	viewMenu->AddItem(fSourceViewItem);
+
+	fStructureViewItem = new BMenuItem(B_TRANSLATE("Show Structure Panel"), new BMessage(MSG_TOGGLE_STRUCTURE));
+	viewMenu->AddItem(fStructureViewItem);
+
+	fStatViewItem = new BMenuItem(B_TRANSLATE("Show Statistics Panel"), new BMessage(MSG_TOGGLE_STAT));
+	viewMenu->AddItem(fStatViewItem);
 
 	viewMenu->SetTargetForItems(target);
 	fMenuBar->AddItem(viewMenu);
@@ -191,12 +200,17 @@ SVGMenuManager::UpdateBoundingBoxStyle(svg_boundingbox_style style)
 }
 
 void
-SVGMenuManager::UpdateViewOptions(bool showTransparency, bool showSource, bool showBoundingBox)
+SVGMenuManager::UpdateViewOptions(bool showTransparency, bool showSource,
+								bool showBoundingBox, bool showStructure, bool showStat)
 {
 	if (fTransparencyItem)
 		fTransparencyItem->SetMarked(showTransparency);
 	if (fSourceViewItem)
 		fSourceViewItem->SetMarked(showSource);
+	if (fStructureViewItem)
+		fStructureViewItem->SetMarked(showStructure);
+	if (fStatViewItem)
+		fStatViewItem->SetMarked(showStat);
 }
 
 void

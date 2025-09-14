@@ -61,6 +61,9 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fEditToolBar(NULL),
 	fDocumentModified(false),
 	fShowStatView(false),
+	fStructureView(NULL),
+	fShowStructureView(false),
+	fShowSourceView(false),
 	fShowBoundingBox(false),
 	fBoundingBoxStyle(1),
 	fCurrentUIState(0),
@@ -153,6 +156,7 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddSeparator();
 	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Bounding Box"));
 	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
+	fToolBar->AddAction(MSG_TOGGLE_STRUCTURE, this, SVGApplication::GetIcon("structure", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Structure"));
 	fToolBar->AddAction(MSG_TOGGLE_STAT, this, SVGApplication::GetIcon("info", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show statistics"));
 	fToolBar->AddGlue();
 
@@ -223,12 +227,19 @@ void
 SVGMainWindow::_BuildMainView()
 {
 	fViewerContainer = new BGroupView(B_HORIZONTAL, 0);
+
+	fStructureView = new SVGStructureView("structure_view");
+	BLayoutItem* structureItem = fViewerContainer->GroupLayout()->AddView(fStructureView);
+	structureItem->SetVisible(false);
+
 	fSVGView = new SVGView("svg_view");
 	fSVGView->SetBoundingBoxStyle(SVG_BBOX_NONE);
 	fViewerContainer->GroupLayout()->AddView(fSVGView);
+	fStructureView->SetSVGView(fSVGView);
+
 	fStatView = new SVGStatView("stat_view");
-	fViewerContainer->GroupLayout()->AddView(fStatView);
-	fStatView->Hide();
+	BLayoutItem* statItem = fViewerContainer->GroupLayout()->AddView(fStatView);
+	statItem->SetVisible(false);
 
 	_BuildTabView();
 
@@ -314,6 +325,7 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case MSG_BBOX_TRANSPARENT_GRAY:
 		case MSG_TOGGLE_SOURCE_VIEW:
 		case MSG_TOGGLE_STAT:
+		case MSG_TOGGLE_STRUCTURE:
 			_HandleViewMessages(message);
 			break;
 
@@ -586,16 +598,12 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			_ToggleSourceView();
 			break;
 
+		case MSG_TOGGLE_STRUCTURE:
+			_ToggleStructureView();
+			break;
+
 		case MSG_TOGGLE_STAT:
-			fShowStatView = !fShowStatView;
-
-			if (fStatView->IsHidden())
-				fStatView->Show();
-			else
-				fStatView->Hide();
-
-			_UpdateToolBarStates();
-			_UpdateUIState();
+			_ToggleStatView();
 			break;
 	}
 }
@@ -877,6 +885,7 @@ SVGMainWindow::_UpdateStatView()
 	fStatView->SetSVGImage(fSVGView->SVGImage());
 	fStatView->SetIntValue("svg-size", fCurrentSource.Length());
 	fStatView->SetIntValue("hvif-size", fCurrentHVIFSize);
+	_UpdateStructureView();
 }
 
 void
@@ -902,9 +911,8 @@ SVGMainWindow::_UpdateViewMenu()
 {
 	if (fMenuManager && fSVGView && fSplitView) {
 		bool showTransparency = fSVGView->ShowTransparency();
-		bool showSource = fSplitView->IsItemCollapsed(1);
 		bool showBoundingBox = fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE;
-		fMenuManager->UpdateViewOptions(showTransparency, showSource, showBoundingBox);
+		fMenuManager->UpdateViewOptions(showTransparency, fShowSourceView, showBoundingBox, fShowStructureView, fShowStatView);
 	}
 }
 
@@ -968,9 +976,11 @@ SVGMainWindow::_ToggleSourceView()
 	if (!fSplitView)
 		return;
 
-	fSplitView->SetItemCollapsed(1, !fSplitView->IsItemCollapsed(1));
+	fShowSourceView = !fShowSourceView;
 
-	if (!fSplitView->IsItemCollapsed(1)) {
+	fSplitView->SetItemCollapsed(1, !fShowSourceView);
+
+	if (fShowSourceView) {
 		float mainWeight = gSettings->GetFloat(kMainViewWeight, 0.7f);
 		float sourceWeight = gSettings->GetFloat(kSourceViewWeight, 0.3f);
 		fSplitView->SetItemWeight(0, mainWeight, false);
@@ -979,6 +989,34 @@ SVGMainWindow::_ToggleSourceView()
 
 	_UpdateViewMenu();
 	_UpdateStatus();
+	_UpdateUIState();
+}
+
+void
+SVGMainWindow::_ToggleStructureView()
+{
+	fShowStructureView = !fShowStructureView;
+
+	BLayoutItem* structureItem = fViewerContainer->GroupLayout()->ItemAt(0);
+	if (structureItem) {
+		structureItem->SetVisible(fShowStructureView);
+	}
+
+	_UpdateToolBarStates();
+	_UpdateUIState();
+}
+
+void
+SVGMainWindow::_ToggleStatView()
+{
+	fShowStatView = !fShowStatView;
+
+	BLayoutItem* statItem = fViewerContainer->GroupLayout()->ItemAt(2);
+	if (statItem) {
+		statItem->SetVisible(fShowStatView);
+	}
+
+	_UpdateToolBarStates();
 	_UpdateUIState();
 }
 
@@ -1479,7 +1517,6 @@ SVGMainWindow::_UpdateMenuStates()
 		_SetMenuItemEnabled(MSG_BBOX_DOCUMENT, hasDocument);
 		_SetMenuItemEnabled(MSG_BBOX_SIMPLE_FRAME, hasDocument);
 		_SetMenuItemEnabled(MSG_BBOX_TRANSPARENT_GRAY, hasDocument);
-		_SetMenuItemEnabled(MSG_TOGGLE_SOURCE_VIEW, hasDocument);
 		_SetMenuItemEnabled(MSG_RELOAD_FROM_SOURCE, sourceVisible && hasDocument);
 	}
 }
@@ -1628,14 +1665,13 @@ void
 SVGMainWindow::_UpdateToggleButtonStates()
 {
 	if (fToolBar) {
-		bool sourceVisible = fSplitView && !fSplitView->IsItemCollapsed(1);
-		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_SOURCE_VIEW, sourceVisible);
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_SOURCE_VIEW, fShowSourceView);
 
 		bool boundingBoxVisible = fSVGView && (fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE);
 		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_BOUNDINGBOX, boundingBoxVisible);
 
-		bool statViewVisible = fStatView && !fStatView->IsHidden();
-		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_STAT, statViewVisible);
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_STAT, fShowStatView);
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_STRUCTURE, fShowStructureView);
 	}
 
 	if (fEditToolBar && fSVGTextView) {
@@ -1653,8 +1689,8 @@ SVGMainWindow::_SaveSettings()
 	gSettings->SetRect(kWindowFrame, Frame());
 
 	if (fSplitView) {
-		gSettings->SetBool(kSourceViewCollapsed, fSplitView->IsItemCollapsed(1));
-		if (!fSplitView->IsItemCollapsed(1)) {
+		gSettings->SetBool(kSourceViewCollapsed, !fShowSourceView);
+		if (fShowSourceView) {
 			gSettings->SetFloat(kMainViewWeight, fSplitView->ItemWeight(0));
 			gSettings->SetFloat(kSourceViewWeight, fSplitView->ItemWeight(1));
 		}
@@ -1663,10 +1699,14 @@ SVGMainWindow::_SaveSettings()
 	if (fSVGView) {
 		gSettings->SetInt32(kDisplayMode, (int32)fSVGView->DisplayMode());
 		gSettings->SetBool(kShowTransparency, fSVGView->ShowTransparency());
-		gSettings->SetBool(kShowStatView, fShowStatView);
 		gSettings->SetBool(kShowBoundingBox, fShowBoundingBox);
 		gSettings->SetInt32(kBoundingBoxStyle, fBoundingBoxStyle);
 	}
+
+	// Сохранение состояния панелей
+	gSettings->SetBool(kShowStructureView, fShowStructureView);
+	gSettings->SetBool(kShowStatView, fShowStatView);
+	gSettings->SetBool(kShowSourceView, fShowSourceView);
 
 	if (fSVGTextView) {
 		gSettings->SetBool(kWordWrap, fSVGTextView->DoesWordWrap());
@@ -1681,11 +1721,12 @@ SVGMainWindow::_RestoreSettings()
 	if (!gSettings)
 		return;
 
+	// Восстановление состояния исходного кода
 	if (fSplitView) {
-		bool collapsed = gSettings->GetBool(kSourceViewCollapsed, true);
-		fSplitView->SetItemCollapsed(1, collapsed);
+		fShowSourceView = !gSettings->GetBool(kSourceViewCollapsed, true);
+		fSplitView->SetItemCollapsed(1, !fShowSourceView);
 
-		if (!collapsed) {
+		if (fShowSourceView) {
 			float mainWeight = gSettings->GetFloat(kMainViewWeight, 0.7f);
 			float sourceWeight = gSettings->GetFloat(kSourceViewWeight, 0.3f);
 			fSplitView->SetItemWeight(0, mainWeight, false);
@@ -1705,12 +1746,22 @@ SVGMainWindow::_RestoreSettings()
 		fSVGView->SetBoundingBoxStyle(fShowBoundingBox ? (svg_boundingbox_style)fBoundingBoxStyle : SVG_BBOX_NONE);
 	}
 
-	if (fStatView) {
+	// Восстановление состояния панели статистики
+	if (fStatView && fViewerContainer) {
 		fShowStatView = gSettings->GetBool(kShowStatView, false);
-		if (fShowStatView && fStatView->IsHidden())
-			fStatView->Show();
-		if (!fShowStatView && !fStatView->IsHidden())
-			fStatView->Hide();
+		BLayoutItem* statItem = fViewerContainer->GroupLayout()->ItemAt(2);
+		if (statItem) {
+			statItem->SetVisible(fShowStatView);
+		}
+	}
+
+	// Восстановление состояния панели структуры
+	if (fStructureView && fViewerContainer) {
+		fShowStructureView = gSettings->GetBool(kShowStructureView, false);
+		BLayoutItem* structureItem = fViewerContainer->GroupLayout()->ItemAt(0);
+		if (structureItem) {
+			structureItem->SetVisible(fShowStructureView);
+		}
 	}
 
 	if (fSVGTextView) {
@@ -1756,4 +1807,12 @@ SVGMainWindow::_HasUnAppliedEditorChanges() const
 
 	BString editorText = fSVGTextView->Text();
 	return (editorText != fCurrentSource);
+}
+
+void
+SVGMainWindow::_UpdateStructureView()
+{
+	if (fStructureView) {
+		fStructureView->SetSVGImage(fSVGView->SVGImage());
+	}
 }

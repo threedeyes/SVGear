@@ -22,6 +22,8 @@ extern const char* const kDisplayMode;
 extern const char* const kShowTransparency;
 extern const char* const kShowBoundingBox;
 extern const char* const kShowStatView;
+extern const char* const kShowStructureView;
+extern const char* const kShowSourceView;
 extern const char* const kBoundingBoxStyle;
 extern const char* const kWordWrap;
 extern const char* const kLastOpenPath;

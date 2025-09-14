@@ -22,6 +22,8 @@ const char* const kDisplayMode = "display_mode";
 const char* const kShowTransparency = "show_transparency";
 const char* const kShowBoundingBox = "show_bounding_box";
 const char* const kShowStatView = "show_stat_view";
+const char* const kShowStructureView = "show_structure_view";
+const char* const kShowSourceView = "show_source_view";
 const char* const kBoundingBoxStyle = "bounding_box_style";
 const char* const kWordWrap = "word_wrap";
 const char* const kLastOpenPath = "last_open_path";
@@ -269,6 +271,7 @@ SVGSettings::_InitializeDefaults()
 	fSettings->AddBool(kShowTransparency, true);
 	fSettings->AddBool(kShowBoundingBox, false);
 	fSettings->AddBool(kShowStatView, false);
+	fSettings->AddBool(kShowStructureView, false);
 	fSettings->AddInt32(kBoundingBoxStyle, 1);
 
 	fSettings->AddBool(kWordWrap, true);

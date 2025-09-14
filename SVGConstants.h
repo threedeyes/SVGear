@@ -74,6 +74,15 @@ const uint32 MSG_STATE_UPDATE = 'stup';
 const uint32 MSG_TEXT_MODIFIED = 'txmd';
 const uint32 MSG_SELECTION_CHANGED = 'slch';
 
+// Structure view messages
+const uint32 MSG_TOGGLE_STRUCTURE = 'tgsr';
+const uint32 MSG_SHAPE_SELECTED = 'shps';
+const uint32 MSG_PATH_SELECTED = 'pths';
+const uint32 MSG_PAINT_SELECTED = 'pnsl';
+const uint32 MSG_CONTROL_POINTS_SELECTED = 'ctps';
+const uint32 MSG_CLEAR_SELECTION = 'clrs';
+
+
 // UI Constants
 const int32 TOOLBAR_ICON_SIZE = 24;
 const float SOURCE_VIEW_WEIGHT = 0.3f;
@@ -81,9 +90,9 @@ const float MAIN_VIEW_WEIGHT = 0.7f;
 
 // Tab indices
 enum {
-    TAB_SVG = 0,
-    TAB_RDEF = 1,
-    TAB_CPP = 2
+	TAB_SVG = 0,
+	TAB_RDEF = 1,
+	TAB_CPP = 2
 };
 
 // Global error messages
