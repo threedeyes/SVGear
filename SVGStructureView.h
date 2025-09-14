@@ -100,6 +100,7 @@ private:
 	void _PopulateShapesList();
 	void _PopulatePathsList();
 	void _PopulatePaintsList();
+	void _ClearListItems(BListView* listView);
 	void _HandleShapeSelection(BMessage* message);
 	void _HandlePathSelection(BMessage* message);
 	void _HandlePaintSelection(BMessage* message);

@@ -242,6 +242,9 @@ SVGStructureView::SVGStructureView(const char* name)
 
 SVGStructureView::~SVGStructureView()
 {
+	_ClearListItems(fShapesList);
+	_ClearListItems(fPathsList);
+	_ClearListItems(fPaintsList);
 }
 
 void
@@ -337,18 +340,13 @@ SVGStructureView::SetSVGImage(NSVGimage* image)
 void
 SVGStructureView::UpdateStructure()
 {
-	if (fShapesList)
-		fShapesList->MakeEmpty();
-
-	if (fPathsList)
-		fPathsList->MakeEmpty();
-
-	if (fPaintsList)
-		fPaintsList->MakeEmpty();
-
+	_ClearListItems(fShapesList);
+	_ClearListItems(fPathsList);
+	_ClearListItems(fPaintsList);
+	
 	if (!fSVGImage)
 		return;
-
+	
 	_PopulateShapesList();
 	_PopulatePathsList();
 	_PopulatePaintsList();
@@ -429,6 +427,20 @@ SVGStructureView::_PopulatePaintsList()
 	}
 
 	fPaintsList->Invalidate();
+}
+
+void
+SVGStructureView::_ClearListItems(BListView* listView)
+{
+	if (!listView)
+		return;
+	
+	int32 count = listView->CountItems();
+	for (int32 i = 0; i < count; i++) {
+		BListItem* item = listView->ItemAt(i);
+		delete item;
+	}
+	listView->MakeEmpty();
 }
 
 void
