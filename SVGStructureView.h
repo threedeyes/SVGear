@@ -33,6 +33,7 @@ public:
 	virtual void Draw(BRect updateRect);
 	virtual void MessageReceived(BMessage* message);
 	virtual void AttachedToWindow();
+	virtual void Hide();
 
 	void SetSVGImage(NSVGimage* image);
 	void SetSVGView(SVGView* svgView) { fSVGView = svgView; }

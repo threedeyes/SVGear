@@ -157,6 +157,13 @@ SVGStructureView::AttachedToWindow()
 }
 
 void
+SVGStructureView::Hide()
+{
+	ClearSelection();
+	BView::Hide();
+}
+
+void
 SVGStructureView::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
