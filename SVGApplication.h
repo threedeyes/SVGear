@@ -17,6 +17,8 @@
 #include <Window.h>
 #include <Bitmap.h>
 #include <Roster.h>
+#include <String.h>
+#include <ObjectList.h>
 
 #include <private/interface/WindowStack.h>
 
@@ -37,6 +39,14 @@
 
 class SVGMainWindow;
 
+struct IconCacheItem {
+	BString key;
+	BBitmap* bitmap;
+
+	IconCacheItem(const char* k, BBitmap* b) : key(k), bitmap(b) {}
+	~IconCacheItem() { delete bitmap; }
+};
+
 class SVGApplication : public BApplication {
 	public:
 		SVGApplication();
@@ -48,10 +58,15 @@ class SVGApplication : public BApplication {
     	virtual void ReadyToRun();
 
 		static BBitmap *GetIcon(const char *iconName, int iconSize);
+		static void ClearIconCache();
 
 	private:
 		SVGMainWindow *CreateWindow(void);
 		SVGMainWindow *lastActivatedWindow;
+
+		static BObjectList<IconCacheItem> iconCache;
+		static BString _CreateCacheKey(const char *iconName, int iconSize);
+		static IconCacheItem* _FindCacheItem(const char* key);
 };
 
 #endif

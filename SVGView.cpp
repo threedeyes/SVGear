@@ -41,7 +41,6 @@ SVGView::SVGView(const char* name)
 
 SVGView::~SVGView()
 {
-	delete fPlaceholderIcon;
 }
 
 void

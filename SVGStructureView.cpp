@@ -51,8 +51,6 @@ SVGStructureView::~SVGStructureView()
 	_ClearListItems(fShapesList);
 	_ClearListItems(fPathsList);
 	_ClearListItems(fPaintsList);
-
-	_DeleteIcons();
 }
 
 void
@@ -70,59 +68,6 @@ SVGStructureView::_LoadIcons()
 	fColorIcon = SVGApplication::GetIcon("colors", iconSize);
 	fLinearGradientIcon = SVGApplication::GetIcon("linear-gradients", iconSize);
 	fRadialGradientIcon = SVGApplication::GetIcon("radial-gradients", iconSize);
-}
-
-void
-SVGStructureView::_DeleteIcons()
-{
-	delete fShapeIcon;
-	delete fPathIcon;
-	delete fColorIcon;
-	delete fLinearGradientIcon;
-	delete fRadialGradientIcon;
-
-	fShapeIcon = NULL;
-	fPathIcon = NULL;
-	fColorIcon = NULL;
-	fLinearGradientIcon = NULL;
-	fRadialGradientIcon = NULL;
-}
-
-void
-SVGStructureView::UpdateIcons()
-{
-	_DeleteIcons();
-	_LoadIcons();
-
-	if (fShapesList) {
-		for (int32 i = 0; i < fShapesList->CountItems(); i++) {
-			SVGListItem* item = dynamic_cast<SVGListItem*>(fShapesList->ItemAt(i));
-			if (item && item->GetType() == SVG_ITEM_SHAPE) {
-				item->SetIcon(fShapeIcon);
-			}
-		}
-		fShapesList->Invalidate();
-	}
-
-	if (fPathsList) {
-		for (int32 i = 0; i < fPathsList->CountItems(); i++) {
-			SVGListItem* item = dynamic_cast<SVGListItem*>(fPathsList->ItemAt(i));
-			if (item && item->GetType() == SVG_ITEM_PATH) {
-				item->SetIcon(fPathIcon);
-			}
-		}
-		fPathsList->Invalidate();
-	}
-
-	if (fPaintsList) {
-		for (int32 i = 0; i < fPaintsList->CountItems(); i++) {
-			SVGListItem* item = dynamic_cast<SVGListItem*>(fPaintsList->ItemAt(i));
-			if (item && item->GetType() == SVG_ITEM_PAINT) {
-				item->SetIcon(_GetPaintIcon(item->GetPaint()));
-			}
-		}
-		fPaintsList->Invalidate();
-	}
 }
 
 BBitmap*

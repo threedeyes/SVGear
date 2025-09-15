@@ -6,6 +6,8 @@
 #include "SVGApplication.h"
 #include "SVGSettings.h"
 
+BObjectList<IconCacheItem> SVGApplication::iconCache(true);
+
 SVGApplication::SVGApplication() : BApplication(APP_SIGNATURE),
 	lastActivatedWindow(NULL)
 {
@@ -15,8 +17,9 @@ SVGApplication::SVGApplication() : BApplication(APP_SIGNATURE),
 SVGApplication::~SVGApplication()
 {
 	CleanupSettings();
+	ClearIconCache();
 	be_app->PostMessage(MSG_WINDOW_CLOSED);
-};
+}
 
 SVGMainWindow*
 SVGApplication::CreateWindow(void)
@@ -127,9 +130,53 @@ SVGApplication::ArgvReceived(int32 argc, char** argv)
 	}
 }
 
+BString
+SVGApplication::_CreateCacheKey(const char *iconName, int iconSize)
+{
+	BString key;
+	if (iconName == NULL) {
+		key = "__app_icon__";
+	} else {
+		key = iconName;
+	}
+	key << "_" << iconSize;
+	return key;
+}
+
+IconCacheItem*
+SVGApplication::_FindCacheItem(const char* key)
+{
+	for (int32 i = 0; i < iconCache.CountItems(); i++) {
+		IconCacheItem* item = iconCache.ItemAt(i);
+		if (item != NULL && item->key == key) {
+			return item;
+		}
+	}
+	return NULL;
+}
+
+void
+SVGApplication::ClearIconCache()
+{
+	for (int32 i = 0; i < iconCache.CountItems(); i++) {
+		IconCacheItem* item = iconCache.ItemAt(i);
+		if (item != NULL)
+			delete item;
+	}
+	iconCache.MakeEmpty();
+}
+
 BBitmap *
 SVGApplication::GetIcon(const char *iconName, int iconSize)
 {
+	BString cacheKey = _CreateCacheKey(iconName, iconSize);
+
+	IconCacheItem* cachedItem = _FindCacheItem(cacheKey.String());
+	if (cachedItem != NULL)
+		return cachedItem->bitmap;
+
+	BBitmap* icon = NULL;
+
 	if (iconName == NULL) {
 		app_info inf;
 		be_app->GetAppInfo(&inf);
@@ -138,25 +185,36 @@ SVGApplication::GetIcon(const char *iconName, int iconSize)
 		BAppFileInfo appMime(&file);
 		if (appMime.InitCheck() != B_OK)
 			return NULL;
-	
-		BBitmap* icon = new BBitmap(BRect(0, 0, iconSize - 1, iconSize -1), B_RGBA32);
-		if (appMime.GetIcon(icon, (icon_size)iconSize) == B_OK)
-			return icon;
 
-		delete icon;
-		return NULL;
+		icon = new BBitmap(BRect(0, 0, iconSize - 1, iconSize - 1), B_RGBA32);
+		if (appMime.GetIcon(icon, (icon_size)iconSize) != B_OK) {
+			delete icon;
+			return NULL;
+		}
 	} else {
 		BResources* resources = AppResources();
 		if (resources != NULL) {
 			size_t size;
 			const void* iconData = resources->LoadResource(B_VECTOR_ICON_TYPE, iconName, &size);
 			if (iconData != NULL && size > 0) {
-				BBitmap* bitmap = new BBitmap(BRect(0, 0, iconSize - 1, iconSize - 1), B_RGBA32);
-				status_t status = BIconUtils::GetVectorIcon((uint8*)iconData, size, bitmap);
-				if (status == B_OK)
-					return bitmap;
+				icon = new BBitmap(BRect(0, 0, iconSize - 1, iconSize - 1), B_RGBA32);
+				status_t status = BIconUtils::GetVectorIcon((uint8*)iconData, size, icon);
+				if (status != B_OK) {
+					delete icon;
+					return NULL;
+				}
+			} else {
+				return NULL;
 			}
+		} else {
+			return NULL;
 		}
-		return NULL;
 	}
+
+	if (icon != NULL) {
+		IconCacheItem* newItem = new IconCacheItem(cacheKey.String(), icon);
+		iconCache.AddItem(newItem);
+	}
+
+	return icon;
 }

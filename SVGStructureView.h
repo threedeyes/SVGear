@@ -38,12 +38,10 @@ public:
 	void SetSVGView(SVGView* svgView) { fSVGView = svgView; }
 	void UpdateStructure();
 	void ClearSelection();
-	void UpdateIcons();
 
 private:
 	void _BuildInterface();
 	void _LoadIcons();
-	void _DeleteIcons();
 	void _PopulateShapesList();
 	void _PopulatePathsList();
 	void _PopulatePaintsList();
