@@ -3,9 +3,12 @@
  * Distributed under the terms of the MIT License.
  */
 
-#include "SVGMenuManager.h"
+#include <Application.h>
 #include <MenuItem.h>
 #include <Catalog.h>
+#include <RecentItems.h>
+
+#include "SVGMenuManager.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "SVGMenuManager"
@@ -54,7 +57,11 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 {
 	BMenu* fileMenu = new BMenu(B_TRANSLATE("File"));
 	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("New"), new BMessage(MSG_NEW_FILE), 'N'));
-	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("Open" B_UTF8_ELLIPSIS), new BMessage(MSG_OPEN_FILE), 'O'));
+
+	BMenuItem* fMenuItemOpen = new BMenuItem(BRecentFilesList::NewFileListMenu( B_TRANSLATE("Open" B_UTF8_ELLIPSIS),
+		NULL, NULL, be_app, 10, true, NULL, APP_SIGNATURE), new BMessage(MSG_OPEN_FILE));
+	fMenuItemOpen->SetShortcut('O', 0);
+	fileMenu->AddItem(fMenuItemOpen);
 	fileMenu->AddSeparatorItem();
 
 	fSaveItem = new BMenuItem(B_TRANSLATE("Save"), new BMessage(MSG_SAVE_FILE), 'S');
@@ -138,7 +145,6 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	viewMenu->AddSeparatorItem();
 
-	// Панели
 	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Sources Panel"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'U');
 	viewMenu->AddItem(fSourceViewItem);
 
