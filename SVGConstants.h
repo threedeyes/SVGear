@@ -14,8 +14,13 @@
 
 // Application constants
 #define APP_SIGNATURE "application/x-vnd.svgear"
-#define STL_SIGNATURE "image/svg+xml"
 #define APP_SETTINGS_FILENAME "SVGear_settings"
+
+// Mime types
+#define MIME_SVG_SIGNATURE "image/svg+xml"
+#define MIME_TXT_SIGNATURE "text/plain"
+#define MIME_CPP_SIGNATURE "text/x-source-code"
+#define MIME_HVIF_SIGNATURE "image/x-hvif"
 
 // URLs
 #define URL_HOMEPAGE "https://github.com/threedeyes/SVGear"

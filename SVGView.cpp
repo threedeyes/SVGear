@@ -205,7 +205,7 @@ SVGView::IsSVGFile(const char* filePath)
 	if (nodeInfo.InitCheck() == B_OK) {
 		char mimeType[B_MIME_TYPE_LENGTH];
 		if (nodeInfo.GetType(mimeType) == B_OK) {
-			if (strcmp(mimeType, "image/svg+xml") == 0)
+			if (strcmp(mimeType, MIME_SVG_SIGNATURE) == 0)
 				return true;
 		}
 	}

@@ -453,7 +453,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 			if (!fileName.EndsWith(".hvif"))
 				fullPath << ".hvif";
 
-			result = _SaveBinaryData(fullPath.String(), fCurrentHVIFData, fCurrentHVIFSize, "image/x-hvif");
+			result = _SaveBinaryData(fullPath.String(), fCurrentHVIFData, fCurrentHVIFSize, MIME_HVIF_SIGNATURE);
 			break;
 		}
 
@@ -468,7 +468,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 				fullPath << ".rdef";
 
 			BString rdefContent = _ConvertToRDef(fCurrentHVIFData, fCurrentHVIFSize);
-			result = fFileManager->SaveFile(fullPath.String(), rdefContent, "text/plain");
+			result = fFileManager->SaveFile(fullPath.String(), rdefContent, MIME_TXT_SIGNATURE);
 			break;
 		}
 
@@ -484,7 +484,7 @@ SVGMainWindow::_HandleExportSavePanel(BMessage* message)
 			}
 
 			BString cppContent = _ConvertToCPP(fCurrentHVIFData, fCurrentHVIFSize);
-			result = fFileManager->SaveFile(fullPath.String(), cppContent, "text/x-source-code");
+			result = fFileManager->SaveFile(fullPath.String(), cppContent, MIME_CPP_SIGNATURE);
 			break;
 		}
 	}
@@ -1195,7 +1195,7 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 		return;
 	}
 
-	status_t result = fFileManager->SaveFile(fullPath.String(), currentSource, "image/svg+xml");
+	status_t result = fFileManager->SaveFile(fullPath.String(), currentSource, MIME_SVG_SIGNATURE);
 
 	if (result == B_OK) {
 		fCurrentFilePath = fullPath;
@@ -1599,8 +1599,8 @@ SVGMainWindow::_CheckClipboardState()
 
 	if (be_clipboard->Lock()) {
 		BMessage* clipData = be_clipboard->Data();
-		hasData = clipData && (clipData->HasString("text/plain") ||
-			  clipData->HasData("text/plain", B_MIME_TYPE));
+		hasData = clipData && (clipData->HasString(MIME_TXT_SIGNATURE) ||
+			  clipData->HasData(MIME_TXT_SIGNATURE, B_MIME_TYPE));
 		be_clipboard->Unlock();
 	}
 

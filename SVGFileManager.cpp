@@ -8,6 +8,7 @@
 #include <NodeInfo.h>
 #include <Catalog.h>
 
+#include "SVGConstants.h"
 #include "SVGFileManager.h"
 #include "SVGView.h"
 #include "SVGHVIFView.h"
@@ -231,7 +232,7 @@ SVGFileManager::SaveCurrentFile(const BString& currentPath, const BString& sourc
 		return false;
 	}
 
-	status_t result = SaveFile(currentPath.String(), source, "image/svg+xml");
+	status_t result = SaveFile(currentPath.String(), source, MIME_SVG_SIGNATURE);
 	if (result != B_OK) {
 		BString error;
 		error.SetToFormat(B_TRANSLATE("Error saving file: %s"), strerror(result));
