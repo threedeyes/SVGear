@@ -87,7 +87,6 @@ const uint32 MSG_PAINT_SELECTED = 'pnsl';
 const uint32 MSG_CONTROL_POINTS_SELECTED = 'ctps';
 const uint32 MSG_CLEAR_SELECTION = 'clrs';
 
-
 // UI Constants
 const int32 TOOLBAR_ICON_SIZE = 24;
 const float SOURCE_VIEW_WEIGHT = 0.3f;
