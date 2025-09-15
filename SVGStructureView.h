@@ -38,6 +38,7 @@ public:
 	void SetSVGView(SVGView* svgView) { fSVGView = svgView; }
 	void UpdateStructure();
 	void ClearSelection();
+	void ForceUpdatePanelWidth();
 
 private:
 	void _BuildInterface();
@@ -51,6 +52,10 @@ private:
 	void _HandlePaintSelection(BMessage* message);
 	const char* _GetPaintTypeName(int paintType);
 	BBitmap* _GetPaintIcon(NSVGpaint* paint);
+	float _CalculatePreferredWidth();
+	void _UpdatePanelWidth();
+	float _CalculateTabsMinWidth();
+	float _GetMinimumPanelWidth();
 
 private:
 	BTabView* fTabView;
@@ -67,6 +72,7 @@ private:
 
 	BBitmap* fShapeIcon;
 	BBitmap* fPathIcon;
+	BBitmap* fClosedPathIcon;
 	BBitmap* fColorIcon;
 	BBitmap* fLinearGradientIcon;
 	BBitmap* fRadialGradientIcon;

@@ -15,47 +15,62 @@
 
 SVGListItem::SVGListItem(NSVGshape* shape, int32 index)
 	: BListItem(),
-	  fType(SVG_ITEM_SHAPE),
-	  fShape(shape),
-	  fPath(NULL),
-	  fPaint(NULL),
-	  fIndex(index),
-	  fShapeIndex(index),
-	  fPathIndex(-1),
-	  fIsStroke(false),
-	  fHeight(0),
-	  fIcon(NULL)
+	fType(SVG_ITEM_SHAPE),
+	fShape(shape),
+	fPath(NULL),
+	fPaint(NULL),
+	fIndex(index),
+	fShapeIndex(index),
+	fPathIndex(-1),
+	fIsStroke(false),
+	fHeight(0),
+	fIcon(NULL),
+	fRequiredWidth(0),
+	fIconSize(0),
+	fSwatchSize(0),
+	fLeftMargin(4),
+	fRightMargin(4)
 {
 }
 
 SVGListItem::SVGListItem(NSVGpath* path, int32 shapeIndex, int32 pathIndex)
 	: BListItem(),
-	  fType(SVG_ITEM_PATH),
-	  fShape(NULL),
-	  fPath(path),
-	  fPaint(NULL),
-	  fIndex(pathIndex),
-	  fShapeIndex(shapeIndex),
-	  fPathIndex(pathIndex),
-	  fIsStroke(false),
-	  fHeight(0),
-	  fIcon(NULL)
+	fType(SVG_ITEM_PATH),
+	fShape(NULL),
+	fPath(path),
+	fPaint(NULL),
+	fIndex(pathIndex),
+	fShapeIndex(shapeIndex),
+	fPathIndex(pathIndex),
+	fIsStroke(false),
+	fHeight(0),
+	fIcon(NULL),
+	fRequiredWidth(0),
+	fIconSize(0),
+	fSwatchSize(0),
+	fLeftMargin(8),
+	fRightMargin(4)
 {
 }
 
 SVGListItem::SVGListItem(NSVGpaint* paint, const char* name, int32 shapeIndex, bool isStroke)
 	: BListItem(),
-	  fType(SVG_ITEM_PAINT),
-	  fShape(NULL),
-	  fPath(NULL),
-	  fPaint(paint),
-	  fName(name),
-	  fIndex(-1),
-	  fShapeIndex(shapeIndex),
-	  fPathIndex(-1),
-	  fIsStroke(isStroke),
-	  fHeight(0),
-	  fIcon(NULL)
+	fType(SVG_ITEM_PAINT),
+	fShape(NULL),
+	fPath(NULL),
+	fPaint(paint),
+	fName(name),
+	fIndex(-1),
+	fShapeIndex(shapeIndex),
+	fPathIndex(-1),
+	fIsStroke(isStroke),
+	fHeight(0),
+	fIcon(NULL),
+	fRequiredWidth(0),
+	fIconSize(0),
+	fSwatchSize(0),
+	fLeftMargin(4),
+	fRightMargin(4)
 {
 }
 
@@ -83,60 +98,37 @@ SVGListItem::DrawItem(BView* owner, BRect frame, bool complete)
 
 	owner->SetHighColor(textColor);
 
-	BString text;
-	float leftMargin = 4;
+	BRect iconRect(frame.left + 2, frame.top + 2,
+				   frame.left + 2 + fIconSize, frame.top + 2 + fIconSize);
+	_DrawIcon(owner, iconRect);
+
+	float textX = fLeftMargin + fIconSize + 2 + 4;
 
 	font_height fh;
 	owner->GetFontHeight(&fh);
-	float iconSize = fh.ascent + fh.descent + fh.leading;
-	if (iconSize < 12) iconSize = 12;
-	if (iconSize > 32) iconSize = 32;
-
-	BRect iconRect(frame.left + 2, frame.top + 2, 
-				   frame.left + 2 + iconSize, frame.top + 2 + iconSize);
-	_DrawIcon(owner, iconRect);
-
-	leftMargin = iconRect.right + 4;
-
-	switch (fType) {
-		case SVG_ITEM_SHAPE:
-			if (fShape) {
-				text.SetToFormat("Shape %ld", fIndex);
-				if (fShape->id && strlen(fShape->id) > 0)
-					text << " (" << fShape->id << ")";
-			}
-			break;
-
-		case SVG_ITEM_PATH:
-			if (fPath) {
-				text.SetToFormat("Path %ld.%ld (%d pts)", fShapeIndex, fPathIndex, fPath->npts);
-				if (fPath->closed)
-					text << " [closed]";
-			}
-			leftMargin += 4;
-			break;
-
-		case SVG_ITEM_PAINT:
-			text = fName;
-			break;
-	}
-
 	float textY = frame.top + (frame.Height() + fh.ascent - fh.descent) / 2;
-	owner->DrawString(text.String(), BPoint(leftMargin, textY));
 
-	float swatchSize = iconSize;
+	float textMaxX = frame.right;
+	if (fType == SVG_ITEM_SHAPE && fShape)
+		textMaxX = frame.right - (fSwatchSize * 2 + 2) - 5;
+	else if (fType == SVG_ITEM_PAINT && fPaint)
+		textMaxX = frame.right - fSwatchSize - 5;
+
+	BString displayText = fDisplayText;
+	owner->TruncateString(&displayText, B_TRUNCATE_END, textMaxX - textX);
+	owner->DrawString(displayText.String(), BPoint(textX, textY));
 
 	if (fType == SVG_ITEM_SHAPE && fShape) {
-		BRect colorRect(frame.right - (swatchSize * 2 + 2),
-						frame.top + (frame.Height() - swatchSize) / 2,
+		BRect colorRect(frame.right - (fSwatchSize * 2 + 2),
+						frame.top + (frame.Height() - fSwatchSize) / 2,
 						frame.right - 2,
-						frame.top + (frame.Height() - swatchSize) / 2 + swatchSize);
-		_DrawColorSwatches(owner, colorRect, fShape, swatchSize);
+						frame.top + (frame.Height() - fSwatchSize) / 2 + fSwatchSize);
+		_DrawColorSwatches(owner, colorRect, fShape, fSwatchSize);
 	} else if (fType == SVG_ITEM_PAINT && fPaint) {
-		BRect colorRect(frame.right - swatchSize - 2,
-						frame.top + (frame.Height() - swatchSize) / 2,
+		BRect colorRect(frame.right - fSwatchSize - 2,
+						frame.top + (frame.Height() - fSwatchSize) / 2,
 						frame.right - 2,
-						frame.top + (frame.Height() - swatchSize) / 2 + swatchSize);
+						frame.top + (frame.Height() - fSwatchSize) / 2 + fSwatchSize);
 		_DrawSingleColorSwatch(owner, colorRect, fPaint);
 	}
 }
@@ -148,6 +140,51 @@ SVGListItem::Update(BView* owner, const BFont* font)
 	font->GetHeight(&fh);
 	fHeight = fh.ascent + fh.descent + fh.leading + 4;
 	SetHeight(fHeight);
+
+	fIconSize = fh.ascent + fh.descent + fh.leading;
+	if (fIconSize < 12) fIconSize = 12;
+	if (fIconSize > 32) fIconSize = 32;
+	fSwatchSize = fIconSize;
+
+	_UpdateDisplayText();
+
+	float textWidth = owner->StringWidth(fDisplayText.String());
+	float iconWidth = fIconSize + 2 + 4;
+	float swatchWidth = 0;
+
+	if (fType == SVG_ITEM_SHAPE && fShape)
+		swatchWidth = fSwatchSize * 2 + 2;
+	else if (fType == SVG_ITEM_PAINT && fPaint)
+		swatchWidth = fSwatchSize;
+
+	float totalRightMargin = fRightMargin;
+	if (swatchWidth > 0)
+		totalRightMargin += swatchWidth + 2;
+
+	fRequiredWidth = fLeftMargin + iconWidth + textWidth + totalRightMargin;
+}
+
+void
+SVGListItem::_UpdateDisplayText()
+{
+	switch (fType) {
+		case SVG_ITEM_SHAPE:
+			if (fShape) {
+				fDisplayText.SetToFormat("Shape %ld", fIndex);
+				if (fShape->id && strlen(fShape->id) > 0)
+					fDisplayText << " (" << fShape->id << ")";
+			}
+			break;
+
+		case SVG_ITEM_PATH:
+			if (fPath)
+				fDisplayText.SetToFormat("Path %ld.%ld (%d pts)", fShapeIndex, fPathIndex, fPath->npts);
+			break;
+
+		case SVG_ITEM_PAINT:
+			fDisplayText = fName;
+			break;
+	}
 }
 
 void
@@ -155,11 +192,10 @@ SVGListItem::_DrawBackground(BView* owner, BRect frame)
 {
 	rgb_color backgroundColor;
 	
-	if (IsSelected()) {
+	if (IsSelected())
 		backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
-	} else {
+	else
 		backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
-	}
 
 	owner->SetHighColor(backgroundColor);
 	owner->FillRect(frame);
@@ -252,7 +288,7 @@ SVGListItem::_DrawLinearGradient(BView* owner, BRect rect, NSVGpaint* paint)
 	}
 
 	NSVGgradient* grad = paint->gradient;
-	
+
 	BGradientLinear gradient(rect.left, rect.top + rect.Height() / 2, 
 							rect.right, rect.top + rect.Height() / 2);
 
@@ -332,9 +368,8 @@ SVGListItem::_NSVGColorToRGB(unsigned int color)
 	result.blue = (color >> 16) & 0xFF;
 	result.alpha = (color >> 24) & 0xFF;
 
-	if (result.alpha == 0 && (color & 0x00FFFFFF) != 0) {
+	if (result.alpha == 0 && (color & 0x00FFFFFF) != 0)
 		result.alpha = 255;
-	}
 
 	return result;
 }

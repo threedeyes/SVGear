@@ -44,6 +44,7 @@ public:
 	int32 GetPathIndex() const { return fPathIndex; }
 
 	bool IsStroke() const { return fIsStroke; }
+	float GetRequiredWidth() const { return fRequiredWidth; }
 
 private:
 	void _DrawBackground(BView* owner, BRect frame);
@@ -53,6 +54,7 @@ private:
 	void _DrawLinearGradient(BView* owner, BRect rect, NSVGpaint* paint);
 	void _DrawRadialGradient(BView* owner, BRect rect, NSVGpaint* paint);
 	void _DrawTransparencyBackground(BView* owner, BRect rect);
+	void _UpdateDisplayText();
 	rgb_color _NSVGColorToRGB(unsigned int color);
 	rgb_color _InterpolateColor(const rgb_color& color1, const rgb_color& color2, float t);
 
@@ -68,6 +70,13 @@ private:
 	bool fIsStroke;
 	float fHeight;
 	BBitmap* fIcon;
+
+	float fRequiredWidth;
+	float fIconSize;
+	float fSwatchSize;
+	float fLeftMargin;
+	float fRightMargin;
+	BString fDisplayText;
 };
 
 #endif // SVG_LIST_ITEM_H

@@ -33,10 +33,9 @@ SVGStructureView::SVGStructureView(const char* name)
 	fLinearGradientIcon(NULL),
 	fRadialGradientIcon(NULL),
 	fSelectedShape(-1),
-	fSelectedPath(-1)
+	fSelectedPath(-1),
+	fMaxTextItemWidth(0)
 {
-	SetExplicitMaxSize(BSize(256, B_SIZE_UNSET));
-	SetExplicitMinSize(BSize(256, B_SIZE_UNSET));
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 
 	GetFont(&fFont);
@@ -64,8 +63,9 @@ SVGStructureView::_LoadIcons()
 	if (iconSize > 32) iconSize = 32;
 
 	fShapeIcon = SVGApplication::GetIcon("draw-shape", iconSize);
-	fPathIcon = SVGApplication::GetIcon("draw-path", iconSize);
-	fColorIcon = SVGApplication::GetIcon("colors", iconSize);
+	fPathIcon = SVGApplication::GetIcon("path", iconSize);
+	fClosedPathIcon = SVGApplication::GetIcon("closed-path", iconSize);
+	fColorIcon = SVGApplication::GetIcon("draw-fill", iconSize);
 	fLinearGradientIcon = SVGApplication::GetIcon("linear-gradients", iconSize);
 	fRadialGradientIcon = SVGApplication::GetIcon("radial-gradients", iconSize);
 }
@@ -91,7 +91,7 @@ SVGStructureView::_GetPaintIcon(NSVGpaint* paint)
 void
 SVGStructureView::_BuildInterface()
 {
-	fTabView = new BTabView("structure_tabs", B_WIDTH_FROM_WIDEST);
+	fTabView = new BTabView("structure_tabs", B_WIDTH_FROM_LABEL);
 
 	fShapesList = new BListView("shapes_list", B_SINGLE_SELECTION_LIST);
 	fShapesList->SetSelectionMessage(new BMessage(MSG_SHAPE_SELECTED));
@@ -150,6 +150,10 @@ SVGStructureView::AttachedToWindow()
 		fPathsList->SetTarget(this);
 	if (fPaintsList)
 		fPaintsList->SetTarget(this);
+
+	float initialWidth = _GetMinimumPanelWidth();
+	SetExplicitMinSize(BSize(initialWidth, B_SIZE_UNSET));
+	SetExplicitMaxSize(BSize(initialWidth, B_SIZE_UNSET));
 }
 
 void
@@ -185,12 +189,112 @@ SVGStructureView::UpdateStructure()
 	_ClearListItems(fPathsList);
 	_ClearListItems(fPaintsList);
 
-	if (!fSVGImage)
+	if (!fSVGImage) {
+		if (Window()) {
+			float minWidth = _GetMinimumPanelWidth();
+			SetExplicitMinSize(BSize(minWidth, B_SIZE_UNSET));
+			SetExplicitMaxSize(BSize(minWidth, B_SIZE_UNSET));
+			BView* parent = Parent();
+			if (parent)
+				parent->InvalidateLayout();
+		}
 		return;
+	}
 
 	_PopulateShapesList();
 	_PopulatePathsList();
 	_PopulatePaintsList();
+
+	if (Window())
+		_UpdatePanelWidth();
+}
+
+float
+SVGStructureView::_CalculateTabsMinWidth()
+{
+	if (!fTabView || !Window())
+		return 220.0f;
+
+	return fTabView->TabFrame(2).right;
+}
+
+float
+SVGStructureView::_GetMinimumPanelWidth()
+{
+	float tabsWidth = _CalculateTabsMinWidth();
+	float baseMinWidth = 220.0f;
+
+	return MAX(tabsWidth, baseMinWidth);
+}
+
+float
+SVGStructureView::_CalculatePreferredWidth()
+{
+	float minWidth = _GetMinimumPanelWidth();
+	float maxWidth = minWidth;
+
+	BListView* lists[] = { fShapesList, fPathsList, fPaintsList };
+
+	for (int listIndex = 0; listIndex < 3; listIndex++) {
+		BListView* list = lists[listIndex];
+		if (!list)
+			continue;
+
+		int32 count = list->CountItems();
+		for (int32 i = 0; i < count; i++) {
+			SVGListItem* item = dynamic_cast<SVGListItem*>(list->ItemAt(i));
+			if (item) {
+				float itemWidth = item->GetRequiredWidth();
+				if (itemWidth > maxWidth)
+					maxWidth = itemWidth;
+			}
+		}
+	}
+	maxWidth += B_V_SCROLL_BAR_WIDTH + 8;
+	return max_c(maxWidth, minWidth);
+}
+
+void
+SVGStructureView::_UpdatePanelWidth()
+{
+	if (!Window())
+		return;
+
+	float preferredWidth = _CalculatePreferredWidth();
+	float currentWidth = ExplicitMinSize().width;
+
+	if (abs(preferredWidth - currentWidth) > 1.0f) {
+		SetExplicitMinSize(BSize(preferredWidth, B_SIZE_UNSET));
+		SetExplicitMaxSize(BSize(preferredWidth, B_SIZE_UNSET));
+
+		BView* parent = Parent();
+		if (parent)
+			parent->InvalidateLayout();
+
+		float itemWidth = preferredWidth - B_V_SCROLL_BAR_WIDTH - 8;
+		BListView* lists[] = { fShapesList, fPathsList, fPaintsList };
+
+		for (int listIndex = 0; listIndex < 3; listIndex++) {
+			BListView* list = lists[listIndex];
+			if (!list)
+				continue;
+
+			int32 count = list->CountItems();
+			for (int32 i = 0; i < count; i++) {
+				BListItem* item = list->ItemAt(i);
+				if (item)
+					item->SetWidth(itemWidth);
+			}
+			list->Invalidate();
+		}
+	}
+}
+
+void
+SVGStructureView::ForceUpdatePanelWidth()
+{
+	if (Window())
+		_UpdatePanelWidth();
 }
 
 void
@@ -228,7 +332,7 @@ SVGStructureView::_PopulatePathsList()
 
 		while (path) {
 			SVGListItem* item = new SVGListItem(path, shapeIndex, pathIndex);
-			item->SetIcon(fPathIcon);
+			item->SetIcon(path->closed ? fClosedPathIcon : fPathIcon);
 			fPathsList->AddItem(item);
 			pathIndex++;
 			path = path->next;
