@@ -103,12 +103,17 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 
 SVGMainWindow::~SVGMainWindow()
 {
+	if (fVectorizationDialog) {
+		fVectorizationDialog->Lock();
+		fVectorizationDialog->Quit();
+		fVectorizationDialog = NULL;
+	}
+
 	_StopStateMonitoring();
 	_SaveSettings();
 	delete fMenuManager;
 	delete fFileManager;
 	delete fVectorizationWorker;
-	delete fVectorizationDialog;
 	delete[] fCurrentHVIFData;
 	be_app->PostMessage(MSG_WINDOW_CLOSED);
 }
