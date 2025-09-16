@@ -37,13 +37,12 @@ public:
 	SVGMainWindow(const char* filePath = NULL);
 	virtual ~SVGMainWindow();
 
-	void LoadFile(const char* filePath);
-	bool IsLoaded() const { return !fCurrentFilePath.IsEmpty(); }
-
 	virtual bool QuitRequested();
 	virtual void MessageReceived(BMessage* message);
 
-	// UI States
+	void LoadFile(const char* filePath);
+	bool IsLoaded() const { return !fCurrentFilePath.IsEmpty(); }
+
 	enum ui_state {
 		UI_STATE_NO_DOCUMENT = 0,
 		UI_STATE_DOCUMENT_LOADED = 1,
@@ -63,8 +62,8 @@ private:
 	void _BuildInterface();
 	void _BuildToolBars();
 	void _BuildMainView();
-	void _BuildStatusBar();
 	void _BuildTabView();
+	void _BuildStatusBar();
 
 	// Message handlers
 	void _HandleFileMessages(BMessage* message);
@@ -87,8 +86,26 @@ private:
 	void _ExportHVIF();
 	void _ExportRDef();
 	void _ExportCPP();
-	status_t _SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime);
 	void _ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType);
+	status_t _SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime);
+
+	// Data conversion and generation
+	void _GenerateHVIFFromSVG();
+	BString _ConvertToRDef(const unsigned char* data, size_t size);
+	BString _ConvertToCPP(const unsigned char* data, size_t size);
+
+	// Tab management
+	void _UpdateAllTabs();
+	void _UpdateRDefTab();
+	void _UpdateCPPTab();
+	void _HandleTabSelection();
+
+	// View management
+	void _ToggleSourceView();
+	void _ToggleStructureView();
+	void _ToggleStatView();
+	void _ReloadFromSource();
+	void _UpdateStructureView();
 
 	// UI Updates
 	void _UpdateStatus();
@@ -98,47 +115,29 @@ private:
 	void _UpdateBoundingBoxMenu();
 	void _UpdateViewMenu();
 
-	// Tab management
-	void _UpdateAllTabs();
-	void _UpdateRDefTab();
-	void _UpdateCPPTab();
-	void _HandleTabSelection();
-
-	// Source view management
-	void _ToggleSourceView();
-	void _ReloadFromSource();
-
-	// Data conversion and generation
-	void _GenerateHVIFFromSVG();
-	BString _ConvertToRDef(const unsigned char* data, size_t size);
-	BString _ConvertToCPP(const unsigned char* data, size_t size);
-
-	// Settings management
-	void _SaveSettings();
-	void _RestoreSettings();
-
 	// UI State management
 	void _UpdateUIState();
 	void _UpdateToolBarStates();
 	void _UpdateMenuStates();
+	void _UpdateToggleButtonStates();
 	uint32 _CalculateCurrentUIState() const;
 	void _SetToolBarItemEnabled(SVGToolBar* toolbar, uint32 command, bool enabled);
+	void _SetToolBarButtonPressed(SVGToolBar* toolbar, uint32 command, bool pressed);
 	void _SetMenuItemEnabled(uint32 command, bool enabled);
 	BMenuItem* _FindMenuItem(BMenu* menu, uint32 command);
-	void _ToggleStructureView();
-	void _ToggleStatView();
-	void _UpdateStructureView();
+	bool _HasUnAppliedEditorChanges() const;
 
 	// State monitoring
 	void _StartStateMonitoring();
 	void _StopStateMonitoring();
 	void _CheckClipboardState();
 	void _CheckTextSelectionState();
-	void _UpdateToggleButtonStates();
-	void _SetToolBarButtonPressed(SVGToolBar* toolbar, uint32 command, bool pressed);
 	void _OnTextModified();
 	void _OnSelectionChanged();
-	bool _HasUnAppliedEditorChanges() const;
+
+	// Settings management
+	void _SaveSettings();
+	void _RestoreSettings();
 
 	// Utility functions
 	BString _GetDisplayModeName() const;
@@ -178,24 +177,28 @@ private:
 	SVGStatView*     fStatView;
 	SVGStructureView* fStructureView;
 
-	// State
+	// Document state
 	BString          fCurrentSource;
 	BString          fCurrentFilePath;
+	BString          fOriginalSourceText;
 	bool             fDocumentModified;
+
+	// View state
 	bool             fShowStatView;
 	bool             fShowStructureView;
 	bool             fShowSourceView;
 	bool             fShowBoundingBox;
 	int32            fBoundingBoxStyle;
+
+	// UI state
 	uint32           fCurrentUIState;
 
 	// State monitoring
 	BMessageRunner*  fStateUpdateRunner;
 	bool             fClipboardHasData;
 	bool             fTextHasSelection;
-	BString          fOriginalSourceText;
 
-	// Current HVIF data for export
+	// HVIF data for export
 	unsigned char*   fCurrentHVIFData;
 	size_t           fCurrentHVIFSize;
 
