@@ -12,6 +12,7 @@
 #include "SVGFileManager.h"
 #include "SVGView.h"
 #include "SVGHVIFView.h"
+#include "SVGSettings.h"
 
 #include "HVIFParser.h"
 #include "HVIFWriter.h"
@@ -23,8 +24,10 @@
 
 SVGFileManager::SVGFileManager()
 	: fOpenPanel(NULL),
-	  fSavePanel(NULL),
-	  fLastFileType(FILE_TYPE_UNKNOWN)
+	fSavePanel(NULL),
+	fExportPanel(NULL),
+	fLastFileType(FILE_TYPE_UNKNOWN),
+	fCurrentExportType(0)
 {
 }
 
@@ -32,6 +35,7 @@ SVGFileManager::~SVGFileManager()
 {
 	delete fOpenPanel;
 	delete fSavePanel;
+	delete fExportPanel;
 }
 
 bool
@@ -282,6 +286,226 @@ SVGFileManager::ShowSaveAsPanel(BHandler* target)
 	}
 
 	fSavePanel->Show();
+}
+
+void
+SVGFileManager::ShowExportHVIFPanel(BHandler* target)
+{
+	_ShowExportPanel("icon", ".hvif", MSG_EXPORT_HVIF, target);
+}
+
+void
+SVGFileManager::ShowExportRDefPanel(BHandler* target)
+{
+	_ShowExportPanel("icon", ".rdef", MSG_EXPORT_RDEF, target);
+}
+
+void
+SVGFileManager::ShowExportCPPPanel(BHandler* target)
+{
+	_ShowExportPanel("icon", ".cpp", MSG_EXPORT_CPP, target);
+}
+
+status_t
+SVGFileManager::ExportHVIF(const char* filePath, const unsigned char* data, size_t size)
+{
+	if (!data || size == 0)
+		return B_BAD_VALUE;
+
+	BString fullPath = filePath;
+	if (!fullPath.EndsWith(".hvif"))
+		fullPath << ".hvif";
+
+	return _SaveBinaryData(fullPath.String(), data, size, MIME_HVIF_SIGNATURE);
+}
+
+status_t
+SVGFileManager::ExportRDef(const char* filePath, const unsigned char* data, size_t size)
+{
+	if (!data || size == 0)
+		return B_BAD_VALUE;
+
+	BString fullPath = filePath;
+	if (!fullPath.EndsWith(".rdef"))
+		fullPath << ".rdef";
+
+	BString rdefContent = _ConvertToRDef(data, size);
+	return SaveFile(fullPath.String(), rdefContent, MIME_TXT_SIGNATURE);
+}
+
+status_t
+SVGFileManager::ExportCPP(const char* filePath, const unsigned char* data, size_t size)
+{
+	if (!data || size == 0)
+		return B_BAD_VALUE;
+
+	BString fullPath = filePath;
+	if (!fullPath.EndsWith(".h") && !fullPath.EndsWith(".hpp") && !fullPath.EndsWith(".cpp")) {
+		fullPath << ".h";
+	}
+
+	BString cppContent = _ConvertToCPP(data, size);
+	return SaveFile(fullPath.String(), cppContent, MIME_CPP_SIGNATURE);
+}
+
+bool
+SVGFileManager::HandleExportSavePanel(BMessage* message, const unsigned char* hvifData, size_t hvifSize)
+{
+	entry_ref dirRef;
+	BString fileName;
+
+	if (message->FindRef("directory", &dirRef) != B_OK ||
+		message->FindString("name", &fileName) != B_OK) {
+		_ShowError(B_TRANSLATE("Could not get export file information"));
+		fCurrentExportType = 0;
+		return false;
+	}
+
+	BPath dirPath(&dirRef);
+	BString fullPath = dirPath.Path();
+	fullPath << "/" << fileName;
+
+	if (gSettings) {
+		gSettings->SetString(kLastExportPath, dirPath.Path());
+	}
+
+	status_t result = B_ERROR;
+
+	switch (fCurrentExportType) {
+		case MSG_EXPORT_HVIF:
+			result = ExportHVIF(fullPath.String(), hvifData, hvifSize);
+			break;
+
+		case MSG_EXPORT_RDEF:
+			result = ExportRDef(fullPath.String(), hvifData, hvifSize);
+			break;
+
+		case MSG_EXPORT_CPP:
+			result = ExportCPP(fullPath.String(), hvifData, hvifSize);
+			break;
+	}
+
+	fCurrentExportType = 0;
+	return (result == B_OK);
+}
+
+void
+SVGFileManager::_ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType, BHandler* target)
+{
+	if (!fExportPanel)
+		fExportPanel = new BFilePanel(B_SAVE_PANEL, NULL, NULL, 0, false);
+
+	if (target)
+		fExportPanel->SetTarget(BMessenger(target));
+
+	if (gSettings) {
+		BString lastExportPath = gSettings->GetString(kLastExportPath);
+		if (!lastExportPath.IsEmpty()) {
+			entry_ref ref;
+			if (get_ref_for_path(lastExportPath.String(), &ref) == B_OK) {
+				fExportPanel->SetPanelDirectory(&ref);
+			}
+		}
+	}
+
+	fCurrentExportType = exportType;
+
+	BString fileName = defaultName;
+	if (!fileName.EndsWith(extension))
+		fileName << extension;
+
+	fExportPanel->SetSaveText(fileName.String());
+	fExportPanel->Show();
+}
+
+status_t
+SVGFileManager::_SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime)
+{
+	if (!filePath || !data || size == 0) {
+		printf("_SaveBinaryData: Invalid parameters\n");
+		return B_BAD_VALUE;
+	}
+
+	BFile file(filePath, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+	status_t initResult = file.InitCheck();
+	if (initResult != B_OK) {
+		printf("_SaveBinaryData: File init failed: %s\n", strerror(initResult));
+		return initResult;
+	}
+
+	ssize_t bytesWritten = file.Write(data, size);
+	if (bytesWritten != (ssize_t)size) {
+		printf("_SaveBinaryData: Write failed - expected %d, wrote %d\n", (int)size, (int)bytesWritten);
+		return B_ERROR;
+	}
+
+	BNodeInfo nodeInfo(&file);
+	if (nodeInfo.InitCheck() == B_OK) {
+		status_t mimeResult = nodeInfo.SetType(mime);
+		if (mimeResult != B_OK) {
+			printf("SaveFile: Warning - could not set MIME type: %s\n", strerror(mimeResult));
+		}
+	}
+
+	return B_OK;
+}
+
+BString
+SVGFileManager::_ConvertToRDef(const unsigned char* data, size_t size)
+{
+	BString result;
+	result << "resource(1) #'VICN' array {\n";
+
+	for (size_t i = 0; i < size; i += 32) {
+		result << "\t$\"";
+
+		for (size_t j = i; j < i + 32 && j < size; j++) {
+			BString hex;
+			hex.SetToFormat("%02X", data[j]);
+			result << hex;
+		}
+
+		result << "\"";
+		if (i + 32 < size) {
+			result << ",";
+		}
+		result << "\n";
+	}
+
+	result << "};";
+	return result;
+}
+
+BString
+SVGFileManager::_ConvertToCPP(const unsigned char* data, size_t size)
+{
+	BString result;
+	result << "const unsigned char kIconData[] = {\n";
+
+	for (size_t i = 0; i < size; i++) {
+		if (i % 16 == 0)
+			result << "\t";
+
+		BString hex;
+		hex.SetToFormat("0x%02x", data[i]);
+		result << hex;
+
+		if (i < size - 1) {
+			result << ",";
+			if ((i + 1) % 16 == 0)
+				result << "\n";
+			else
+				result << " ";
+		}
+	}
+
+	result << "\n};\n";
+	result << "\nconst size_t kIconDataSize = ";
+	BString sizeStr;
+	sizeStr.SetToFormat("%u", (unsigned int)size);
+	result << sizeStr << ";";
+
+	return result;
 }
 
 bool

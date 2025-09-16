@@ -71,7 +71,6 @@ private:
 	void _HandleEditMessages(BMessage* message);
 	void _HandleDropMessages(BMessage* message);
 	void _HandleExportMessages(BMessage* message);
-	void _HandleExportSavePanel(BMessage* message);
 
 	// File operations
 	void _LoadNewFile();
@@ -82,17 +81,8 @@ private:
 	void _HandleSavePanel(BMessage* message);
 	bool _UpdateTitleAfterSave(const char* filePath);
 
-	// Export operations
-	void _ExportHVIF();
-	void _ExportRDef();
-	void _ExportCPP();
-	void _ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType);
-	status_t _SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime);
-
-	// Data conversion and generation
+	// Data generation
 	void _GenerateHVIFFromSVG();
-	BString _ConvertToRDef(const unsigned char* data, size_t size);
-	BString _ConvertToCPP(const unsigned char* data, size_t size);
 
 	// Tab management
 	void _UpdateAllTabs();
@@ -201,10 +191,6 @@ private:
 	// HVIF data for export
 	unsigned char*   fCurrentHVIFData;
 	size_t           fCurrentHVIFSize;
-
-	// Export panel
-	BFilePanel*      fExportPanel;
-	uint32           fCurrentExportType;
 };
 
 #endif

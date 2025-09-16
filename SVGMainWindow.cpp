@@ -39,7 +39,7 @@
 
 SVGMainWindow::SVGMainWindow(const char* filePath)
 	: BWindow(gSettings->GetRect(kWindowFrame, BRect(100, 100, 1200, 800)),
-			  "SVGear", B_DOCUMENT_WINDOW, B_ASYNCHRONOUS_CONTROLS),
+			"SVGear", B_DOCUMENT_WINDOW, B_ASYNCHRONOUS_CONTROLS),
 	fSVGView(NULL),
 	fIconView(NULL),
 	fTabView(NULL),
@@ -72,9 +72,7 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fTextHasSelection(false),
 	fOriginalSourceText(),
 	fCurrentHVIFData(NULL),
-	fCurrentHVIFSize(0),
-	fExportPanel(NULL),
-	fCurrentExportType(0)
+	fCurrentHVIFSize(0)
 {
 	SetSizeLimits(600, 16384, 450, 16384);
 
@@ -103,7 +101,6 @@ SVGMainWindow::~SVGMainWindow()
 	_SaveSettings();
 	delete fMenuManager;
 	delete fFileManager;
-	delete fExportPanel;
 	delete[] fCurrentHVIFData;
 	be_app->PostMessage(MSG_WINDOW_CLOSED);
 }
@@ -119,11 +116,6 @@ SVGMainWindow::MessageReceived(BMessage* message)
 {
 	if (message->WasDropped()) {
 		_HandleDropMessages(message);
-		return;
-	}
-
-	if (message->what == B_SAVE_REQUESTED && fCurrentExportType != 0) {
-		_HandleExportSavePanel(message);
 		return;
 	}
 
@@ -432,7 +424,17 @@ SVGMainWindow::_HandleFileMessages(BMessage* message)
 
 		case B_SAVE_REQUESTED:
 		case MSG_SAVE_PANEL_SAVE:
-			_HandleSavePanel(message);
+			if (fFileManager && fFileManager->GetExportPanel() &&
+				fFileManager->GetExportPanel()->Window() &&
+				fFileManager->GetExportPanel()->Window()->IsActive()) {
+				if (fFileManager->HandleExportSavePanel(message, fCurrentHVIFData, fCurrentHVIFSize)) {
+					_ShowSuccess(MSG_FILE_EXPORTED);
+				} else {
+					_ShowError(ERROR_EXPORT_FAILED);
+				}
+			} else {
+				_HandleSavePanel(message);
+			}
 			break;
 	}
 }
@@ -652,96 +654,22 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 void
 SVGMainWindow::_HandleExportMessages(BMessage* message)
 {
-	switch (message->what) {
-		case MSG_EXPORT_HVIF:
-			_ExportHVIF();
-			break;
-		case MSG_EXPORT_RDEF:
-			_ExportRDef();
-			break;
-		case MSG_EXPORT_CPP:
-			_ExportCPP();
-			break;
-	}
-}
-
-void
-SVGMainWindow::_HandleExportSavePanel(BMessage* message)
-{
-	entry_ref dirRef;
-	BString fileName;
-
-	if (message->FindRef("directory", &dirRef) != B_OK ||
-		message->FindString("name", &fileName) != B_OK) {
-		_ShowError(B_TRANSLATE("Could not get export file information"));
-		fCurrentExportType = 0;
+	if (!fFileManager || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		_ShowError(B_TRANSLATE("No HVIF data available for export"));
 		return;
 	}
 
-	BPath dirPath(&dirRef);
-	BString fullPath = dirPath.Path();
-	fullPath << "/" << fileName;
-
-	gSettings->SetString(kLastExportPath, dirPath.Path());
-
-	status_t result = B_ERROR;
-
-	switch (fCurrentExportType) {
+	switch (message->what) {
 		case MSG_EXPORT_HVIF:
-		{
-			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-				_ShowError(B_TRANSLATE("No HVIF data available"));
-				break;
-			}
-
-			if (!fileName.EndsWith(".hvif"))
-				fullPath << ".hvif";
-
-			result = _SaveBinaryData(fullPath.String(), fCurrentHVIFData, fCurrentHVIFSize, MIME_HVIF_SIGNATURE);
+			fFileManager->ShowExportHVIFPanel(this);
 			break;
-		}
-
 		case MSG_EXPORT_RDEF:
-		{
-			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-				_ShowError(B_TRANSLATE("No HVIF data available"));
-				break;
-			}
-
-			if (!fileName.EndsWith(".rdef"))
-				fullPath << ".rdef";
-
-			BString rdefContent = _ConvertToRDef(fCurrentHVIFData, fCurrentHVIFSize);
-			result = fFileManager->SaveFile(fullPath.String(), rdefContent, MIME_TXT_SIGNATURE);
+			fFileManager->ShowExportRDefPanel(this);
 			break;
-		}
-
 		case MSG_EXPORT_CPP:
-		{
-			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-				_ShowError(B_TRANSLATE("No HVIF data available"));
-				break;
-			}
-
-			if (!fileName.EndsWith(".h") && !fileName.EndsWith(".hpp") && !fileName.EndsWith(".cpp")) {
-				fullPath << ".h";
-			}
-
-			BString cppContent = _ConvertToCPP(fCurrentHVIFData, fCurrentHVIFSize);
-			result = fFileManager->SaveFile(fullPath.String(), cppContent, MIME_CPP_SIGNATURE);
+			fFileManager->ShowExportCPPPanel(this);
 			break;
-		}
 	}
-
-	if (result == B_OK) {
-		_ShowSuccess(MSG_FILE_EXPORTED);
-	} else {
-		BString error;
-		error.SetToFormat("%s: %s", B_TRANSLATE("Failed to export file"), strerror(result));
-		_ShowError(error.String());
-	}
-
-	fCurrentExportType = 0;
 }
 
 void
@@ -953,152 +881,31 @@ SVGMainWindow::_UpdateTitleAfterSave(const char* filePath)
 }
 
 void
-SVGMainWindow::_ExportHVIF()
+SVGMainWindow::_GenerateHVIFFromSVG()
 {
-	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError(B_TRANSLATE("No HVIF data available for export"));
+	if (fCurrentSource.IsEmpty())
 		return;
-	}
 
-	_ShowExportPanel("icon", ".hvif", MSG_EXPORT_HVIF);
-}
+	try {
+		hvif::HVIFWriter writer;
+		hvif::SVGParser parser;
 
-void
-SVGMainWindow::_ExportRDef()
-{
-	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError(B_TRANSLATE("No HVIF data available for export"));
-		return;
-	}
+		if (parser.ParseString(fCurrentSource.String(), writer)) {
+			std::vector<uint8_t> hvifData = writer.WriteToBuffer();
 
-	_ShowExportPanel("icon", ".rdef", MSG_EXPORT_RDEF);
-}
-
-void
-SVGMainWindow::_ExportCPP()
-{
-	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError(B_TRANSLATE("No HVIF data available for export"));
-		return;
-	}
-
-	_ShowExportPanel("icon", ".cpp", MSG_EXPORT_CPP);
-}
-
-void
-SVGMainWindow::_ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType)
-{
-	if (!fExportPanel) {
-		fExportPanel = new BFilePanel(B_SAVE_PANEL, NULL, NULL, 0, false);
-		fExportPanel->SetTarget(BMessenger(this));
-	}
-
-	BString lastExportPath = gSettings->GetString(kLastExportPath);
-	if (!lastExportPath.IsEmpty()) {
-		entry_ref ref;
-		if (get_ref_for_path(lastExportPath.String(), &ref) == B_OK) {
-			fExportPanel->SetPanelDirectory(&ref);
+			delete[] fCurrentHVIFData;
+			fCurrentHVIFData = NULL;
+			fCurrentHVIFSize = hvifData.size();
+			if (!hvifData.empty()) {
+				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
+				memcpy(fCurrentHVIFData, &hvifData[0], fCurrentHVIFSize);
+			}
 		}
+	} catch (...) {
 	}
 
-	fCurrentExportType = exportType;
-
-	BString fileName = defaultName;
-	if (!fileName.EndsWith(extension))
-		fileName << extension;
-
-	fExportPanel->SetSaveText(fileName.String());
-	fExportPanel->Show();
-}
-
-status_t
-SVGMainWindow::_SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime)
-{
-	if (!filePath || !data || size == 0) {
-		printf("_SaveBinaryData: Invalid parameters\n");
-		return B_BAD_VALUE;
-	}
-
-	BFile file(filePath, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-	status_t initResult = file.InitCheck();
-	if (initResult != B_OK) {
-		printf("_SaveBinaryData: File init failed: %s\n", strerror(initResult));
-		return initResult;
-	}
-
-	ssize_t bytesWritten = file.Write(data, size);
-	if (bytesWritten != (ssize_t)size) {
-		printf("_SaveBinaryData: Write failed - expected %d, wrote %d\n", (int)size, (int)bytesWritten);
-		return B_ERROR;
-	}
-
-	BNodeInfo nodeInfo(&file);
-	if (nodeInfo.InitCheck() == B_OK) {
-		status_t mimeResult = nodeInfo.SetType(mime);
-		if (mimeResult != B_OK) {
-			printf("SaveFile: Warning - could not set MIME type: %s\n", strerror(mimeResult));
-		}
-	}
-
-	return B_OK;
-}
-
-BString
-SVGMainWindow::_ConvertToRDef(const unsigned char* data, size_t size)
-{
-	BString result;
-	result << "resource(1) #'VICN' array {\n";
-
-	for (size_t i = 0; i < size; i += 32) {
-		result << "\t$\"";
-
-		for (size_t j = i; j < i + 32 && j < size; j++) {
-			BString hex;
-			hex.SetToFormat("%02X", data[j]);
-			result << hex;
-		}
-
-		result << "\"";
-		if (i + 32 < size) {
-			result << ",";
-		}
-		result << "\n";
-	}
-
-	result << "};";
-	return result;
-}
-
-BString
-SVGMainWindow::_ConvertToCPP(const unsigned char* data, size_t size)
-{
-	BString result;
-	result << "const unsigned char kIconData[] = {\n";
-
-	for (size_t i = 0; i < size; i++) {
-		if (i % 16 == 0)
-			result << "\t";
-
-		BString hex;
-		hex.SetToFormat("0x%02x", data[i]);
-		result << hex;
-
-		if (i < size - 1) {
-			result << ",";
-			if ((i + 1) % 16 == 0)
-				result << "\n";
-			else
-				result << " ";
-		}
-	}
-
-	result << "\n};\n";
-	result << "\nconst size_t kIconDataSize = ";
-	BString sizeStr;
-	sizeStr.SetToFormat("%u", (unsigned int)size);
-	result << sizeStr << ";";
-
-	return result;
+	if (fIconView)
+		fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
 }
 
 void
@@ -1124,7 +931,26 @@ SVGMainWindow::_UpdateRDefTab()
 		return;
 	}
 
-	BString rdefContent = _ConvertToRDef(fCurrentHVIFData, fCurrentHVIFSize);
+	BString rdefContent;
+	rdefContent << "resource(1) #'VICN' array {\n";
+
+	for (size_t i = 0; i < fCurrentHVIFSize; i += 32) {
+		rdefContent << "\t$\"";
+
+		for (size_t j = i; j < i + 32 && j < fCurrentHVIFSize; j++) {
+			BString hex;
+			hex.SetToFormat("%02X", fCurrentHVIFData[j]);
+			rdefContent << hex;
+		}
+
+		rdefContent << "\"";
+		if (i + 32 < fCurrentHVIFSize) {
+			rdefContent << ",";
+		}
+		rdefContent << "\n";
+	}
+
+	rdefContent << "};";
 	fRDefTextView->SetText(rdefContent.String());
 }
 
@@ -1137,7 +963,32 @@ SVGMainWindow::_UpdateCPPTab()
 		return;
 	}
 
-	BString cppContent = _ConvertToCPP(fCurrentHVIFData, fCurrentHVIFSize);
+	BString cppContent;
+	cppContent << "const unsigned char kIconData[] = {\n";
+
+	for (size_t i = 0; i < fCurrentHVIFSize; i++) {
+		if (i % 16 == 0)
+			cppContent << "\t";
+
+		BString hex;
+		hex.SetToFormat("0x%02x", fCurrentHVIFData[i]);
+		cppContent << hex;
+
+		if (i < fCurrentHVIFSize - 1) {
+			cppContent << ",";
+			if ((i + 1) % 16 == 0)
+				cppContent << "\n";
+			else
+				cppContent << " ";
+		}
+	}
+
+	cppContent << "\n};\n";
+	cppContent << "\nconst size_t kIconDataSize = ";
+	BString sizeStr;
+	sizeStr.SetToFormat("%u", (unsigned int)fCurrentHVIFSize);
+	cppContent << sizeStr << ";";
+
 	fCPPTextView->SetText(cppContent.String());
 }
 
@@ -1229,34 +1080,6 @@ SVGMainWindow::_UpdateStructureView()
 	if (fStructureView) {
 		fStructureView->SetSVGImage(fSVGView->SVGImage());
 	}
-}
-
-void
-SVGMainWindow::_GenerateHVIFFromSVG()
-{
-	if (fCurrentSource.IsEmpty())
-		return;
-
-	try {
-		hvif::HVIFWriter writer;
-		hvif::SVGParser parser;
-
-		if (parser.ParseString(fCurrentSource.String(), writer)) {
-			std::vector<uint8_t> hvifData = writer.WriteToBuffer();
-
-			delete[] fCurrentHVIFData;
-			fCurrentHVIFData = NULL;
-			fCurrentHVIFSize = hvifData.size();
-			if (!hvifData.empty()) {
-				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
-				memcpy(fCurrentHVIFData, &hvifData[0], fCurrentHVIFSize);
-			}
-		}
-	} catch (...) {
-	}
-
-	if (fIconView)
-		fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
 }
 
 void
