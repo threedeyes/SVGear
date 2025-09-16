@@ -28,6 +28,7 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 	fOptions.SetDefaults();
 	_BuildInterface();
 	_UpdateControls();
+	_ApplyPreset();
 
 	SetSizeLimits(320, 32768, 240, 32768);
 
@@ -205,7 +206,7 @@ SVGVectorizationDialog::_BuildColorsTab()
 	fColorsSlider = _CreateSlider("colors", B_TRANSLATE("Number of colors"),
 								2, 128, fOptions.fNumberOfColors);
 	fColorQuantizationCyclesSlider = _CreateSlider("color_cycles", B_TRANSLATE("Quantization cycles"),
-								1, 10, fOptions.fColorQuantizationCycles);
+								1, 50, fOptions.fColorQuantizationCycles);
 
 	BLayoutBuilder::Group<>(colorsGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
@@ -563,6 +564,15 @@ SVGVectorizationDialog::_ApplyPreset()
 	switch (index) {
 		case 0: // Default
 			fOptions.SetDefaults();
+			fOptions.fFilterSmallObjects = true;
+			fOptions.fMinObjectArea = 10.0f;
+			fOptions.fLineThreshold = 2.0f;
+			fOptions.fQuadraticThreshold = 0.5f;
+			fOptions.fNumberOfColors = 8;
+			fOptions.fColorQuantizationCycles = 16.0f;
+			fOptions.fAggressiveSimplification = true;
+			fOptions.fDouglasPeuckerEnabled = true;
+			fOptions.fDouglasPeuckerTolerance = 0.5f;
 			break;
 		case 1: // Fast
 			fOptions.SetDefaults();
@@ -580,7 +590,7 @@ SVGVectorizationDialog::_ApplyPreset()
 			fOptions.fNumberOfColors = 64;
 			fOptions.fLineThreshold = 0.5f;
 			fOptions.fQuadraticThreshold = 0.5f;
-			fOptions.fColorQuantizationCycles = 3.0f;
+			fOptions.fColorQuantizationCycles = 20.0f;
 			fOptions.fDouglasPeuckerEnabled = true;
 			fOptions.fDouglasPeuckerTolerance = 0.5f;
 			fOptions.fDetectGeometry = true;
