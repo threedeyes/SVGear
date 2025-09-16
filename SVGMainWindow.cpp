@@ -28,6 +28,7 @@
 #include "SVGToolBar.h"
 #include "SVGApplication.h"
 #include "SVGSettings.h"
+#include "SVGCodeGenerator.h"
 
 #include "HVIFParser.h"
 #include "HVIFWriter.h"
@@ -925,70 +926,32 @@ SVGMainWindow::_UpdateAllTabs()
 void
 SVGMainWindow::_UpdateRDefTab()
 {
-	if (!fRDefTextView || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		if (fRDefTextView)
-			fRDefTextView->SetText(B_TRANSLATE("No HVIF data available"));
+	if (!fRDefTextView) {
 		return;
 	}
 
-	BString rdefContent;
-	rdefContent << "resource(1) #'VICN' array {\n";
-
-	for (size_t i = 0; i < fCurrentHVIFSize; i += 32) {
-		rdefContent << "\t$\"";
-
-		for (size_t j = i; j < i + 32 && j < fCurrentHVIFSize; j++) {
-			BString hex;
-			hex.SetToFormat("%02X", fCurrentHVIFData[j]);
-			rdefContent << hex;
-		}
-
-		rdefContent << "\"";
-		if (i + 32 < fCurrentHVIFSize) {
-			rdefContent << ",";
-		}
-		rdefContent << "\n";
+	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		fRDefTextView->SetText(B_TRANSLATE("No HVIF data available"));
+		return;
 	}
 
-	rdefContent << "};";
+	BString rdefContent = SVGCodeGenerator::GenerateRDef(fCurrentHVIFData, fCurrentHVIFSize);
 	fRDefTextView->SetText(rdefContent.String());
 }
 
 void
 SVGMainWindow::_UpdateCPPTab()
 {
-	if (!fCPPTextView || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		if (fCPPTextView)
-			fCPPTextView->SetText(B_TRANSLATE("No HVIF data available"));
+	if (!fCPPTextView) {
 		return;
 	}
 
-	BString cppContent;
-	cppContent << "const unsigned char kIconData[] = {\n";
-
-	for (size_t i = 0; i < fCurrentHVIFSize; i++) {
-		if (i % 16 == 0)
-			cppContent << "\t";
-
-		BString hex;
-		hex.SetToFormat("0x%02x", fCurrentHVIFData[i]);
-		cppContent << hex;
-
-		if (i < fCurrentHVIFSize - 1) {
-			cppContent << ",";
-			if ((i + 1) % 16 == 0)
-				cppContent << "\n";
-			else
-				cppContent << " ";
-		}
+	if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+		fCPPTextView->SetText(B_TRANSLATE("No HVIF data available"));
+		return;
 	}
 
-	cppContent << "\n};\n";
-	cppContent << "\nconst size_t kIconDataSize = ";
-	BString sizeStr;
-	sizeStr.SetToFormat("%u", (unsigned int)fCurrentHVIFSize);
-	cppContent << sizeStr << ";";
-
+	BString cppContent = SVGCodeGenerator::GenerateCPP(fCurrentHVIFData, fCurrentHVIFSize);
 	fCPPTextView->SetText(cppContent.String());
 }
 

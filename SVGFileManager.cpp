@@ -13,6 +13,7 @@
 #include "SVGView.h"
 #include "SVGHVIFView.h"
 #include "SVGSettings.h"
+#include "SVGCodeGenerator.h"
 
 #include "HVIFParser.h"
 #include "HVIFWriter.h"
@@ -329,7 +330,7 @@ SVGFileManager::ExportRDef(const char* filePath, const unsigned char* data, size
 	if (!fullPath.EndsWith(".rdef"))
 		fullPath << ".rdef";
 
-	BString rdefContent = _ConvertToRDef(data, size);
+	BString rdefContent = SVGCodeGenerator::GenerateRDef(data, size);
 	return SaveFile(fullPath.String(), rdefContent, MIME_TXT_SIGNATURE);
 }
 
@@ -344,7 +345,7 @@ SVGFileManager::ExportCPP(const char* filePath, const unsigned char* data, size_
 		fullPath << ".h";
 	}
 
-	BString cppContent = _ConvertToCPP(data, size);
+	BString cppContent = SVGCodeGenerator::GenerateCPP(data, size);
 	return SaveFile(fullPath.String(), cppContent, MIME_CPP_SIGNATURE);
 }
 
@@ -448,64 +449,6 @@ SVGFileManager::_SaveBinaryData(const char* filePath, const unsigned char* data,
 	}
 
 	return B_OK;
-}
-
-BString
-SVGFileManager::_ConvertToRDef(const unsigned char* data, size_t size)
-{
-	BString result;
-	result << "resource(1) #'VICN' array {\n";
-
-	for (size_t i = 0; i < size; i += 32) {
-		result << "\t$\"";
-
-		for (size_t j = i; j < i + 32 && j < size; j++) {
-			BString hex;
-			hex.SetToFormat("%02X", data[j]);
-			result << hex;
-		}
-
-		result << "\"";
-		if (i + 32 < size) {
-			result << ",";
-		}
-		result << "\n";
-	}
-
-	result << "};";
-	return result;
-}
-
-BString
-SVGFileManager::_ConvertToCPP(const unsigned char* data, size_t size)
-{
-	BString result;
-	result << "const unsigned char kIconData[] = {\n";
-
-	for (size_t i = 0; i < size; i++) {
-		if (i % 16 == 0)
-			result << "\t";
-
-		BString hex;
-		hex.SetToFormat("0x%02x", data[i]);
-		result << hex;
-
-		if (i < size - 1) {
-			result << ",";
-			if ((i + 1) % 16 == 0)
-				result << "\n";
-			else
-				result << " ";
-		}
-	}
-
-	result << "\n};\n";
-	result << "\nconst size_t kIconDataSize = ";
-	BString sizeStr;
-	sizeStr.SetToFormat("%u", (unsigned int)size);
-	result << sizeStr << ";";
-
-	return result;
 }
 
 bool

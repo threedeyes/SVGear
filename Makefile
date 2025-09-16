@@ -13,6 +13,7 @@ SRCS = \
 	SVGStatView.cpp \
 	SVGListItem.cpp \
 	SVGStructureView.cpp \
+	SVGCodeGenerator.cpp \
 	External/BSVGView/BSVGView.cpp \
 	External/HVIF-Tools/src/hvif2svg/HVIFParser.cpp \
 	External/HVIF-Tools/src/hvif2svg/SVGRenderer.cpp \
