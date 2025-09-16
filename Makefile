@@ -7,6 +7,7 @@ SRCS = \
 	SVGView.cpp \
 	SVGToolBar.cpp \
 	SVGTextEdit.cpp \
+	SVGHVIFView.cpp \
 	SVGFileManager.cpp \
 	SVGMenuManager.cpp \
 	SVGSettings.cpp \
