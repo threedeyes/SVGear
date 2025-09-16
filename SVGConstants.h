@@ -96,6 +96,7 @@ const uint32 MSG_VECTORIZATION_RESET = 'vcrs';
 const uint32 MSG_VECTORIZATION_STATUS_UPDATE = 'vcsu';
 const uint32 MSG_VECTORIZATION_COMPLETED = 'vccp';
 const uint32 MSG_VECTORIZATION_ERROR = 'vcer';
+const uint32 MSG_VECTORIZATION_PRESET = 'vcpr';
 
 // UI Constants
 const int32 TOOLBAR_ICON_SIZE = 24;

@@ -12,7 +12,6 @@
 #include <Slider.h>
 #include <MenuField.h>
 #include <Button.h>
-#include <StringView.h>
 #include <GroupView.h>
 #include <Handler.h>
 #include <Message.h>
@@ -23,9 +22,10 @@
 
 class SVGVectorizationDialog : public BWindow {
 public:
-	SVGVectorizationDialog(const char* imagePath, BHandler* target);
+	SVGVectorizationDialog(const char* imagePath, BWindow* target);
 	virtual ~SVGVectorizationDialog();
 
+	virtual void Show();
 	virtual void MessageReceived(BMessage* message);
 	virtual bool QuitRequested();
 
@@ -33,19 +33,21 @@ public:
 	void SetOptions(const TracingOptions& options);
 
 	BString GetImagePath() const { return fImagePath; }
-	void SetStatusText(const char* text);
 
 private:
 	void _BuildInterface();
 	void _BuildBasicTab();
+	void _BuildColorsTab();
 	void _BuildPreprocessingTab();
 	void _BuildSimplificationTab();
 	void _BuildGeometryTab();
+	void _BuildFilteringTab();
 	void _BuildOutputTab();
 
 	void _UpdateFromControls();
 	void _UpdateControls();
 	void _ResetToDefaults();
+	void _ApplyPreset();
 	void _StartVectorization();
 
 	BSlider* _CreateSlider(const char* name, const char* label, float min, float max, float value);
@@ -54,29 +56,39 @@ private:
 
 private:
 	BTabView*       fTabView;
-	BHandler*       fTarget;
+	BWindow*        fTarget;
 	BString         fImagePath;
 	TracingOptions  fOptions;
+	bool            fFirstShow;
+
+	// Preset control
+	BMenuField*     fPresetMenu;
 
 	// Basic tab controls
-	BSlider*        fColorsSlider;
 	BSlider*        fLineThresholdSlider;
 	BSlider*        fQuadraticThresholdSlider;
 	BSlider*        fPathOmitSlider;
+
+	// Colors tab controls
+	BSlider*        fColorsSlider;
+	BSlider*        fColorQuantizationCyclesSlider;
 
 	// Preprocessing tab controls
 	BCheckBox*      fRemoveBackgroundCheck;
 	BMenuField*     fBackgroundMethodMenu;
 	BSlider*        fBackgroundToleranceSlider;
+	BSlider*        fMinBackgroundRatioSlider;
 	BSlider*        fBlurRadiusSlider;
 	BSlider*        fBlurDeltaSlider;
 
 	// Simplification tab controls
 	BCheckBox*      fDouglasPeuckerCheck;
 	BSlider*        fDouglasPeuckerToleranceSlider;
-	BCheckBox*      fFilterSmallObjectsCheck;
-	BSlider*        fMinObjectAreaSlider;
+	BSlider*        fDouglasPeuckerCurveProtectionSlider;
 	BCheckBox*      fAggressiveSimplificationCheck;
+	BSlider*        fCollinearToleranceSlider;
+	BSlider*        fMinSegmentLengthSlider;
+	BSlider*        fCurveSmoothingSlider;
 
 	// Geometry tab controls  
 	BCheckBox*      fDetectGeometryCheck;
@@ -85,8 +97,18 @@ private:
 	BSlider*        fMinCircleRadiusSlider;
 	BSlider*        fMaxCircleRadiusSlider;
 
+	// Filtering tab controls
+	BCheckBox*      fFilterSmallObjectsCheck;
+	BSlider*        fMinObjectAreaSlider;
+	BSlider*        fMinObjectWidthSlider;
+	BSlider*        fMinObjectHeightSlider;
+	BSlider*        fMinObjectPerimeterSlider;
+
 	// Output tab controls
 	BSlider*        fScaleSlider;
+	BSlider*        fRoundCoordinatesSlider;
+	BCheckBox*      fShowDescriptionCheck;
+	BCheckBox*      fUseViewBoxCheck;
 	BCheckBox*      fOptimizeSvgCheck;
 	BCheckBox*      fRemoveDuplicatesCheck;
 
@@ -94,9 +116,6 @@ private:
 	BButton*        fOKButton;
 	BButton*        fCancelButton;
 	BButton*        fResetButton;
-
-	// Status
-	BStringView*    fStatusView;
 };
 
 #endif

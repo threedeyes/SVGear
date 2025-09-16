@@ -734,11 +734,8 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
         case MSG_VECTORIZATION_ERROR:
         {
             BString error;
-            if (message->FindString("error", &error) == B_OK) {
+            if (message->FindString("error", &error) == B_OK)
                 _ShowError(error.String());
-                if (fVectorizationDialog)
-                    fVectorizationDialog->SetStatusText(error.String());
-            }
             break;
         }
 
@@ -763,6 +760,7 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
                 fVectorizationDialog = NULL;
             }
 
+			fSVGView->ResetView();
             _UpdateUIState();
             break;
         }
@@ -776,6 +774,9 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
                 fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
                 fVectorizationDialog = NULL;
             }
+
+            fSVGView->ResetView();
+            _UpdateUIState();
             break;
         }
     }
