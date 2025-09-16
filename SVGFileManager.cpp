@@ -5,6 +5,7 @@
 
 #include <Alert.h>
 #include <Directory.h>
+#include <Node.h>
 #include <NodeInfo.h>
 #include <Catalog.h>
 
@@ -14,6 +15,8 @@
 #include "SVGHVIFView.h"
 #include "SVGSettings.h"
 #include "SVGCodeGenerator.h"
+#include "SVGVectorizationWorker.h"
+#include "SVGVectorizationDialog.h"
 
 #include "HVIFParser.h"
 #include "HVIFWriter.h"
@@ -55,6 +58,9 @@ SVGFileManager::LoadFile(const char* filePath, SVGView* svgView, HVIFView* iconV
 	} else if (svgView && _IsSVGFile(filePath)) {
 		fLastFileType = FILE_TYPE_SVG;
 		return _LoadSVGFile(filePath, svgView, iconView, source);
+	} else if (IsRasterImage(filePath)) {
+		fLastFileType = FILE_TYPE_RASTER;
+		return false;
 	} else {
 		fLastFileType = FILE_TYPE_FROM_ATTRIBUTES;
 		return _LoadFromFileAttributes(filePath, iconView, source);
@@ -261,6 +267,26 @@ SVGFileManager::CanDirectSave(const BString& currentPath) const
 	return !currentPath.IsEmpty() &&
 		   _IsSVGFile(currentPath.String()) &&
 		   fLastFileType == FILE_TYPE_SVG;
+}
+
+bool
+SVGFileManager::IsRasterImage(const char* filePath) const
+{
+	if (!filePath)
+		return false;
+
+	BNode node(filePath);
+	if (node.InitCheck() == B_OK) {
+		BNodeInfo info(&node);
+		if (info.InitCheck() == B_OK) {
+			BString mimeType;
+			info.GetType(mimeType.LockBuffer(B_MIME_TYPE_LENGTH));
+			mimeType.UnlockBuffer();
+			if (mimeType.IFindFirst("image/") != B_ERROR)
+				return true;
+		}
+	}
+	return false;
 }
 
 void
@@ -479,3 +505,4 @@ SVGFileManager::_ShowError(const char* message)
 							  B_WIDTH_AS_USUAL, B_STOP_ALERT);
 	alert->Go();
 }
+

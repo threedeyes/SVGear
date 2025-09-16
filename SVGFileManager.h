@@ -20,13 +20,16 @@
 class SVGView;
 class HVIFView;
 class BHandler;
+class VectorizationWorker;
+class VectorizationDialog;
 
 enum file_type {
 	FILE_TYPE_UNKNOWN = 0,
 	FILE_TYPE_SVG,
 	FILE_TYPE_HVIF,
 	FILE_TYPE_FROM_ATTRIBUTES,
-	FILE_TYPE_NEW
+	FILE_TYPE_NEW,
+	FILE_TYPE_RASTER
 };
 
 class SVGFileManager {
@@ -41,6 +44,7 @@ public:
 	bool SaveCurrentFile(const BString& currentPath, const BString& source);
 	bool SaveAsFile(const BString& source, BHandler* target);
 	bool CanDirectSave(const BString& currentPath) const;
+	bool IsRasterImage(const char* filePath) const;
 
 	void ShowOpenPanel(BHandler* target = NULL);
 	void ShowSaveAsPanel(BHandler* target = NULL);

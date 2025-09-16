@@ -29,6 +29,8 @@
 #include "SVGApplication.h"
 #include "SVGSettings.h"
 #include "SVGCodeGenerator.h"
+#include "SVGVectorizationWorker.h"
+#include "SVGVectorizationDialog.h"
 
 #include "HVIFParser.h"
 #include "HVIFWriter.h"
@@ -73,12 +75,15 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fTextHasSelection(false),
 	fOriginalSourceText(),
 	fCurrentHVIFData(NULL),
-	fCurrentHVIFSize(0)
+	fCurrentHVIFSize(0),
+	fVectorizationWorker(NULL),
+	fVectorizationDialog(NULL)
 {
 	SetSizeLimits(600, 16384, 450, 16384);
 
 	fMenuManager = new SVGMenuManager();
 	fFileManager = new SVGFileManager();
+	fVectorizationWorker = new SVGVectorizationWorker(this);
 
 	_BuildInterface();
 
@@ -102,6 +107,8 @@ SVGMainWindow::~SVGMainWindow()
 	_SaveSettings();
 	delete fMenuManager;
 	delete fFileManager;
+	delete fVectorizationWorker;
+	delete fVectorizationDialog;
 	delete[] fCurrentHVIFData;
 	be_app->PostMessage(MSG_WINDOW_CLOSED);
 }
@@ -174,6 +181,14 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			_HandleEditMessages(message);
 			break;
 
+		case MSG_VECTORIZATION_PREVIEW:
+		case MSG_VECTORIZATION_COMPLETED:
+		case MSG_VECTORIZATION_ERROR:
+		case MSG_VECTORIZATION_OK:
+		case MSG_VECTORIZATION_CANCEL:
+			_HandleVectorizationMessages(message);
+			break;
+
 		case MSG_STATE_UPDATE:
 			_CheckClipboardState();
 			_CheckTextSelectionState();
@@ -235,6 +250,9 @@ SVGMainWindow::LoadFile(const char* filePath)
 		fSVGTextView->ClearUndoHistory();
 		_UpdateUIState();
 		_UpdateStatView();
+	} else {
+		if (fFileManager->IsRasterImage(filePath))
+			_StartRasterImageVectorization(filePath);
 	}
 }
 
@@ -674,6 +692,96 @@ SVGMainWindow::_HandleExportMessages(BMessage* message)
 }
 
 void
+SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
+{
+    switch (message->what) {
+        case MSG_VECTORIZATION_PREVIEW:
+        {
+            BString imagePath;
+            TracingOptions* options;
+            ssize_t size;
+
+            if (message->FindString("image_path", &imagePath) == B_OK &&
+                message->FindData("options", B_RAW_TYPE,
+                                (const void**)&options, &size) == B_OK) {
+                if (fVectorizationWorker && size == sizeof(TracingOptions))
+                    fVectorizationWorker->StartVectorization(imagePath, *options);
+            }
+            break;
+        }
+
+        case MSG_VECTORIZATION_COMPLETED:
+        {
+            BString svgData;
+            BString imagePath;
+
+            if (message->FindString("svg_data", &svgData) == B_OK &&
+                message->FindString("image_path", &imagePath) == B_OK) {
+
+                fCurrentSource = svgData;
+                if (fSVGView)
+                    fSVGView->LoadFromMemory(svgData.String());
+
+                _GenerateHVIFFromSVG();
+                _UpdateAllTabs();
+                _UpdateStatus();
+                _UpdateUIState();
+                _UpdateStatView();
+            }
+            break;
+        }
+
+        case MSG_VECTORIZATION_ERROR:
+        {
+            BString error;
+            if (message->FindString("error", &error) == B_OK) {
+                _ShowError(error.String());
+                if (fVectorizationDialog)
+                    fVectorizationDialog->SetStatusText(error.String());
+            }
+            break;
+        }
+
+        case MSG_VECTORIZATION_OK:
+        {
+            if (fVectorizationDialog) {
+                BPath path(fVectorizationDialog->GetImagePath().String());
+                BString title("SVGear - ");
+                title << path.Leaf() << " (vectorized)";
+                SetTitle(title.String());
+            }
+
+            fCurrentFilePath = "";
+            fOriginalSourceText = fCurrentSource;
+            fDocumentModified = true;
+
+            if (fFileManager)
+                fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
+
+            if (fVectorizationDialog) {
+                fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
+                fVectorizationDialog = NULL;
+            }
+
+            _UpdateUIState();
+            break;
+        }
+
+        case MSG_VECTORIZATION_CANCEL:
+        {
+            if (fVectorizationWorker)
+                fVectorizationWorker->StopVectorization();
+
+            if (fVectorizationDialog) {
+                fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
+                fVectorizationDialog = NULL;
+            }
+            break;
+        }
+    }
+}
+
+void
 SVGMainWindow::_HandleRefsReceived(BMessage* message)
 {
 	entry_ref ref;
@@ -751,6 +859,18 @@ SVGMainWindow::_HandleSavePanel(BMessage* message)
 void
 SVGMainWindow::_HandleTabSelection()
 {
+}
+
+void
+SVGMainWindow::_StartRasterImageVectorization(const char* filePath)
+{
+	if (fVectorizationDialog) {
+		fVectorizationDialog->Activate();
+		return;
+	}
+
+	fVectorizationDialog = new SVGVectorizationDialog(filePath, this);
+	fVectorizationDialog->Show();
 }
 
 void

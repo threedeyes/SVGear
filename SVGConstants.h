@@ -87,6 +87,16 @@ const uint32 MSG_PAINT_SELECTED = 'pnsl';
 const uint32 MSG_CONTROL_POINTS_SELECTED = 'ctps';
 const uint32 MSG_CLEAR_SELECTION = 'clrs';
 
+// Vectorization
+const uint32 MSG_VECTORIZATION_SETTINGS_CHANGED = 'vcsc';
+const uint32 MSG_VECTORIZATION_PREVIEW = 'vcpv';
+const uint32 MSG_VECTORIZATION_OK = 'vcok';
+const uint32 MSG_VECTORIZATION_CANCEL = 'vccl';
+const uint32 MSG_VECTORIZATION_RESET = 'vcrs';
+const uint32 MSG_VECTORIZATION_STATUS_UPDATE = 'vcsu';
+const uint32 MSG_VECTORIZATION_COMPLETED = 'vccp';
+const uint32 MSG_VECTORIZATION_ERROR = 'vcer';
+
 // UI Constants
 const int32 TOOLBAR_ICON_SIZE = 24;
 const float SOURCE_VIEW_WEIGHT = 0.3f;

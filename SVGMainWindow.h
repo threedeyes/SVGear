@@ -29,6 +29,9 @@ class HVIFView;
 class SVGMenuManager;
 class SVGFileManager;
 class SVGToolBar;
+class SVGVectorizationWorker;
+class SVGVectorizationDialog;
+
 class BMenuBar;
 class BTextView;
 
@@ -71,6 +74,7 @@ private:
 	void _HandleEditMessages(BMessage* message);
 	void _HandleDropMessages(BMessage* message);
 	void _HandleExportMessages(BMessage* message);
+	void _HandleVectorizationMessages(BMessage* message);
 
 	// File operations
 	void _LoadNewFile();
@@ -80,6 +84,9 @@ private:
 	void _SaveAsFile();
 	void _HandleSavePanel(BMessage* message);
 	bool _UpdateTitleAfterSave(const char* filePath);
+
+	// Vectorization operations
+	void _StartRasterImageVectorization(const char* filePath);
 
 	// Data generation
 	void _GenerateHVIFFromSVG();
@@ -191,6 +198,10 @@ private:
 	// HVIF data for export
 	unsigned char*   fCurrentHVIFData;
 	size_t           fCurrentHVIFSize;
+
+	// Vectorization
+	SVGVectorizationWorker* fVectorizationWorker;
+	SVGVectorizationDialog* fVectorizationDialog;
 };
 
 #endif
