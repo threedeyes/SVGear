@@ -70,7 +70,7 @@ SVGView::_DrawPlaceholder()
 		SetDrawingMode(B_OP_COPY);
 	}
 
-	const char* text = B_TRANSLATE("Drop here a file containing vector icon");
+	const char* text = B_TRANSLATE("Drop a file to view or vectorize");
 
 	font_height height;
 	GetFontHeight(&height);
