@@ -113,8 +113,8 @@ void
 HVIFView::MouseMoved(BPoint where, uint32 transit, const BMessage* message)
 {
     if (fDragButton == 0 || fDragStarted || !fIcon
-        || (abs((int32)(where.x - fClickPoint.x)) <= kDragSlop
-            && abs((int32)(where.y - fClickPoint.y)) <= kDragSlop))
+        || (abs((int32)(where.x - fClickPoint.x)) <= kDragThreshold
+            && abs((int32)(where.y - fClickPoint.y)) <= kDragThreshold))
         return;
 
     fDragStarted = true;
