@@ -136,6 +136,11 @@ private:
 	void _SaveSettings();
 	void _RestoreSettings();
 
+	// Backup/restore methods
+	void _BackupCurrentState();
+	void _RestoreBackupState();
+	void _ClearBackupState();
+
 	// Utility functions
 	BString _GetDisplayModeName() const;
 	BString _GetBoundingBoxStyleName() const;
@@ -202,6 +207,13 @@ private:
 	// Vectorization
 	SVGVectorizationWorker* fVectorizationWorker;
 	SVGVectorizationDialog* fVectorizationDialog;
+
+	// Vectorization backup state
+	BString          fBackupSource;
+	BString          fBackupFilePath;
+	BString          fBackupOriginalSourceText;
+	BString          fBackupWindowTitle;
+	bool             fBackupDocumentModified;
 };
 
 #endif

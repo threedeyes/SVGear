@@ -77,7 +77,8 @@ SVGMainWindow::SVGMainWindow(const char* filePath)
 	fCurrentHVIFData(NULL),
 	fCurrentHVIFSize(0),
 	fVectorizationWorker(NULL),
-	fVectorizationDialog(NULL)
+	fVectorizationDialog(NULL),
+	fBackupDocumentModified(false)
 {
 	SetSizeLimits(600, 16384, 450, 16384);
 
@@ -115,6 +116,7 @@ SVGMainWindow::~SVGMainWindow()
 	delete fFileManager;
 	delete fVectorizationWorker;
 	delete[] fCurrentHVIFData;
+	_ClearBackupState();
 	be_app->PostMessage(MSG_WINDOW_CLOSED);
 }
 
@@ -772,6 +774,8 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
                 fVectorizationDialog = NULL;
             }
 
+            _ClearBackupState();
+
 			fSVGView->ResetView();
             _UpdateUIState();
             break;
@@ -787,6 +791,7 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
                 fVectorizationDialog = NULL;
             }
 
+            _RestoreBackupState();
             fSVGView->ResetView();
             _UpdateUIState();
             break;
@@ -881,6 +886,8 @@ SVGMainWindow::_StartRasterImageVectorization(const char* filePath)
 		fVectorizationDialog->Activate();
 		return;
 	}
+
+	_BackupCurrentState();
 
 	fVectorizationDialog = new SVGVectorizationDialog(filePath, this);
 	fVectorizationDialog->Show();
@@ -1730,4 +1737,51 @@ SVGMainWindow::_GetCurrentSource() const
 	} else {
 		return fCurrentSource;
 	}
+}
+
+void
+SVGMainWindow::_BackupCurrentState()
+{
+	fBackupSource = fCurrentSource;
+	fBackupFilePath = fCurrentFilePath;
+	fBackupOriginalSourceText = fOriginalSourceText;
+	fBackupWindowTitle = Title();
+	fBackupDocumentModified = fDocumentModified;
+}
+
+void
+SVGMainWindow::_RestoreBackupState()
+{
+	if (fBackupSource.IsEmpty()) {
+		_LoadNewFile();
+		_ClearBackupState();
+		return;
+	}
+
+	fCurrentSource = fBackupSource;
+	fCurrentFilePath = fBackupFilePath;
+	fOriginalSourceText = fBackupOriginalSourceText;
+	fDocumentModified = fBackupDocumentModified;
+	SetTitle(fBackupWindowTitle.String());
+
+	if (fSVGView)
+		fSVGView->LoadFromMemory(fCurrentSource.String());
+
+	_GenerateHVIFFromSVG();
+
+	_UpdateAllTabs();
+	_UpdateStatus();
+	_UpdateStatView();
+
+	_ClearBackupState();
+}
+
+void
+SVGMainWindow::_ClearBackupState()
+{
+	fBackupSource = "";
+	fBackupFilePath = "";
+	fBackupOriginalSourceText = "";
+	fBackupWindowTitle = "";
+	fBackupDocumentModified = false;
 }
