@@ -1,90 +1,180 @@
-1	Russian	application/x-vnd.svgear	458115997
-File saved successfully	SVGMainWindow		Файл успешно сохранён
+1	Russian	application/x-vnd.svgear	4127275414
 Failed to save file	SVGMainWindow		Не удалось сохранить файл
 Outline	SVGMainWindow		Контур
-Error saving file: %s	SVGFileManager		Ошибка сохранения файла: %s
-Save As…	SVGMenuManager		Сохранить как…
+Min Y:	SVGStatView		Мин. Y:
+Filtering	SVGVectorizationDialog		Фильтрация
+Show description	SVGVectorizationDialog		Добавлять описание
+Minimum circle radius	SVGVectorizationDialog		Минимальный радиус круга
+Simple	SVGVectorizationDialog		Простой
 Quit	SVGMenuManager		Выход
-C++ array…	SVGMenuManager		Массив C++…
 Text wrap	SVGMainWindow		Перенос текста
-OK	SVGFileManager		OK
-Show Bounding Box	SVGMainWindow		Показать ограничивающую рамку
+C++ array…	SVGMenuManager		Массив C++…
+OK	SVGFileManager		ОК
 Zoom out	SVGMainWindow		Уменьшить
 View	SVGMenuManager		Вид
 Outline	SVGMenuManager		Контур
-Error reading HVIF icon data from file: %s	SVGFileManager		Ошибка чтения данных HVIF иконки из файла: %s
-Cut	SVGMainWindow		Вырезать
+Filter small objects	SVGVectorizationDialog		Фильтровать мелкие объекты
 Redo	SVGMainWindow		Повторить
 File	SVGMenuManager		Файл
-Unknown	SVGMainWindow		Неизвестно
-HVIF Icon…	SVGMenuManager		Иконка HVIF…
-Paste	SVGMainWindow		Вставить
+Number of colors	SVGVectorizationDialog		Количество цветов
+Points:	SVGStatView		Точек:
 Show Source Code	SVGMainWindow		Показать исходный код
 Error parsing HVIF data from file attributes	SVGFileManager		Ошибка разбора данных HVIF из атрибутов файла
 Zoom In	SVGMenuManager		Увеличить
-Transparent Gray	SVGMenuManager		Прозрачный серый
-Zoom Out	SVGMenuManager		Уменьшить
-Bounding Box	SVGMenuManager		Ограничивающая рамка
-Display Mode	SVGMenuManager		Режим отображения
-OK	SVGMainWindow		OK
+Show Statistics Panel	SVGMenuManager		Показать панель статистики
+Linear Gradient	SVGStructureView		Линейный градиент
+Blur radius	SVGVectorizationDialog		Радиус размытия
 Save	SVGMenuManager		Сохранить
-Error	SVGMainWindow		Ошибка
-Error accessing file: %s	SVGFileManager		Ошибка доступа к файлу: %s
+Maximum circle radius	SVGVectorizationDialog		Максимальный радиус круга
+Colors	SVGVectorizationDialog		Цвета
+Show Structure	SVGMainWindow		Показать структуру
+Geometry	SVGVectorizationDialog		Геометрия
+Curve protection	SVGVectorizationDialog		Защита кривых
 RDef resource…	SVGMenuManager		Ресурс RDef…
+Gradients:	SVGStatView		Градиентов:
 New	SVGMenuManager		Создать
 Save as…	SVGMenuManager		Сохранить как…
-File path not specified	SVGFileManager		Путь к файлу не указан
- Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Размер: %.0fx%.0f | Масштаб: %.1f%% | Режим: %s | Рамка: %s
-Apply	SVGMainWindow		Применить
-Stroke Only	SVGMainWindow		Только обводка
-Center	SVGMenuManager		По центру
-Export	SVGMenuManager		Экспорт
+Paths:	SVGStatView		Путей:
+File path not specified	SVGFileManager		Не указан путь к файлу
+Remove duplicate paths	SVGVectorizationDialog		Удалить дублирующиеся пути
+Content	SVGStatView		Содержимое
+Output scale	SVGVectorizationDialog		Масштаб вывода
 Fill Only	SVGMainWindow		Только заливка
+Export	SVGMenuManager		Экспорт
 No SVG loaded	SVGMainWindow		SVG не загружен
-Open	SVGMainWindow		Открыть
-Gray	SVGMainWindow		Серый
-Show Transparency Grid	SVGMenuManager		Показать сетку прозрачности
 Error	SVGFileManager		Ошибка
+Quantization cycles	SVGVectorizationDialog		Циклы квантования
 No HVIF data available for export	SVGMainWindow		Нет данных HVIF для экспорта
 Document	SVGMainWindow		Документ
+Closed paths:	SVGStatView		Замкнутых путей:
+Error reading SVG file	SVGFileManager		Ошибка чтения SVG-файла
 Zoom original	SVGMainWindow		Исходный масштаб
-Error reading SVG file	SVGFileManager		Ошибка чтения файла SVG
-None	SVGMenuManager		Нет
 Save	SVGMainWindow		Сохранить
 Invalid file path	SVGMainWindow		Неверный путь к файлу
-No HVIF data available	SVGMainWindow		Нет доступных данных HVIF
-Copy	SVGMainWindow		Копировать
-File exported successfully	SVGMainWindow		Файл успешно экспортирован
 Zoom in	SVGMainWindow		Увеличить
-None	SVGMainWindow		Нет
 Failed to export file	SVGMainWindow		Не удалось экспортировать файл
 Document Style	SVGMenuManager		Стиль документа
 Open…	SVGMenuManager		Открыть…
+Best fit	SVGMainWindow		Подогнать по размеру
+Height:	SVGStatView		Высота:
+Error loading SVG file: %s	SVGFileManager		Ошибка загрузки SVG-файла: %s
+Width:	SVGStatView		Ширина:
+Douglas-Peucker simplification	SVGVectorizationDialog		Упрощение Дугласа-Пойкера
+SVG Size:	SVGStatView		Размер SVG:
+Combined	SVGVectorizationDialog		Комбинированный
+Optimize SVG output	SVGVectorizationDialog		Оптимизировать вывод SVG
+Color	SVGStructureView		Цвет
+Background method	SVGVectorizationDialog		Метод фона
+Shape %ld Stroke	SVGStructureView		Контур фигуры %ld
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear предоставляет интуитивно понятный интерфейс для просмотра и управления файлами SVG (Scalable Vector Graphics). \nПриложение поддерживает операции преобразования форматов, позволяя пользователям преобразовывать файлы SVG в другие векторные форматы, такие как HVIF (Haiku Vector Icon Format).
+Stroke Only	SVGMenuManager		Только контур
+Max X:	SVGStatView		Макс. X:
+About SVGear…	SVGMenuManager		О программе SVGear…
+Round coordinates	SVGVectorizationDialog		Округлять координаты
+Background tolerance	SVGVectorizationDialog		Допуск фона
+Fit to Window	SVGMenuManager		По размеру окна
+Undo	SVGMainWindow		Отменить
+Show Sources Panel	SVGMenuManager		Показать панель исходного кода
+Radial Gradient	SVGStructureView		Радиальный градиент
+Aggressive simplification	SVGVectorizationDialog		Агрессивное упрощение
+Shapes:	SVGStatView		Фигур:
+Edge analysis	SVGVectorizationDialog		Анализ краёв
+Ready	SVGMainWindow		Готово
+Reset View	SVGMenuManager		Сбросить вид
+Blur settings	SVGVectorizationDialog		Настройки размытия
+Preset	SVGVectorizationDialog		Предустановка
+Min X:	SVGStatView		Мин. X:
+Error importing HVIF icon from file: %s	SVGFileManager		Ошибка импорта иконки HVIF из файла: %s
+Min background ratio	SVGVectorizationDialog		Мин. соотношение фона
+Error parsing HVIF file: %s	SVGFileManager		Ошибка разбора файла HVIF: %s
+File saved successfully	SVGMainWindow		Файл успешно сохранён
+Quality	SVGVectorizationDialog		Качество
+Output	SVGVectorizationDialog		Вывод
+Line threshold	SVGVectorizationDialog		Порог линии
+Error saving file: %s	SVGFileManager		Ошибка сохранения файла: %s
+File	SVGStatView		Файл
+Simplification tolerance	SVGVectorizationDialog		Допуск упрощения
+Apply (Alt+Enter)	SVGMainWindow		Применить (Alt+Enter)
+Flood fill	SVGVectorizationDialog		Заливка
+Filled shapes:	SVGStatView		Фигур с заливкой:
+Show Bounding Box	SVGMainWindow		Показать границу объекта
+Show statistics	SVGMainWindow		Показать статистику
+Cut	SVGMainWindow		Вырезать
+Error reading HVIF icon data from file: %s	SVGFileManager		Ошибка чтения данных иконки HVIF из файла: %s
+Stroked shapes:	SVGStatView		Фигур с контуром:
+Unknown	SVGMainWindow		Неизвестно
+Remove background	SVGVectorizationDialog		Удалить фон
+Shape %ld	SVGListItem		Фигура %ld
+Paste	SVGMainWindow		Вставить
+HVIF Icon…	SVGMenuManager		Иконка HVIF…
+Show Structure Panel	SVGMenuManager		Показать панель структуры
+Could not get export file information	SVGFileManager		Не удалось получить информацию об экспортируемом файле
+Zoom Out	SVGMenuManager		Уменьшить
+Transparent Gray	SVGMenuManager		Прозрачный серый
+Bounds	SVGStatView		Границы
+OK	SVGMainWindow		ОК
+Display Mode	SVGMenuManager		Режим отображения
+Bounding Box	SVGMenuManager		Граница объекта
+Simplification	SVGVectorizationDialog		Упрощение
+Image	SVGStatView		Изображение
+Curve threshold	SVGVectorizationDialog		Порог кривой
+Vectorization Settings	SVGVectorizationDialog		Настройки векторизации
+Minimum object perimeter	SVGVectorizationDialog		Минимальный периметр объекта
+Minimum object area	SVGVectorizationDialog		Минимальная площадь объекта
+Error	SVGMainWindow		Ошибка
+Error accessing file: %s	SVGFileManager		Ошибка доступа к файлу: %s
+ Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Размер: %.0fx%.0f | Масштаб: %.1f%% | Режим: %s | Граница объекта: %s
+Stroke Only	SVGMainWindow		Только контур
+Minimum object height	SVGVectorizationDialog		Минимальная высота объекта
+Path %ld.%ld (%d pts)	SVGListItem		Путь %ld.%ld (%d т.)
+Center	SVGMenuManager		Центрировать
+Open	SVGMainWindow		Открыть
+Gray	SVGMainWindow		Серый
+Show Transparency Grid	SVGMenuManager		Показать сетку прозрачности
+HVIF Size:	SVGStatView		Размер HVIF:
+Reset to defaults	SVGVectorizationDialog		Сбросить по умолчанию
+Blur delta	SVGVectorizationDialog		Дельта размытия
+None	SVGMenuManager		Нет
+No HVIF data available	SVGMainWindow		Нет данных HVIF
+Collinear tolerance	SVGVectorizationDialog		Допуск коллинеарности
+OK	SVGVectorizationDialog		ОК
+Copy	SVGMainWindow		Копировать
+None	SVGMainWindow		Нет
+File exported successfully	SVGMainWindow		Файл успешно экспортирован
+Shape %ld Fill	SVGStructureView		Заливка фигуры %ld
 Error getting HVIF icon info from file: %s	SVGFileManager		Ошибка получения информации об иконке HVIF из файла: %s
-Best fit	SVGMainWindow		По размеру окна
-Reload from Source	SVGMenuManager		Перезагрузить из исходника
-Error loading SVG file: %s	SVGFileManager		Ошибка загрузки файла SVG: %s
+Use ViewBox	SVGVectorizationDialog		Использовать ViewBox
 Normal	SVGMainWindow		Обычный
 Source code is empty.	SVGMainWindow		Исходный код пуст.
-Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Ошибка разбора SVG из исходного кода. Проверьте синтаксис.
-Could not get export file information	SVGMainWindow		Не удалось получить информацию о файле экспорта
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Ошибка разбора SVG из исходного кода. Пожалуйста, проверьте синтаксис.
+Minimum object width	SVGVectorizationDialog		Минимальная ширина объекта
+Dominant color	SVGVectorizationDialog		Доминирующий цвет
+Default	SVGVectorizationDialog		По умолчанию
+Fast	SVGVectorizationDialog		Быстрый
+Paints	SVGStructureView		Закраски
+Min segment length	SVGVectorizationDialog		Мин. длина сегмента
+Processing	SVGVectorizationDialog		Обработка
 Could not find directory reference	SVGMainWindow		Не удалось найти ссылку на каталог
 New	SVGMainWindow		Создать
 Simple Frame	SVGMenuManager		Простая рамка
-SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear предоставляет интуитивный интерфейс для просмотра и работы с файлами SVG (масштабируемая векторная графика). \nПриложение поддерживает операции преобразования форматов, позволяя пользователям преобразовывать файлы SVG в другие векторные форматы, такие как HVIF (формат векторных иконок Haiku).
-Stroke Only	SVGMenuManager		Только обводка
-About SVGear…	SVGMenuManager		О программе SVGear…
-Fit to Window	SVGMenuManager		По размеру окна
-Undo	SVGMainWindow		Отменить
-Drop here a file containing vector icon	SVGView		Перетащите сюда файл с векторной иконкой
+Curve smoothing	SVGVectorizationDialog		Сглаживание кривых
+Cancel	SVGVectorizationDialog		Отмена
+Line detection tolerance	SVGVectorizationDialog		Допуск обнаружения линий
+Basic	SVGVectorizationDialog		Базовый
+Detailed	SVGVectorizationDialog		Детальный
+Path omit threshold	SVGVectorizationDialog		Порог пропуска пути
+Drop a file to view or vectorize	SVGView		Перетащите файл для просмотра или векторизации
+Paths	SVGStructureView		Пути
+Max Y:	SVGStatView		Макс. Y:
+Detect geometric shapes	SVGVectorizationDialog		Обнаруживать геометрические фигуры
 Fill Only	SVGMenuManager		Только заливка
-Reset View	SVGMenuManager		Сбросить вид
-Ready	SVGMainWindow		Готово
+Center	SVGMainWindow		Центрировать
+Shapes	SVGStructureView		Фигуры
+Clustering	SVGVectorizationDialog		Кластеризация
 Help	SVGMenuManager		Справка
-Show Source Code	SVGMenuManager		Показать исходный код
 Simple	SVGMainWindow		Простой
+None	SVGStructureView		Нет
 Normal	SVGMenuManager		Обычный
 Zoom Original	SVGMenuManager		Исходный масштаб
-Error importing HVIF icon from file: %s	SVGFileManager		Ошибка импорта иконки HVIF из файла: %s
+Circle detection tolerance	SVGVectorizationDialog		Допуск обнаружения кругов
 Could not find file name	SVGMainWindow		Не удалось найти имя файла
-Error parsing HVIF file: %s	SVGFileManager		Ошибка разбора файла HVIF: %s
