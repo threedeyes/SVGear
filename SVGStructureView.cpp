@@ -364,7 +364,7 @@ SVGStructureView::_PopulatePaintsList()
 	while (shape) {
 		if (shape->fill.type != NSVG_PAINT_NONE) {
 			BString name;
-			name.SetToFormat("Shape %ld Fill", shapeIndex);
+			name.SetToFormat(B_TRANSLATE("Shape %ld Fill"), shapeIndex);
 			SVGListItem* item = new SVGListItem(&shape->fill, name.String(), shapeIndex, false);
 			item->SetIcon(_GetPaintIcon(&shape->fill));
 			fPaintsList->AddItem(item);
@@ -372,7 +372,7 @@ SVGStructureView::_PopulatePaintsList()
 
 		if (shape->stroke.type != NSVG_PAINT_NONE) {
 			BString name;
-			name.SetToFormat("Shape %ld Stroke", shapeIndex);
+			name.SetToFormat(B_TRANSLATE("Shape %ld Stroke"), shapeIndex);
 			SVGListItem* item = new SVGListItem(&shape->stroke, name.String(), shapeIndex, true);
 			item->SetIcon(_GetPaintIcon(&shape->stroke));
 			fPaintsList->AddItem(item);

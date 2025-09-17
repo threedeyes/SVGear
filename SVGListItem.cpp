@@ -170,7 +170,7 @@ SVGListItem::_UpdateDisplayText()
 	switch (fType) {
 		case SVG_ITEM_SHAPE:
 			if (fShape) {
-				fDisplayText.SetToFormat("Shape %ld", fIndex);
+				fDisplayText.SetToFormat(B_TRANSLATE("Shape %ld"), fIndex);
 				if (fShape->id && strlen(fShape->id) > 0)
 					fDisplayText << " (" << fShape->id << ")";
 			}
@@ -178,7 +178,7 @@ SVGListItem::_UpdateDisplayText()
 
 		case SVG_ITEM_PATH:
 			if (fPath)
-				fDisplayText.SetToFormat("Path %ld.%ld (%d pts)", fShapeIndex, fPathIndex, fPath->npts);
+				fDisplayText.SetToFormat(B_TRANSLATE("Path %ld.%ld (%d pts)"), fShapeIndex, fPathIndex, fPath->npts);
 			break;
 
 		case SVG_ITEM_PAINT:
