@@ -28,6 +28,9 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 	fImagePath(imagePath),
 	fFirstShow(true)
 {
+	fBoldFont = new BFont(be_plain_font);
+	fBoldFont->SetFace(B_BOLD_FACE);
+
 	fOptions.SetDefaults();
 	_BuildInterface();
 	_UpdateControls();
@@ -43,6 +46,7 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 
 SVGVectorizationDialog::~SVGVectorizationDialog()
 {
+	delete fBoldFont;
 }
 
 void
@@ -237,6 +241,7 @@ SVGVectorizationDialog::_BuildPreprocessingTab()
 
 	fRemoveBackgroundCheck = _CreateCheckBox("remove_bg", B_TRANSLATE("Remove background"),
 											fOptions.fRemoveBackground);
+	fRemoveBackgroundCheck->SetFont(fBoldFont);
 
 	const char* bgMethods[] = {
 		B_TRANSLATE("Edge analysis"),
@@ -304,6 +309,8 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 
 	fDouglasPeuckerCheck = _CreateCheckBox("douglas_peucker", B_TRANSLATE("Douglas-Peucker simplification"),
 										fOptions.fDouglasPeuckerEnabled);
+	fDouglasPeuckerCheck->SetFont(fBoldFont);
+
 	BView* douglasToleranceGroup = _CreateSliderWithLabels("douglas_tolerance", B_TRANSLATE("Simplification tolerance"),
 										0.1f, 15.0f, fOptions.fDouglasPeuckerTolerance,
 										&fDouglasPeuckerToleranceSlider, &fDouglasPeuckerToleranceValueLabel);
@@ -313,6 +320,8 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 
 	fAggressiveSimplificationCheck = _CreateCheckBox("aggressive_simplify", B_TRANSLATE("Aggressive simplification"),
 										fOptions.fAggressiveSimplification);
+	fAggressiveSimplificationCheck->SetFont(fBoldFont);
+
 	BView* collinearToleranceGroup = _CreateSliderWithLabels("collinear_tolerance", B_TRANSLATE("Collinear tolerance"),
 										0.1f, 10.0f, fOptions.fCollinearTolerance,
 										&fCollinearToleranceSlider, &fCollinearToleranceValueLabel);
@@ -365,6 +374,8 @@ SVGVectorizationDialog::_BuildGeometryTab()
 
 	fDetectGeometryCheck = _CreateCheckBox("detect_geometry", B_TRANSLATE("Detect geometric shapes"),
 										fOptions.fDetectGeometry);
+	fDetectGeometryCheck->SetFont(fBoldFont);
+
 	BView* lineToleranceGroup = _CreateSliderWithLabels("line_tolerance", B_TRANSLATE("Line detection tolerance"),
 										0.1f, 20.0f, fOptions.fLineTolerance,
 										&fLineToleranceSlider, &fLineToleranceValueLabel);
@@ -409,6 +420,8 @@ SVGVectorizationDialog::_BuildFilteringTab()
 
 	fFilterSmallObjectsCheck = _CreateCheckBox("filter_small", B_TRANSLATE("Filter small objects"),
 										fOptions.fFilterSmallObjects);
+	fFilterSmallObjectsCheck->SetFont(fBoldFont);
+
 	BView* minAreaGroup = _CreateSliderWithLabels("min_area", B_TRANSLATE("Minimum object area"),
 										1, 250, fOptions.fMinObjectArea,
 										&fMinObjectAreaSlider, &fMinObjectAreaValueLabel);

@@ -64,6 +64,7 @@ private:
 	BTabView*       fTabView;
 	BWindow*        fTarget;
 	BString         fImagePath;
+	BFont*          fBoldFont;
 	TracingOptions  fOptions;
 	bool            fFirstShow;
 
