@@ -635,7 +635,11 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 void
 SVGMainWindow::_HandleDropMessages(BMessage* message)
 {
+	message->PrintToStream();
 	if (fVectorizationDialog != NULL)
+		return;
+
+	if (message->HasBool("src_svgear"))
 		return;
 
 	if (message->HasData("icon", B_VECTOR_ICON_TYPE)) {

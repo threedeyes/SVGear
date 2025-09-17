@@ -186,6 +186,7 @@ HVIFView::_StartDrag(BPoint point)
     GetMouse(&tmpLoc, &button);
     msg.AddInt32("buttons", (int32)button);
     msg.AddInt32("be:actions", B_COPY_TARGET);
+    msg.AddBool("src_svgear", true);
 
     BBitmap* dragBitmap = new BBitmap(fIcon);
     DragMessage(&msg, dragBitmap, B_OP_ALPHA, fClickPoint, this);
