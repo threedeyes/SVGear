@@ -635,6 +635,9 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 void
 SVGMainWindow::_HandleDropMessages(BMessage* message)
 {
+	if (fVectorizationDialog != NULL)
+		return;
+
 	if (message->HasData("icon", B_VECTOR_ICON_TYPE)) {
 		ssize_t size;
 		const void* data;
