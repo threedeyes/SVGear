@@ -32,6 +32,7 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 	fBoldFont->SetFace(B_BOLD_FACE);
 
 	fOptions.SetDefaults();
+
 	_BuildInterface();
 	_UpdateControls();
 	_ApplyPreset();
@@ -867,6 +868,8 @@ SVGVectorizationDialog::_ApplyPreset()
 			fOptions.fCircleTolerance = 0.5f;
 			break;
 	}
+
+	fOptions.fCustomDescription = "Vectorized with SVGear 1.0 for Haiku";
 
 	_UpdateControls();
 	_StartVectorization();
