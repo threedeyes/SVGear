@@ -46,6 +46,7 @@ private:
 
 	void _UpdateFromControls();
 	void _UpdateControls();
+	void _UpdateControlStates();
 	void _ResetToDefaults();
 	void _ApplyPreset();
 	void _StartVectorization();

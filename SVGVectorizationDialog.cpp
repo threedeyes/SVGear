@@ -11,6 +11,7 @@
 #include <PopUpMenu.h>
 #include <Catalog.h>
 #include <ControlLook.h>
+#include <Box.h>
 
 #include "SVGVectorizationDialog.h"
 
@@ -83,6 +84,7 @@ SVGVectorizationDialog::MessageReceived(BMessage* message)
 	switch (message->what) {
 		case MSG_VECTORIZATION_SETTINGS_CHANGED:
 			_UpdateFromControls();
+			_UpdateControlStates();
 			_StartVectorization();
 			break;
 		case MSG_VECTORIZATION_OK:
@@ -248,15 +250,33 @@ SVGVectorizationDialog::_BuildPreprocessingTab()
 	fBlurDeltaSlider = _CreateSlider("blur_delta", B_TRANSLATE("Blur delta"),
 									0, 1024, fOptions.fBlurDelta);
 
-	BLayoutBuilder::Group<>(preprocessGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	BBox* backgroundBox = new BBox("background_box");
+	backgroundBox->SetLabel(fRemoveBackgroundCheck);
+	BLayoutBuilder::Group<>(backgroundBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(fRemoveBackgroundCheck)
+		.AddStrut(B_USE_DEFAULT_SPACING)
 		.Add(fBackgroundMethodMenu)
 		.Add(fBackgroundToleranceSlider)
 		.Add(fMinBackgroundRatioSlider)
+		.AddGlue()
+	.End();
+
+	BBox* blurBox = new BBox("blur_box");
+	blurBox->SetLabel(B_TRANSLATE("Blur settings"));
+	BLayoutBuilder::Group<>(blurBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddStrut(B_USE_DEFAULT_SPACING)
 		.Add(fBlurRadiusSlider)
 		.Add(fBlurDeltaSlider)
+		.AddGlue()
+	.End();
+
+	BLayoutBuilder::Group<>(preprocessGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
+			.Add(backgroundBox, 1.0f)
+			.Add(blurBox, 1.0f)
+		.End()
 		.AddGlue()
 	.End();
 
@@ -286,16 +306,33 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 	fCurveSmoothingSlider = _CreateSlider("curve_smoothing", B_TRANSLATE("Curve smoothing"),
 										0.0f, 2.0f, fOptions.fCurveSmoothing);
 
-	BLayoutBuilder::Group<>(simplifyGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	BBox* douglasBox = new BBox("douglas_box");
+	douglasBox->SetLabel(fDouglasPeuckerCheck);
+	BLayoutBuilder::Group<>(douglasBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(fDouglasPeuckerCheck)
+		.AddStrut(B_USE_DEFAULT_SPACING)
 		.Add(fDouglasPeuckerToleranceSlider)
 		.Add(fDouglasPeuckerCurveProtectionSlider)
+		.AddGlue()
+	.End();
+
+	BBox* aggressiveBox = new BBox("aggressive_box");
+	aggressiveBox->SetLabel(fAggressiveSimplificationCheck);
+	BLayoutBuilder::Group<>(aggressiveBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddStrut(B_USE_DEFAULT_SPACING)
-		.Add(fAggressiveSimplificationCheck)
 		.Add(fCollinearToleranceSlider)
 		.Add(fMinSegmentLengthSlider)
 		.Add(fCurveSmoothingSlider)
+		.AddGlue()
+	.End();
+
+	BLayoutBuilder::Group<>(simplifyGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
+			.Add(douglasBox, 1.0f)
+			.Add(aggressiveBox, 1.0f)
+		.End()
 		.AddGlue()
 	.End();
 
@@ -320,9 +357,11 @@ SVGVectorizationDialog::_BuildGeometryTab()
 	fMaxCircleRadiusSlider = _CreateSlider("max_circle_radius", B_TRANSLATE("Maximum circle radius"),
 										10.0f, 1000.0f, fOptions.fMaxCircleRadius);
 
-	BLayoutBuilder::Group<>(geometryGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	BBox* geometryBox = new BBox("geometry_box");
+	geometryBox->SetLabel(fDetectGeometryCheck);
+	BLayoutBuilder::Group<>(geometryBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(fDetectGeometryCheck)
+		.AddStrut(B_USE_DEFAULT_SPACING)
 		.Add(fLineToleranceSlider)
 		.Add(fCircleToleranceSlider)
 		.Add(fMinCircleRadiusSlider)
@@ -330,10 +369,17 @@ SVGVectorizationDialog::_BuildGeometryTab()
 		.AddGlue()
 	.End();
 
+	BLayoutBuilder::Group<>(geometryGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.Add(geometryBox)
+		.AddGlue()
+	.End();
+
 	BTab* geometryTab = new BTab();
 	fTabView->AddTab(geometryGroup, geometryTab);
 	geometryTab->SetLabel(B_TRANSLATE("Geometry"));
 }
+
 
 void
 SVGVectorizationDialog::_BuildFilteringTab()
@@ -351,13 +397,21 @@ SVGVectorizationDialog::_BuildFilteringTab()
 	fMinObjectPerimeterSlider = _CreateSlider("min_perimeter", B_TRANSLATE("Minimum object perimeter"),
 										1.0f, 500.0f, fOptions.fMinObjectPerimeter);
 
-	BLayoutBuilder::Group<>(filteringGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	BBox* filteringBox = new BBox("filtering_box");
+	filteringBox->SetLabel(fFilterSmallObjectsCheck);
+	BLayoutBuilder::Group<>(filteringBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(fFilterSmallObjectsCheck)
+		.AddStrut(B_USE_DEFAULT_SPACING)
 		.Add(fMinObjectAreaSlider)
 		.Add(fMinObjectWidthSlider)
 		.Add(fMinObjectHeightSlider)
 		.Add(fMinObjectPerimeterSlider)
+		.AddGlue()
+	.End();
+
+	BLayoutBuilder::Group<>(filteringGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.Add(filteringBox)
 		.AddGlue()
 	.End();
 
@@ -543,6 +597,38 @@ SVGVectorizationDialog::_UpdateControls()
 	fUseViewBoxCheck->SetValue(fOptions.fUseViewBox ? B_CONTROL_ON : B_CONTROL_OFF);
 	fOptimizeSvgCheck->SetValue(fOptions.fOptimizeSvg ? B_CONTROL_ON : B_CONTROL_OFF);
 	fRemoveDuplicatesCheck->SetValue(fOptions.fRemoveDuplicates ? B_CONTROL_ON : B_CONTROL_OFF);
+
+	_UpdateControlStates();
+}
+
+void
+SVGVectorizationDialog::_UpdateControlStates()
+{
+	bool douglasEnabled = (fDouglasPeuckerCheck->Value() == B_CONTROL_ON);
+	fDouglasPeuckerToleranceSlider->SetEnabled(douglasEnabled);
+	fDouglasPeuckerCurveProtectionSlider->SetEnabled(douglasEnabled);
+
+	bool aggressiveEnabled = (fAggressiveSimplificationCheck->Value() == B_CONTROL_ON);
+	fCollinearToleranceSlider->SetEnabled(aggressiveEnabled);
+	fMinSegmentLengthSlider->SetEnabled(aggressiveEnabled);
+	fCurveSmoothingSlider->SetEnabled(aggressiveEnabled);
+
+	bool removeBackgroundEnabled = (fRemoveBackgroundCheck->Value() == B_CONTROL_ON);
+	fBackgroundMethodMenu->SetEnabled(removeBackgroundEnabled);
+	fBackgroundToleranceSlider->SetEnabled(removeBackgroundEnabled);
+	fMinBackgroundRatioSlider->SetEnabled(removeBackgroundEnabled);
+
+	bool detectGeometryEnabled = (fDetectGeometryCheck->Value() == B_CONTROL_ON);
+	fLineToleranceSlider->SetEnabled(detectGeometryEnabled);
+	fCircleToleranceSlider->SetEnabled(detectGeometryEnabled);
+	fMinCircleRadiusSlider->SetEnabled(detectGeometryEnabled);
+	fMaxCircleRadiusSlider->SetEnabled(detectGeometryEnabled);
+
+	bool filterSmallObjectsEnabled = (fFilterSmallObjectsCheck->Value() == B_CONTROL_ON);
+	fMinObjectAreaSlider->SetEnabled(filterSmallObjectsEnabled);
+	fMinObjectWidthSlider->SetEnabled(filterSmallObjectsEnabled);
+	fMinObjectHeightSlider->SetEnabled(filterSmallObjectsEnabled);
+	fMinObjectPerimeterSlider->SetEnabled(filterSmallObjectsEnabled);
 }
 
 void
