@@ -16,6 +16,7 @@
 #include <Handler.h>
 #include <Message.h>
 #include <String.h>
+#include <StringView.h>
 
 #include "TracingOptions.h"
 #include "SVGConstants.h"
@@ -54,6 +55,10 @@ private:
 	BSlider* _CreateSlider(const char* name, const char* label, float min, float max, float value);
 	BCheckBox* _CreateCheckBox(const char* name, const char* label, bool value);
 	BMenuField* _CreateMenuField(const char* name, const char* label, const char* items[], int32 selected);
+	BView* _CreateSliderWithLabels(const char* name, const char* label, float min, float max, float value,
+									BSlider** outSlider, BStringView** outValueLabel);
+	void _UpdateSliderLabels();
+	BString _FormatSliderValue(float value, int decimals = 2);
 
 private:
 	BTabView*       fTabView;
@@ -91,7 +96,7 @@ private:
 	BSlider*        fMinSegmentLengthSlider;
 	BSlider*        fCurveSmoothingSlider;
 
-	// Geometry tab controls  
+	// Geometry tab controls
 	BCheckBox*      fDetectGeometryCheck;
 	BSlider*        fLineToleranceSlider;
 	BSlider*        fCircleToleranceSlider;
@@ -117,6 +122,32 @@ private:
 	BButton*        fOKButton;
 	BButton*        fCancelButton;
 	BButton*        fResetButton;
+
+	// Labels
+	BStringView*    fLineThresholdValueLabel;
+	BStringView*    fQuadraticThresholdValueLabel;
+	BStringView*    fPathOmitValueLabel;
+	BStringView*    fColorsValueLabel;
+	BStringView*    fColorQuantizationCyclesValueLabel;
+	BStringView*    fBackgroundToleranceValueLabel;
+	BStringView*    fMinBackgroundRatioValueLabel;
+	BStringView*    fBlurRadiusValueLabel;
+	BStringView*    fBlurDeltaValueLabel;
+	BStringView*    fDouglasPeuckerToleranceValueLabel;
+	BStringView*    fDouglasPeuckerCurveProtectionValueLabel;
+	BStringView*    fCollinearToleranceValueLabel;
+	BStringView*    fMinSegmentLengthValueLabel;
+	BStringView*    fCurveSmoothingValueLabel;
+	BStringView*    fLineToleranceValueLabel;
+	BStringView*    fCircleToleranceValueLabel;
+	BStringView*    fMinCircleRadiusValueLabel;
+	BStringView*    fMaxCircleRadiusValueLabel;
+	BStringView*    fMinObjectAreaValueLabel;
+	BStringView*    fMinObjectWidthValueLabel;
+	BStringView*    fMinObjectHeightValueLabel;
+	BStringView*    fMinObjectPerimeterValueLabel;
+	BStringView*    fScaleValueLabel;
+	BStringView*    fRoundCoordinatesValueLabel;
 };
 
 #endif
