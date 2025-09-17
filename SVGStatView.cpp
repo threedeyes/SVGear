@@ -54,11 +54,6 @@ SVGStatView::SVGStatView(const char* name)
 	view->AddChild(new BStringView("paths", B_TRANSLATE("Paths:")));
 	view->AddChild(new BStringView("points", B_TRANSLATE("Points:")));
 
-	BStringView *visualTitle = new BStringView("visual", B_TRANSLATE("Visual"));
-	visualTitle->SetAlignment(B_ALIGN_CENTER);
-	visualTitle->SetFont(&font, B_FONT_FACE);
-	view->AddChild(visualTitle);
-
 	view->AddChild(new BStringView("filled-shapes", B_TRANSLATE("Filled shapes:")));
 	view->AddChild(new BStringView("stroked-shapes", B_TRANSLATE("Stroked shapes:")));
 	view->AddChild(new BStringView("gradients", B_TRANSLATE("Gradients:")));
