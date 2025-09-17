@@ -38,11 +38,11 @@ private:
     uint8* fData;
     size_t fDataSize;
 
-    bool fMouseDown;
-    BPoint fMouseDownPoint;
+    uint32 fDragButton;
+    BPoint fClickPoint;
     bool fDragStarted;
 
-    static const float kDragThreshold;
+    static const int32 kDragThreshold;
 
     void _StartDrag(BPoint point);
     void _OpenInIconOMatic();

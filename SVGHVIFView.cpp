@@ -13,15 +13,15 @@
 #include "SVGHVIFView.h"
 #include "SVGConstants.h"
 
-const float HVIFView::kDragThreshold = 5.0f;
+const int32 HVIFView::kDragThreshold = 3;
 
 HVIFView::HVIFView(const char* name)
 	: BView(name, B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE),
 	fIcon(NULL),
 	fData(NULL),
 	fDataSize(0),
-	fMouseDown(false),
-	fMouseDownPoint(0, 0),
+	fDragButton(0),
+	fClickPoint(0, 0),
 	fDragStarted(false)
 {
     _CleanupOldFiles();
@@ -99,31 +99,32 @@ HVIFView::MouseDown(BPoint point)
         return;
     }
 
-    fMouseDown = true;
-    fMouseDownPoint = point;
+    uint32 buttons = 0;
+    if (currentMessage)
+        currentMessage->FindInt32("buttons", (int32*)&buttons);
+
+    fDragButton = buttons;
+    fClickPoint = point;
     fDragStarted = false;
     SetMouseEventMask(B_POINTER_EVENTS, B_LOCK_WINDOW_FOCUS);
 }
 
 void 
-HVIFView::MouseMoved(BPoint point, uint32 transit, const BMessage* message)
+HVIFView::MouseMoved(BPoint where, uint32 transit, const BMessage* message)
 {
-    if (!fMouseDown || fDragStarted || !fIcon)
+    if (fDragButton == 0 || fDragStarted || !fIcon
+        || (abs((int32)(where.x - fClickPoint.x)) <= kDragSlop
+            && abs((int32)(where.y - fClickPoint.y)) <= kDragSlop))
         return;
 
-    BPoint delta = point - fMouseDownPoint;
-    float distance = sqrt(delta.x * delta.x + delta.y * delta.y);
-
-    if (distance >= kDragThreshold) {
-        fDragStarted = true;
-        _StartDrag(fMouseDownPoint);
-    }
+    fDragStarted = true;
+    _StartDrag(where);
 }
 
 void 
 HVIFView::MouseUp(BPoint point)
 {
-    fMouseDown = false;
+    fDragButton = 0;
     fDragStarted = false;
 }
 
@@ -172,6 +173,7 @@ HVIFView::_StartDrag(BPoint point)
 
     BMessage msg(B_SIMPLE_DATA);
     msg.AddData("icon", B_VECTOR_ICON_TYPE, fData, fDataSize);
+    msg.AddPoint("click_pt", fClickPoint);
 
     entry_ref ref;
     BEntry entry(tempPath.Path());
@@ -179,9 +181,16 @@ HVIFView::_StartDrag(BPoint point)
         msg.AddRef("refs", &ref);
     }
 
-    BBitmap* drag = new BBitmap(fIcon);
-    DragMessage(&msg, drag, B_OP_ALPHA, BPoint(11, 11));
+    BPoint tmpLoc;
+    uint32 button;
+    GetMouse(&tmpLoc, &button);
+    msg.AddInt32("buttons", (int32)button);
+    msg.AddInt32("be:actions", B_COPY_TARGET);
 
+    BBitmap* dragBitmap = new BBitmap(fIcon);
+    DragMessage(&msg, dragBitmap, B_OP_ALPHA, fClickPoint, this);
+
+    fDragButton = 0;
     _DeleteFileDelayed(tempPath);
 }
 
@@ -274,6 +283,6 @@ HVIFView::_DeleteFileDelayed(const BPath& filePath)
     BMessage* deleteMsg = new BMessage(MSG_DELETE_FILE);
     deleteMsg->AddString("path", filePath.Path());
 
-    BMessageRunner* runner = new BMessageRunner(this, deleteMsg, 5000000);
+    BMessageRunner* runner = new BMessageRunner(this, deleteMsg, 10000000);
     runner->SetCount(1);
 }
