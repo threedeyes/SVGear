@@ -58,6 +58,7 @@ const uint32 MSG_EDIT_APPLY = 'appl';
 const uint32 MSG_EDIT_WORD_WRAP = 'wrap';
 const uint32 MSG_DROP_HVIF = '_RRC';
 const uint32 MSG_TOGGLE_STAT = 'tgst';
+const uint32 MSG_DELETE_FILE = 'delf';
 
 // Export messages
 const uint32 MSG_EXPORT_HVIF = 'exhv';

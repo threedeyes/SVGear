@@ -12,6 +12,12 @@
 #include <ControlLook.h>
 #include <Message.h>
 #include <MimeType.h>
+#include <Roster.h>
+#include <Entry.h>
+#include <Path.h>
+#include <FindDirectory.h>
+#include <NodeInfo.h>
+#include <MessageRunner.h>
 
 class HVIFView : public BView {
 public:
@@ -20,11 +26,12 @@ public:
 
     void SetIcon(const uint8* data, size_t size);
     void RemoveIcon();
-    
+
     virtual void Draw(BRect updateRect);
     virtual void MouseDown(BPoint point);
     virtual void MouseMoved(BPoint point, uint32 transit, const BMessage* message);
     virtual void MouseUp(BPoint point);
+    virtual void MessageReceived(BMessage* message);
 
 private:
     BBitmap* fIcon;
@@ -34,9 +41,15 @@ private:
     bool fMouseDown;
     BPoint fMouseDownPoint;
     bool fDragStarted;
+
     static const float kDragThreshold;
 
     void _StartDrag(BPoint point);
+    void _OpenInIconOMatic();
+    status_t _CreateTempFile(BPath& tempPath);
+    void _SetupTempFile(const BPath& tempPath);
+    void _CleanupOldFiles();
+    void _DeleteFileDelayed(const BPath& filePath);
 };
 
 #endif
