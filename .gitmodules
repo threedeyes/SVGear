@@ -1,9 +1,9 @@
-[submodule "NanoSVG"]
-	path = External/NanoSVG
-	url = https://github.com/memononen/nanosvg
 [submodule "SVGView"]
 	path = External/BSVGView
 	url = git@github.com:threedeyes/BSVGView.git
 [submodule "HVIF-Tools"]
 	path = External/HVIF-Tools
 	url = git@github.com:threedeyes/hvif-tools
+[submodule "External/NanoSVG-Ext"]
+	path = External/NanoSVG-Ext
+	url = git@github.com:threedeyes/nanosvg_ext
