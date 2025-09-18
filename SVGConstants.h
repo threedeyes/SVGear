@@ -59,6 +59,7 @@ const uint32 MSG_EDIT_WORD_WRAP = 'wrap';
 const uint32 MSG_DROP_HVIF = '_RRC';
 const uint32 MSG_TOGGLE_STAT = 'tgst';
 const uint32 MSG_DELETE_FILE = 'delf';
+const uint32 MSG_OPEN_IN_ICON_O_MATIC = 'oiom';
 
 // Export messages
 const uint32 MSG_EXPORT_HVIF = 'exhv';

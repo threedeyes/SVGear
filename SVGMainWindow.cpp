@@ -151,6 +151,10 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			_HandleExportMessages(message);
 			break;
 
+		case MSG_OPEN_IN_ICON_O_MATIC:
+			_HandleOpenInIconOMatic();
+			break;
+
 		case MSG_TAB_SELECTION:
 			_HandleTabSelection();
 			break;
@@ -887,6 +891,14 @@ SVGMainWindow::_HandleTabSelection()
 }
 
 void
+SVGMainWindow::_HandleOpenInIconOMatic()
+{
+	if (fIconView && fIconView->HasValidIcon()) {
+		fIconView->OpenInIconOMatic();
+	}
+}
+
+void
 SVGMainWindow::_StartRasterImageVectorization(const char* filePath)
 {
 	if (fVectorizationDialog) {
@@ -1317,6 +1329,7 @@ SVGMainWindow::_UpdateMenuStates()
 	if (fMenuManager) {
 		fMenuManager->UpdateFileMenu(canSaveDirect, isModified || fDocumentModified);
 		fMenuManager->UpdateExportMenu(hasHVIF);
+		fMenuManager->UpdateToolsMenu(hasHVIF);
 
 		_SetMenuItemEnabled(MSG_ZOOM_IN, hasDocument);
 		_SetMenuItemEnabled(MSG_ZOOM_OUT, hasDocument);

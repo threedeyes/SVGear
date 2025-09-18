@@ -29,9 +29,11 @@ SVGMenuManager::SVGMenuManager()
 	fStatViewItem(NULL),
 	fSaveItem(NULL),
 	fSaveAsItem(NULL),
+	fOpenInIconOMaticItem(NULL),
 	fExportSubMenu(NULL),
 	fDisplaySubMenu(NULL),
-	fBoundingBoxSubMenu(NULL)
+	fBoundingBoxSubMenu(NULL),
+	fToolsMenu(NULL)
 {
 }
 
@@ -46,6 +48,7 @@ SVGMenuManager::CreateMenuBar(BHandler* target)
 
 	_CreateFileMenu(target);
 	_CreateViewMenu(target);
+	_CreateToolsMenu(target);
 	_CreateHelpMenu(target);
 	_AddShortcuts(target);
 
@@ -159,6 +162,19 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 }
 
 void
+SVGMenuManager::_CreateToolsMenu(BHandler* target)
+{
+	fToolsMenu = new BMenu(B_TRANSLATE("Tools"));
+
+	fOpenInIconOMaticItem = new BMenuItem(B_TRANSLATE("Icon-O-Matic"), new BMessage(MSG_OPEN_IN_ICON_O_MATIC));
+	fOpenInIconOMaticItem->SetEnabled(false);
+	fToolsMenu->AddItem(fOpenInIconOMaticItem);
+
+	fToolsMenu->SetTargetForItems(target);
+	fMenuBar->AddItem(fToolsMenu);
+}
+
+void
 SVGMenuManager::_CreateHelpMenu(BHandler* target)
 {
 	BMenu* helpMenu = new BMenu(B_TRANSLATE("Help"));
@@ -239,6 +255,14 @@ SVGMenuManager::UpdateExportMenu(bool hasHVIFData)
 				item->SetEnabled(hasHVIFData);
 			}
 		}
+	}
+}
+
+void
+SVGMenuManager::UpdateToolsMenu(bool hasHVIFData)
+{
+	if (fOpenInIconOMaticItem) {
+		fOpenInIconOMaticItem->SetEnabled(hasHVIFData);
 	}
 }
 

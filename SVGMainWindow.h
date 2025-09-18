@@ -76,6 +76,9 @@ private:
 	void _HandleExportMessages(BMessage* message);
 	void _HandleVectorizationMessages(BMessage* message);
 
+	// Tools handlers
+	void _HandleOpenInIconOMatic();
+
 	// File operations
 	void _LoadNewFile();
 	void _LoadTemplateFile(const char* resourceName, const char* title);

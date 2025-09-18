@@ -28,6 +28,7 @@ public:
 	void UpdateBoundingBoxStyle(svg_boundingbox_style style);
 	void UpdateFileMenu(bool canSave, bool isModified);
 	void UpdateExportMenu(bool hasHVIFData);
+	void UpdateToolsMenu(bool hasHVIFData);
 	void SetMenuItemEnabled(uint32 command, bool enabled);
 
 private:
@@ -46,12 +47,15 @@ private:
 	BMenuItem* fSaveAsItem;
 	BMenuItem* fStructureViewItem;
 	BMenuItem* fStatViewItem;
+	BMenuItem* fOpenInIconOMaticItem;
 	BMenu* fExportSubMenu;
 	BMenu* fDisplaySubMenu;
 	BMenu* fBoundingBoxSubMenu;
+	BMenu* fToolsMenu;
 
 	void _CreateFileMenu(BHandler* target);
 	void _CreateViewMenu(BHandler* target);
+	void _CreateToolsMenu(BHandler* target);
 	void _CreateHelpMenu(BHandler* target);
 	void _AddShortcuts(BHandler* target);
 	BMenuItem* _FindMenuItem(BMenu* menu, uint32 command);
