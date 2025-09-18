@@ -66,6 +66,18 @@ HVIFView::RemoveIcon()
     Invalidate();
 }
 
+void
+HVIFView::OpenInIconOMatic()
+{
+	_OpenInIconOMatic();
+}
+
+bool
+HVIFView::HasValidIcon() const
+{
+	return (fIcon != NULL && fData != NULL && fDataSize > 0);
+}
+
 void 
 HVIFView::Draw(BRect updateRect)
 {

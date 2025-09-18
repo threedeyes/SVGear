@@ -27,6 +27,9 @@ public:
     void SetIcon(const uint8* data, size_t size);
     void RemoveIcon();
 
+    void OpenInIconOMatic();
+    bool HasValidIcon() const;
+
     virtual void Draw(BRect updateRect);
     virtual void MouseDown(BPoint point);
     virtual void MouseMoved(BPoint point, uint32 transit, const BMessage* message);
