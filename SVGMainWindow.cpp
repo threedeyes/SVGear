@@ -377,6 +377,7 @@ SVGMainWindow::_BuildTabView()
 	fSVGScrollView = new BScrollView("svg_scroll", fSVGTextView,
 					B_WILL_DRAW | B_FRAME_EVENTS,
 					true, true, B_NO_BORDER);
+	fStructureView->SetSVGTextEdit(fSVGTextView);
 
 	svgTabGroup->GroupLayout()->AddView(fSVGScrollView);
 

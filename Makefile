@@ -42,7 +42,7 @@ LIBS = be tracker translation shared localestub $(STDCPPLIBS)
 SYSTEM_INCLUDE_PATHS = /system/develop/headers/private/interface
 LOCAL_INCLUDE_PATHS = \
 	./External/BSVGView \
-	./External/NanoSVG/src \
+	./External/NanoSVG-Ext/src \
 	./External/HVIF-Tools/src/common \
 	./External/HVIF-Tools/src/hvif2svg \
 	./External/HVIF-Tools/src/svg2hvif \

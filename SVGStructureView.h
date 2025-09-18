@@ -19,6 +19,7 @@
 #include <Bitmap.h>
 
 #include "SVGListItem.h"
+#include "SVGTextEdit.h"
 
 struct NSVGimage;
 struct NSVGpaint;
@@ -37,6 +38,7 @@ public:
 
 	void SetSVGImage(NSVGimage* image);
 	void SetSVGView(SVGView* svgView) { fSVGView = svgView; }
+	void SetSVGTextEdit(SVGTextEdit *svgTextEdit) { fSVGTextEdit = svgTextEdit; }
 	void UpdateStructure();
 	void ClearSelection();
 	void ForceUpdatePanelWidth();
@@ -57,6 +59,7 @@ private:
 	void _UpdatePanelWidth();
 	float _CalculateTabsMinWidth();
 	float _GetMinimumPanelWidth();
+	void _MoveTextCursor(size_t from, size_t to);
 
 private:
 	BTabView* fTabView;
@@ -69,6 +72,7 @@ private:
 
 	NSVGimage* fSVGImage;
 	SVGView* fSVGView;
+	SVGTextEdit* fSVGTextEdit;
 	BFont fFont;
 
 	BBitmap* fShapeIcon;

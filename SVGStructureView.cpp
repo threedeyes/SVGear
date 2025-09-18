@@ -6,6 +6,8 @@
 #include <Catalog.h>
 #include <LayoutBuilder.h>
 
+#include <cstdio>
+
 #include "nanosvg.h"
 
 #include "SVGConstants.h"
@@ -27,6 +29,7 @@ SVGStructureView::SVGStructureView(const char* name)
 	fPaintsScroll(NULL),
 	fSVGImage(NULL),
 	fSVGView(NULL),
+	fSVGTextEdit(NULL),
 	fShapeIcon(NULL),
 	fPathIcon(NULL),
 	fColorIcon(NULL),
@@ -415,6 +418,8 @@ SVGStructureView::_HandleShapeSelection(BMessage* message)
 
 	if (fSVGView)
 		fSVGView->SetHighlightedShape(fSelectedShape);
+
+	_MoveTextCursor(item->GetShape()->start_pos, item->GetShape()->end_pos);
 }
 
 void
@@ -433,6 +438,8 @@ SVGStructureView::_HandlePathSelection(BMessage* message)
 
 	if (fSVGView)
 		fSVGView->SetHighlightControlPoints(fSelectedShape, fSelectedPath, true);
+
+	_MoveTextCursor(item->GetPath()->start_pos, item->GetPath()->end_pos);
 }
 
 void
@@ -450,6 +457,8 @@ SVGStructureView::_HandlePaintSelection(BMessage* message)
 
 	if (fSVGView)
 		fSVGView->SetHighlightedShape(fSelectedShape);
+
+	_MoveTextCursor(item->GetPaint()->start_pos, item->GetPaint()->end_pos);
 }
 
 void
@@ -483,5 +492,20 @@ SVGStructureView::_GetPaintTypeName(int paintType)
 			return B_TRANSLATE("Radial Gradient");
 		default:
 			return B_TRANSLATE("None");
+	}
+}
+
+void
+SVGStructureView::_MoveTextCursor(size_t from, size_t to)
+{
+	if (!fSVGTextEdit)
+		return;
+
+	if (fSVGTextEdit->LockLooperWithTimeout(10000) == B_OK) {
+		fSVGTextEdit->MakeFocus(true);
+		fSVGTextEdit->Select(from, from);
+		fSVGTextEdit->ScrollToOffset(from);
+		fSVGTextEdit->UnlockLooper();
+		fSVGTextEdit->Invalidate();
 	}
 }
