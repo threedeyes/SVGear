@@ -16,6 +16,7 @@
 #include <Font.h>
 
 #include "SVGVectorizationDialog.h"
+#include "SVGSettings.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "SVGVectorizationDialog"
@@ -26,14 +27,17 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 			B_ASYNCHRONOUS_CONTROLS | B_NOT_RESIZABLE | B_NOT_ZOOMABLE | B_NOT_CLOSABLE),
 	fTarget(target),
 	fImagePath(imagePath),
-	fFirstShow(true)
+	fFirstShow(true),
+	fUpdatingControls(false)
 {
 	fBoldFont = new BFont(be_plain_font);
 	fBoldFont->SetFace(B_BOLD_FACE);
 
 	fOptions.SetDefaults();
+	_LoadCustomPreset();
 
 	_BuildInterface();
+	_LoadSelectedPreset();
 	_UpdateControls();
 	_ApplyPreset();
 
@@ -90,12 +94,17 @@ SVGVectorizationDialog::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
 		case MSG_VECTORIZATION_SETTINGS_CHANGED:
-			_UpdateFromControls();
-			_UpdateSliderLabels();
-			_UpdateControlStates();
-			_StartVectorization();
+			if (!fUpdatingControls) {
+				_SwitchToCustomPreset();
+				_UpdateFromControls();
+				_UpdateSliderLabels();
+				_UpdateControlStates();
+				_SaveCustomPreset();
+				_StartVectorization();
+			}
 			break;
 		case MSG_VECTORIZATION_OK:
+			_SaveCustomPreset();
 			if (fTarget) {
 				BMessage msg(MSG_VECTORIZATION_OK);
 				msg.AddData("options", B_RAW_TYPE, &fOptions, sizeof(TracingOptions));
@@ -152,11 +161,11 @@ SVGVectorizationDialog::_BuildInterface()
 	_BuildOutputTab();
 
 	const char* presets[] = {
-		B_TRANSLATE("Default"),
+		B_TRANSLATE("Optimal"),
 		B_TRANSLATE("Fast"),
 		B_TRANSLATE("Quality"),
 		B_TRANSLATE("Simple"),
-		B_TRANSLATE("Detailed"),
+		B_TRANSLATE("Custom"),
 		NULL
 	};
 	fPresetMenu = _CreateMenuField("preset", B_TRANSLATE("Preset"), presets, 0);
@@ -412,7 +421,6 @@ SVGVectorizationDialog::_BuildGeometryTab()
 	fTabView->AddTab(geometryGroup, geometryTab);
 	geometryTab->SetLabel(B_TRANSLATE("Geometry"));
 }
-
 
 void
 SVGVectorizationDialog::_BuildFilteringTab()
@@ -811,8 +819,13 @@ SVGVectorizationDialog::_ApplyPreset()
 		return;
 
 	int32 index = fPresetMenu->Menu()->IndexOf(item);
+
+	_SaveSelectedPreset(index);
+
+	fUpdatingControls = true;
+
 	switch (index) {
-		case 0: // Default
+		case 0: // Optimal
 			fOptions.SetDefaults();
 			fOptions.fFilterSmallObjects = true;
 			fOptions.fMinObjectArea = 10.0f;
@@ -856,21 +869,17 @@ SVGVectorizationDialog::_ApplyPreset()
 			fOptions.fFilterSmallObjects = true;
 			fOptions.fMinObjectArea = 25.0f;
 			break;
-		case 4: // Detailed
-			fOptions.SetDefaults();
-			fOptions.fNumberOfColors = 128;
-			fOptions.fLineThreshold = 0.2f;
-			fOptions.fQuadraticThreshold = 0.2f;
-			fOptions.fColorQuantizationCycles = 5.0f;
-			fOptions.fDouglasPeuckerTolerance = 0.2f;
-			fOptions.fDetectGeometry = true;
-			fOptions.fLineTolerance = 0.5f;
-			fOptions.fCircleTolerance = 0.5f;
-			break;
+		case 4: // Custom
+			_LoadCustomPreset();
+			fUpdatingControls = false;
+			_UpdateControls();
+			_StartVectorization();
+			return;
 	}
 
 	fOptions.fCustomDescription = "Vectorized with SVGear 1.0 for Haiku";
 
+	fUpdatingControls = false;
 	_UpdateControls();
 	_StartVectorization();
 }
@@ -883,5 +892,127 @@ SVGVectorizationDialog::_StartVectorization()
 		msg.AddString("image_path", fImagePath);
 		msg.AddData("options", B_RAW_TYPE, &fOptions, sizeof(TracingOptions));
 		fTarget->Looper()->PostMessage(&msg, fTarget);
+	}
+}
+
+void
+SVGVectorizationDialog::_SwitchToCustomPreset()
+{
+	BMenuItem* customItem = fPresetMenu->Menu()->ItemAt(4);
+	if (customItem && !customItem->IsMarked()) {
+		fUpdatingControls = true;
+		customItem->SetMarked(true);
+		_SaveSelectedPreset(4);
+		fUpdatingControls = false;
+	}
+}
+
+void
+SVGVectorizationDialog::_SaveCustomPreset()
+{
+	if (!gSettings)
+		return;
+
+	gSettings->SetFloat(kVectorizationCustomLineThreshold, fOptions.fLineThreshold);
+	gSettings->SetFloat(kVectorizationCustomQuadraticThreshold, fOptions.fQuadraticThreshold);
+	gSettings->SetFloat(kVectorizationCustomPathOmitThreshold, fOptions.fPathOmitThreshold);
+	gSettings->SetFloat(kVectorizationCustomNumberOfColors, fOptions.fNumberOfColors);
+	gSettings->SetFloat(kVectorizationCustomColorQuantizationCycles, fOptions.fColorQuantizationCycles);
+	gSettings->SetBool(kVectorizationCustomRemoveBackground, fOptions.fRemoveBackground);
+	gSettings->SetInt32(kVectorizationCustomBackgroundMethod, (int32)fOptions.fBackgroundMethod);
+	gSettings->SetFloat(kVectorizationCustomBackgroundTolerance, fOptions.fBackgroundTolerance);
+	gSettings->SetFloat(kVectorizationCustomMinBackgroundRatio, fOptions.fMinBackgroundRatio);
+	gSettings->SetFloat(kVectorizationCustomBlurRadius, fOptions.fBlurRadius);
+	gSettings->SetFloat(kVectorizationCustomBlurDelta, fOptions.fBlurDelta);
+	gSettings->SetBool(kVectorizationCustomDouglasPeuckerEnabled, fOptions.fDouglasPeuckerEnabled);
+	gSettings->SetFloat(kVectorizationCustomDouglasPeuckerTolerance, fOptions.fDouglasPeuckerTolerance);
+	gSettings->SetFloat(kVectorizationCustomDouglasPeuckerCurveProtection, fOptions.fDouglasPeuckerCurveProtection);
+	gSettings->SetBool(kVectorizationCustomAggressiveSimplification, fOptions.fAggressiveSimplification);
+	gSettings->SetFloat(kVectorizationCustomCollinearTolerance, fOptions.fCollinearTolerance);
+	gSettings->SetFloat(kVectorizationCustomMinSegmentLength, fOptions.fMinSegmentLength);
+	gSettings->SetFloat(kVectorizationCustomCurveSmoothing, fOptions.fCurveSmoothing);
+	gSettings->SetBool(kVectorizationCustomDetectGeometry, fOptions.fDetectGeometry);
+	gSettings->SetFloat(kVectorizationCustomLineTolerance, fOptions.fLineTolerance);
+	gSettings->SetFloat(kVectorizationCustomCircleTolerance, fOptions.fCircleTolerance);
+	gSettings->SetFloat(kVectorizationCustomMinCircleRadius, fOptions.fMinCircleRadius);
+	gSettings->SetFloat(kVectorizationCustomMaxCircleRadius, fOptions.fMaxCircleRadius);
+	gSettings->SetBool(kVectorizationCustomFilterSmallObjects, fOptions.fFilterSmallObjects);
+	gSettings->SetFloat(kVectorizationCustomMinObjectArea, fOptions.fMinObjectArea);
+	gSettings->SetFloat(kVectorizationCustomMinObjectWidth, fOptions.fMinObjectWidth);
+	gSettings->SetFloat(kVectorizationCustomMinObjectHeight, fOptions.fMinObjectHeight);
+	gSettings->SetFloat(kVectorizationCustomMinObjectPerimeter, fOptions.fMinObjectPerimeter);
+	gSettings->SetFloat(kVectorizationCustomScale, fOptions.fScale);
+	gSettings->SetFloat(kVectorizationCustomRoundCoordinates, fOptions.fRoundCoordinates);
+	gSettings->SetBool(kVectorizationCustomShowDescription, fOptions.fShowDescription);
+	gSettings->SetBool(kVectorizationCustomUseViewBox, fOptions.fUseViewBox);
+	gSettings->SetBool(kVectorizationCustomOptimizeSvg, fOptions.fOptimizeSvg);
+	gSettings->SetBool(kVectorizationCustomRemoveDuplicates, fOptions.fRemoveDuplicates);
+}
+
+void
+SVGVectorizationDialog::_LoadCustomPreset()
+{
+	if (!gSettings)
+		return;
+
+	fOptions.fLineThreshold = gSettings->GetFloat(kVectorizationCustomLineThreshold, fOptions.fLineThreshold);
+	fOptions.fQuadraticThreshold = gSettings->GetFloat(kVectorizationCustomQuadraticThreshold, fOptions.fQuadraticThreshold);
+	fOptions.fPathOmitThreshold = gSettings->GetFloat(kVectorizationCustomPathOmitThreshold, fOptions.fPathOmitThreshold);
+	fOptions.fNumberOfColors = gSettings->GetFloat(kVectorizationCustomNumberOfColors, fOptions.fNumberOfColors);
+	fOptions.fColorQuantizationCycles = gSettings->GetFloat(kVectorizationCustomColorQuantizationCycles, fOptions.fColorQuantizationCycles);
+	fOptions.fRemoveBackground = gSettings->GetBool(kVectorizationCustomRemoveBackground, fOptions.fRemoveBackground);
+	fOptions.fBackgroundMethod = (BackgroundDetectionMethod)gSettings->GetInt32(kVectorizationCustomBackgroundMethod, (int32)fOptions.fBackgroundMethod);
+	fOptions.fBackgroundTolerance = gSettings->GetFloat(kVectorizationCustomBackgroundTolerance, fOptions.fBackgroundTolerance);
+	fOptions.fMinBackgroundRatio = gSettings->GetFloat(kVectorizationCustomMinBackgroundRatio, fOptions.fMinBackgroundRatio);
+	fOptions.fBlurRadius = gSettings->GetFloat(kVectorizationCustomBlurRadius, fOptions.fBlurRadius);
+	fOptions.fBlurDelta = gSettings->GetFloat(kVectorizationCustomBlurDelta, fOptions.fBlurDelta);
+	fOptions.fDouglasPeuckerEnabled = gSettings->GetBool(kVectorizationCustomDouglasPeuckerEnabled, fOptions.fDouglasPeuckerEnabled);
+	fOptions.fDouglasPeuckerTolerance = gSettings->GetFloat(kVectorizationCustomDouglasPeuckerTolerance, fOptions.fDouglasPeuckerTolerance);
+	fOptions.fDouglasPeuckerCurveProtection = gSettings->GetFloat(kVectorizationCustomDouglasPeuckerCurveProtection, fOptions.fDouglasPeuckerCurveProtection);
+	fOptions.fAggressiveSimplification = gSettings->GetBool(kVectorizationCustomAggressiveSimplification, fOptions.fAggressiveSimplification);
+	fOptions.fCollinearTolerance = gSettings->GetFloat(kVectorizationCustomCollinearTolerance, fOptions.fCollinearTolerance);
+	fOptions.fMinSegmentLength = gSettings->GetFloat(kVectorizationCustomMinSegmentLength, fOptions.fMinSegmentLength);
+	fOptions.fCurveSmoothing = gSettings->GetFloat(kVectorizationCustomCurveSmoothing, fOptions.fCurveSmoothing);
+	fOptions.fDetectGeometry = gSettings->GetBool(kVectorizationCustomDetectGeometry, fOptions.fDetectGeometry);
+	fOptions.fLineTolerance = gSettings->GetFloat(kVectorizationCustomLineTolerance, fOptions.fLineTolerance);
+	fOptions.fCircleTolerance = gSettings->GetFloat(kVectorizationCustomCircleTolerance, fOptions.fCircleTolerance);
+	fOptions.fMinCircleRadius = gSettings->GetFloat(kVectorizationCustomMinCircleRadius, fOptions.fMinCircleRadius);
+	fOptions.fMaxCircleRadius = gSettings->GetFloat(kVectorizationCustomMaxCircleRadius, fOptions.fMaxCircleRadius);
+	fOptions.fFilterSmallObjects = gSettings->GetBool(kVectorizationCustomFilterSmallObjects, fOptions.fFilterSmallObjects);
+	fOptions.fMinObjectArea = gSettings->GetFloat(kVectorizationCustomMinObjectArea, fOptions.fMinObjectArea);
+	fOptions.fMinObjectWidth = gSettings->GetFloat(kVectorizationCustomMinObjectWidth, fOptions.fMinObjectWidth);
+	fOptions.fMinObjectHeight = gSettings->GetFloat(kVectorizationCustomMinObjectHeight, fOptions.fMinObjectHeight);
+	fOptions.fMinObjectPerimeter = gSettings->GetFloat(kVectorizationCustomMinObjectPerimeter, fOptions.fMinObjectPerimeter);
+	fOptions.fScale = gSettings->GetFloat(kVectorizationCustomScale, fOptions.fScale);
+	fOptions.fRoundCoordinates = gSettings->GetFloat(kVectorizationCustomRoundCoordinates, fOptions.fRoundCoordinates);
+	fOptions.fShowDescription = gSettings->GetBool(kVectorizationCustomShowDescription, fOptions.fShowDescription);
+	fOptions.fUseViewBox = gSettings->GetBool(kVectorizationCustomUseViewBox, fOptions.fUseViewBox);
+	fOptions.fOptimizeSvg = gSettings->GetBool(kVectorizationCustomOptimizeSvg, fOptions.fOptimizeSvg);
+	fOptions.fRemoveDuplicates = gSettings->GetBool(kVectorizationCustomRemoveDuplicates, fOptions.fRemoveDuplicates);
+}
+
+void
+SVGVectorizationDialog::_SaveSelectedPreset(int32 presetIndex)
+{
+	if (gSettings)
+		gSettings->SetInt32(kVectorizationSelectedPreset, presetIndex);
+}
+
+void
+SVGVectorizationDialog::_LoadSelectedPreset()
+{
+	if (!gSettings)
+		return;
+
+	int32 selectedPreset = gSettings->GetInt32(kVectorizationSelectedPreset, 0);
+
+	if (selectedPreset < 0 || selectedPreset >= fPresetMenu->Menu()->CountItems())
+		selectedPreset = 0;
+
+	BMenuItem* item = fPresetMenu->Menu()->ItemAt(selectedPreset);
+	if (item) {
+		fUpdatingControls = true;
+		item->SetMarked(true);
+		fUpdatingControls = false;
 	}
 }

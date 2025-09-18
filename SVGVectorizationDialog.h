@@ -52,6 +52,12 @@ private:
 	void _ApplyPreset();
 	void _StartVectorization();
 
+	void _SaveCustomPreset();
+	void _LoadCustomPreset();
+	void _SwitchToCustomPreset();
+	void _SaveSelectedPreset(int32 presetIndex);
+	void _LoadSelectedPreset();
+
 	BSlider* _CreateSlider(const char* name, const char* label, float min, float max, float value);
 	BCheckBox* _CreateCheckBox(const char* name, const char* label, bool value);
 	BMenuField* _CreateMenuField(const char* name, const char* label, const char* items[], int32 selected);
@@ -67,6 +73,7 @@ private:
 	BFont*          fBoldFont;
 	TracingOptions  fOptions;
 	bool            fFirstShow;
+	bool            fUpdatingControls;
 
 	// Preset control
 	BMenuField*     fPresetMenu;
