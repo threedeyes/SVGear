@@ -98,6 +98,8 @@ const uint32 MSG_VECTORIZATION_STATUS_UPDATE = 'vcsu';
 const uint32 MSG_VECTORIZATION_COMPLETED = 'vccp';
 const uint32 MSG_VECTORIZATION_ERROR = 'vcer';
 const uint32 MSG_VECTORIZATION_PRESET = 'vcpr';
+const uint32 MSG_VECTORIZATION_CLEAR_STATUS = 'vccs';
+const uint32 MSG_VECTORIZATION_STATUS_ANIMATION = 'vcsa';
 
 // UI Constants
 const int32 TOOLBAR_ICON_SIZE = 24;
@@ -109,6 +111,14 @@ enum {
 	TAB_SVG = 0,
 	TAB_RDEF = 1,
 	TAB_CPP = 2
+};
+
+// Vectorization status constants
+enum VectorizationStatus {
+	STATUS_IDLE = 0,
+	STATUS_VECTORIZING,
+	STATUS_COMPLETED,
+	STATUS_ERROR
 };
 
 // Global error messages

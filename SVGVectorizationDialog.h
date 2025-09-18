@@ -17,6 +17,7 @@
 #include <Message.h>
 #include <String.h>
 #include <StringView.h>
+#include <MessageRunner.h>
 
 #include "TracingOptions.h"
 #include "SVGConstants.h"
@@ -29,6 +30,10 @@ public:
 	virtual void Show();
 	virtual void MessageReceived(BMessage* message);
 	virtual bool QuitRequested();
+
+	void SetVectorizationStatus(VectorizationStatus status, const char* message = NULL);
+	void SetVectorizationCompleted();
+	void SetVectorizationError(const char* errorMessage = NULL);
 
 	TracingOptions GetCurrentOptions() const;
 	void SetOptions(const TracingOptions& options);
@@ -58,6 +63,11 @@ private:
 	void _SaveSelectedPreset(int32 presetIndex);
 	void _LoadSelectedPreset();
 
+	void _SetVectorizationStatus(VectorizationStatus status, const char* message = NULL);
+	void _UpdateStatusAnimation();
+	void _StartStatusAnimation();
+	void _StopStatusAnimation();
+
 	BSlider* _CreateSlider(const char* name, const char* label, float min, float max, float value);
 	BCheckBox* _CreateCheckBox(const char* name, const char* label, bool value);
 	BMenuField* _CreateMenuField(const char* name, const char* label, const char* items[], int32 selected);
@@ -67,13 +77,18 @@ private:
 	BString _FormatSliderValue(float value, int decimals = 2);
 
 private:
-	BTabView*       fTabView;
-	BWindow*        fTarget;
-	BString         fImagePath;
-	BFont*          fBoldFont;
-	TracingOptions  fOptions;
-	bool            fFirstShow;
-	bool            fUpdatingControls;
+	BTabView*        fTabView;
+	BWindow*         fTarget;
+	BString          fImagePath;
+	BFont*           fBoldFont;
+	TracingOptions   fOptions;
+	BStringView*     fStatusView;
+	BMessageRunner*  fStatusAnimationRunner;
+	VectorizationStatus fCurrentStatus;
+	BString          fBaseStatusMessage;
+	int32            fAnimationDots;
+	bool             fFirstShow;
+	bool             fUpdatingControls;
 
 	// Preset control
 	BMenuField*     fPresetMenu;

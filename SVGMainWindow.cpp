@@ -742,14 +742,21 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
                 _UpdateUIState();
                 _UpdateStatView();
             }
+
+			if (fVectorizationDialog)
+				fVectorizationDialog->SetVectorizationStatus(STATUS_IDLE);
+
             break;
         }
 
         case MSG_VECTORIZATION_ERROR:
         {
             BString error;
-            if (message->FindString("error", &error) == B_OK)
+            if (message->FindString("error", &error) == B_OK) {
                 _ShowError(error.String());
+                if (fVectorizationDialog)
+					fVectorizationDialog->SetVectorizationError(error.String());
+            }
             break;
         }
 
