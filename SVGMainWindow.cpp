@@ -811,9 +811,6 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 
 		case MSG_VECTORIZATION_OK:
 		{
-			if (fSVGView)
-				fSVGView->ClearVectorizationBitmap();
-
 			if (fVectorizationDialog) {
 				BPath path(fVectorizationDialog->GetImagePath().String());
 				BString title("SVGear - ");
@@ -827,6 +824,9 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 
 			if (fFileManager)
 				fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
+
+			if (fSVGView)
+				fSVGView->ClearVectorizationBitmap();
 
 			if (fVectorizationDialog) {
 				fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);

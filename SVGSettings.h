@@ -64,6 +64,8 @@ extern const char* const kVectorizationCustomUseViewBox;
 extern const char* const kVectorizationCustomOptimizeSvg;
 extern const char* const kVectorizationCustomRemoveDuplicates;
 extern const char* const kVectorizationSelectedPreset;
+extern const char* const kVectorizationCustomVisvalingamWhyattEnabled;
+extern const char* const kVectorizationCustomVisvalingamWhyattTolerance;
 
 class SVGSettings {
 public:

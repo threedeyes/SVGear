@@ -362,20 +362,26 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 {
 	BGroupView* simplifyGroup = new BGroupView(B_VERTICAL, B_USE_DEFAULT_SPACING);
 
-	fDouglasPeuckerCheck = _CreateCheckBox("douglas_peucker", B_TRANSLATE("Douglas-Peucker simplification"),
+	// Visvalingam-Whyatt controls
+	fVisvalingamWhyattCheck = _CreateCheckBox("visvalingam_whyatt", B_TRANSLATE("Visvalingam-Whyatt"),
+										fOptions.fVisvalingamWhyattEnabled);
+	fVisvalingamWhyattCheck->SetFont(fBoldFont);
+
+	BView* visvalingamToleranceGroup = _CreateSliderWithLabels("visvalingam_tolerance", B_TRANSLATE("Area tolerance"),
+										0.0f, 2.0f, fOptions.fVisvalingamWhyattTolerance,
+										&fVisvalingamWhyattToleranceSlider, &fVisvalingamWhyattToleranceValueLabel);
+
+	// Douglas-Peucker controls
+	fDouglasPeuckerCheck = _CreateCheckBox("douglas_peucker", B_TRANSLATE("Douglas-Peucker"),
 										fOptions.fDouglasPeuckerEnabled);
 	fDouglasPeuckerCheck->SetFont(fBoldFont);
 
 	BView* douglasToleranceGroup = _CreateSliderWithLabels("douglas_tolerance", B_TRANSLATE("Simplification tolerance"),
-										0.1f, 15.0f, fOptions.fDouglasPeuckerTolerance,
+										0.0f, 15.0f, fOptions.fDouglasPeuckerTolerance,
 										&fDouglasPeuckerToleranceSlider, &fDouglasPeuckerToleranceValueLabel);
 	BView* curveProtectionGroup = _CreateSliderWithLabels("curve_protection", B_TRANSLATE("Curve protection"),
 										0.0f, 2.0f, fOptions.fDouglasPeuckerCurveProtection,
 										&fDouglasPeuckerCurveProtectionSlider, &fDouglasPeuckerCurveProtectionValueLabel);
-
-	fAggressiveSimplificationCheck = _CreateCheckBox("aggressive_simplify", B_TRANSLATE("Aggressive simplification"),
-										fOptions.fAggressiveSimplification);
-	fAggressiveSimplificationCheck->SetFont(fBoldFont);
 
 	BView* collinearToleranceGroup = _CreateSliderWithLabels("collinear_tolerance", B_TRANSLATE("Collinear tolerance"),
 										0.1f, 10.0f, fOptions.fCollinearTolerance,
@@ -387,6 +393,16 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 										0.0f, 2.0f, fOptions.fCurveSmoothing,
 										&fCurveSmoothingSlider, &fCurveSmoothingValueLabel);
 
+	// Create boxes
+	BBox* visvalingamBox = new BBox("visvalingam_box");
+	visvalingamBox->SetLabel(fVisvalingamWhyattCheck);
+	BLayoutBuilder::Group<>(visvalingamBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.AddStrut(B_USE_DEFAULT_SPACING)
+		.Add(visvalingamToleranceGroup)
+		.AddGlue()
+	.End();
+
 	BBox* douglasBox = new BBox("douglas_box");
 	douglasBox->SetLabel(fDouglasPeuckerCheck);
 	BLayoutBuilder::Group<>(douglasBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
@@ -397,9 +413,9 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 		.AddGlue()
 	.End();
 
-	BBox* aggressiveBox = new BBox("aggressive_box");
-	aggressiveBox->SetLabel(fAggressiveSimplificationCheck);
-	BLayoutBuilder::Group<>(aggressiveBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	BBox* miscBox = new BBox("misc_box");
+	miscBox->SetLabel("Common");
+	BLayoutBuilder::Group<>(miscBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddStrut(B_USE_DEFAULT_SPACING)
 		.Add(collinearToleranceGroup)
@@ -411,8 +427,11 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 	BLayoutBuilder::Group<>(simplifyGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
-			.Add(douglasBox, 1.0f)
-			.Add(aggressiveBox, 1.0f)
+			.AddGroup(B_VERTICAL, B_USE_DEFAULT_SPACING)
+				.Add(visvalingamBox)
+				.Add(douglasBox)
+			.End()
+			.Add(miscBox)
 		.End()
 		.AddGlue()
 	.End();
@@ -660,6 +679,8 @@ SVGVectorizationDialog::_UpdateSliderLabels()
 	if (fBlurDeltaValueLabel)
 		fBlurDeltaValueLabel->SetText(_FormatSliderValue(fBlurDeltaSlider->Value() / 100.0f, 0).String());
 
+	if (fVisvalingamWhyattToleranceValueLabel)
+		fVisvalingamWhyattToleranceValueLabel->SetText(_FormatSliderValue(fVisvalingamWhyattToleranceSlider->Value() / 100.0f).String());
 	if (fDouglasPeuckerToleranceValueLabel)
 		fDouglasPeuckerToleranceValueLabel->SetText(_FormatSliderValue(fDouglasPeuckerToleranceSlider->Value() / 100.0f).String());
 	if (fDouglasPeuckerCurveProtectionValueLabel)
@@ -757,11 +778,14 @@ SVGVectorizationDialog::_UpdateFromControls()
 	fOptions.fBlurRadius = fBlurRadiusSlider->Value() / 100.0f;
 	fOptions.fBlurDelta = fBlurDeltaSlider->Value() / 100.0f;
 
+	fOptions.fVisvalingamWhyattEnabled = (fVisvalingamWhyattCheck->Value() == B_CONTROL_ON);
+	fOptions.fVisvalingamWhyattTolerance = fVisvalingamWhyattToleranceSlider->Value() / 100.0f;
+
 	fOptions.fDouglasPeuckerEnabled = (fDouglasPeuckerCheck->Value() == B_CONTROL_ON);
 	fOptions.fDouglasPeuckerTolerance = fDouglasPeuckerToleranceSlider->Value() / 100.0f;
 	fOptions.fDouglasPeuckerCurveProtection = fDouglasPeuckerCurveProtectionSlider->Value() / 100.0f;
 
-	fOptions.fAggressiveSimplification = (fAggressiveSimplificationCheck->Value() == B_CONTROL_ON);
+	fOptions.fAggressiveSimplification = false;
 	fOptions.fCollinearTolerance = fCollinearToleranceSlider->Value() / 100.0f;
 	fOptions.fMinSegmentLength = fMinSegmentLengthSlider->Value() / 100.0f;
 	fOptions.fCurveSmoothing = fCurveSmoothingSlider->Value() / 100.0f;
@@ -809,11 +833,13 @@ SVGVectorizationDialog::_UpdateControls()
 	fBlurRadiusSlider->SetValue((int32)(fOptions.fBlurRadius * 100));
 	fBlurDeltaSlider->SetValue((int32)(fOptions.fBlurDelta * 100));
 
+	fVisvalingamWhyattCheck->SetValue(fOptions.fVisvalingamWhyattEnabled ? B_CONTROL_ON : B_CONTROL_OFF);
+	fVisvalingamWhyattToleranceSlider->SetValue((int32)(fOptions.fVisvalingamWhyattTolerance * 100));
+
 	fDouglasPeuckerCheck->SetValue(fOptions.fDouglasPeuckerEnabled ? B_CONTROL_ON : B_CONTROL_OFF);
 	fDouglasPeuckerToleranceSlider->SetValue((int32)(fOptions.fDouglasPeuckerTolerance * 100));
 	fDouglasPeuckerCurveProtectionSlider->SetValue((int32)(fOptions.fDouglasPeuckerCurveProtection * 100));
 
-	fAggressiveSimplificationCheck->SetValue(fOptions.fAggressiveSimplification ? B_CONTROL_ON : B_CONTROL_OFF);
 	fCollinearToleranceSlider->SetValue((int32)(fOptions.fCollinearTolerance * 100));
 	fMinSegmentLengthSlider->SetValue((int32)(fOptions.fMinSegmentLength * 100));
 	fCurveSmoothingSlider->SetValue((int32)(fOptions.fCurveSmoothing * 100));
@@ -844,14 +870,12 @@ SVGVectorizationDialog::_UpdateControls()
 void
 SVGVectorizationDialog::_UpdateControlStates()
 {
+	bool visvalingamEnabled = (fVisvalingamWhyattCheck->Value() == B_CONTROL_ON);
+	fVisvalingamWhyattToleranceSlider->SetEnabled(visvalingamEnabled);
+
 	bool douglasEnabled = (fDouglasPeuckerCheck->Value() == B_CONTROL_ON);
 	fDouglasPeuckerToleranceSlider->SetEnabled(douglasEnabled);
 	fDouglasPeuckerCurveProtectionSlider->SetEnabled(douglasEnabled);
-
-	bool aggressiveEnabled = (fAggressiveSimplificationCheck->Value() == B_CONTROL_ON);
-	fCollinearToleranceSlider->SetEnabled(aggressiveEnabled);
-	fMinSegmentLengthSlider->SetEnabled(aggressiveEnabled);
-	fCurveSmoothingSlider->SetEnabled(aggressiveEnabled);
 
 	bool removeBackgroundEnabled = (fRemoveBackgroundCheck->Value() == B_CONTROL_ON);
 	fBackgroundMethodMenu->SetEnabled(removeBackgroundEnabled);
@@ -901,7 +925,6 @@ SVGVectorizationDialog::_ApplyPreset()
 			fOptions.fQuadraticThreshold = 0.5f;
 			fOptions.fNumberOfColors = 8;
 			fOptions.fColorQuantizationCycles = 16.0f;
-			fOptions.fAggressiveSimplification = true;
 			fOptions.fDouglasPeuckerEnabled = true;
 			fOptions.fDouglasPeuckerTolerance = 0.5f;
 			break;
@@ -914,7 +937,6 @@ SVGVectorizationDialog::_ApplyPreset()
 			fOptions.fDouglasPeuckerTolerance = 2.0f;
 			fOptions.fFilterSmallObjects = true;
 			fOptions.fMinObjectArea = 10.0f;
-			fOptions.fAggressiveSimplification = true;
 			break;
 		case 2: // Quality
 			fOptions.SetDefaults();
@@ -932,7 +954,6 @@ SVGVectorizationDialog::_ApplyPreset()
 			fOptions.fNumberOfColors = 8;
 			fOptions.fLineThreshold = 3.0f;
 			fOptions.fQuadraticThreshold = 3.0f;
-			fOptions.fAggressiveSimplification = true;
 			fOptions.fCollinearTolerance = 2.0f;
 			fOptions.fFilterSmallObjects = true;
 			fOptions.fMinObjectArea = 25.0f;
@@ -946,6 +967,7 @@ SVGVectorizationDialog::_ApplyPreset()
 	}
 
 	fOptions.fCustomDescription = kSVGDescription;
+	fOptions.fAggressiveSimplification = false;
 
 	fUpdatingControls = false;
 	_UpdateControls();
@@ -994,10 +1016,11 @@ SVGVectorizationDialog::_SaveCustomPreset()
 	gSettings->SetFloat(kVectorizationCustomMinBackgroundRatio, fOptions.fMinBackgroundRatio);
 	gSettings->SetFloat(kVectorizationCustomBlurRadius, fOptions.fBlurRadius);
 	gSettings->SetFloat(kVectorizationCustomBlurDelta, fOptions.fBlurDelta);
+	gSettings->SetBool(kVectorizationCustomVisvalingamWhyattEnabled, fOptions.fVisvalingamWhyattEnabled);
+	gSettings->SetFloat(kVectorizationCustomVisvalingamWhyattTolerance, fOptions.fVisvalingamWhyattTolerance);
 	gSettings->SetBool(kVectorizationCustomDouglasPeuckerEnabled, fOptions.fDouglasPeuckerEnabled);
 	gSettings->SetFloat(kVectorizationCustomDouglasPeuckerTolerance, fOptions.fDouglasPeuckerTolerance);
 	gSettings->SetFloat(kVectorizationCustomDouglasPeuckerCurveProtection, fOptions.fDouglasPeuckerCurveProtection);
-	gSettings->SetBool(kVectorizationCustomAggressiveSimplification, fOptions.fAggressiveSimplification);
 	gSettings->SetFloat(kVectorizationCustomCollinearTolerance, fOptions.fCollinearTolerance);
 	gSettings->SetFloat(kVectorizationCustomMinSegmentLength, fOptions.fMinSegmentLength);
 	gSettings->SetFloat(kVectorizationCustomCurveSmoothing, fOptions.fCurveSmoothing);
@@ -1036,10 +1059,11 @@ SVGVectorizationDialog::_LoadCustomPreset()
 	fOptions.fMinBackgroundRatio = gSettings->GetFloat(kVectorizationCustomMinBackgroundRatio, fOptions.fMinBackgroundRatio);
 	fOptions.fBlurRadius = gSettings->GetFloat(kVectorizationCustomBlurRadius, fOptions.fBlurRadius);
 	fOptions.fBlurDelta = gSettings->GetFloat(kVectorizationCustomBlurDelta, fOptions.fBlurDelta);
+	fOptions.fVisvalingamWhyattEnabled = gSettings->GetBool(kVectorizationCustomVisvalingamWhyattEnabled, fOptions.fVisvalingamWhyattEnabled);
+	fOptions.fVisvalingamWhyattTolerance = gSettings->GetFloat(kVectorizationCustomVisvalingamWhyattTolerance, fOptions.fVisvalingamWhyattTolerance);
 	fOptions.fDouglasPeuckerEnabled = gSettings->GetBool(kVectorizationCustomDouglasPeuckerEnabled, fOptions.fDouglasPeuckerEnabled);
 	fOptions.fDouglasPeuckerTolerance = gSettings->GetFloat(kVectorizationCustomDouglasPeuckerTolerance, fOptions.fDouglasPeuckerTolerance);
 	fOptions.fDouglasPeuckerCurveProtection = gSettings->GetFloat(kVectorizationCustomDouglasPeuckerCurveProtection, fOptions.fDouglasPeuckerCurveProtection);
-	fOptions.fAggressiveSimplification = gSettings->GetBool(kVectorizationCustomAggressiveSimplification, fOptions.fAggressiveSimplification);
 	fOptions.fCollinearTolerance = gSettings->GetFloat(kVectorizationCustomCollinearTolerance, fOptions.fCollinearTolerance);
 	fOptions.fMinSegmentLength = gSettings->GetFloat(kVectorizationCustomMinSegmentLength, fOptions.fMinSegmentLength);
 	fOptions.fCurveSmoothing = gSettings->GetFloat(kVectorizationCustomCurveSmoothing, fOptions.fCurveSmoothing);
@@ -1060,6 +1084,7 @@ SVGVectorizationDialog::_LoadCustomPreset()
 	fOptions.fOptimizeSvg = gSettings->GetBool(kVectorizationCustomOptimizeSvg, fOptions.fOptimizeSvg);
 	fOptions.fRemoveDuplicates = gSettings->GetBool(kVectorizationCustomRemoveDuplicates, fOptions.fRemoveDuplicates);
 	fOptions.fCustomDescription = kSVGDescription;
+	fOptions.fAggressiveSimplification = false;
 }
 
 void
@@ -1091,7 +1116,7 @@ SVGVectorizationDialog::_LoadSelectedPreset()
 void
 SVGVectorizationDialog::_SetVectorizationStatus(VectorizationStatus status, const char* message)
 {
-	if (LockLooperWithTimeout(10000) != B_OK)
+	if (LockLooperWithTimeout(100000) != B_OK)
 		return;
 
 	fCurrentStatus = status;

@@ -33,6 +33,7 @@ SRCS = \
 	External/HVIF-Tools/src/img2svg/processing/PathSimplifier.cpp \
 	External/HVIF-Tools/src/img2svg/processing/PathTracer.cpp \
 	External/HVIF-Tools/src/img2svg/processing/SelectiveBlur.cpp \
+	External/HVIF-Tools/src/img2svg/processing/VisvalingamWhyatt.cpp \
 	External/HVIF-Tools/src/img2svg/quantization/ColorCube.cpp \
 	External/HVIF-Tools/src/img2svg/quantization/ColorNode.cpp \
 	External/HVIF-Tools/src/img2svg/quantization/ColorQuantizer.cpp \

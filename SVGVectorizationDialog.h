@@ -113,6 +113,8 @@ private:
 	BSlider*        fBlurDeltaSlider;
 
 	// Simplification tab controls
+	BCheckBox*      fVisvalingamWhyattCheck;
+	BSlider*        fVisvalingamWhyattToleranceSlider;
 	BCheckBox*      fDouglasPeuckerCheck;
 	BSlider*        fDouglasPeuckerToleranceSlider;
 	BSlider*        fDouglasPeuckerCurveProtectionSlider;
@@ -158,6 +160,7 @@ private:
 	BStringView*    fMinBackgroundRatioValueLabel;
 	BStringView*    fBlurRadiusValueLabel;
 	BStringView*    fBlurDeltaValueLabel;
+	BStringView*    fVisvalingamWhyattToleranceValueLabel;
 	BStringView*    fDouglasPeuckerToleranceValueLabel;
 	BStringView*    fDouglasPeuckerCurveProtectionValueLabel;
 	BStringView*    fCollinearToleranceValueLabel;

@@ -64,6 +64,8 @@ const char* const kVectorizationCustomUseViewBox = "vectorization_custom_use_vie
 const char* const kVectorizationCustomOptimizeSvg = "vectorization_custom_optimize_svg";
 const char* const kVectorizationCustomRemoveDuplicates = "vectorization_custom_remove_duplicates";
 const char* const kVectorizationSelectedPreset = "vectorization_selected_preset";
+const char* const kVectorizationCustomVisvalingamWhyattEnabled = "vectorization_custom_visvalingam_whyatt_enabled";
+const char* const kVectorizationCustomVisvalingamWhyattTolerance = "vectorization_custom_visvalingam_whyatt_tolerance";
 
 SVGSettings* gSettings = NULL;
 
