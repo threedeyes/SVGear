@@ -833,6 +833,8 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 				fVectorizationDialog = NULL;
 			}
 
+			fSVGTextView->ClearUndoHistory();
+
 			_ClearBackupState();
 
 			fSVGView->ResetView();
