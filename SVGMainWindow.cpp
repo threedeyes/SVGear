@@ -315,7 +315,9 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), B_TRANSLATE("Best fit"));
 	fToolBar->AddAction(MSG_CENTER, this, SVGApplication::GetIcon("go-center", TOOLBAR_ICON_SIZE), B_TRANSLATE("Center"));
 	fToolBar->AddSeparator();
+	fToolBar->AddAction(MSG_TOGGLE_TRANSPARENCY, this, SVGApplication::GetIcon("transparent", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Transparency Grid"));
 	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Bounding Box"));
+	fToolBar->AddSeparator();
 	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
 	fToolBar->AddAction(MSG_TOGGLE_STRUCTURE, this, SVGApplication::GetIcon("structure", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Structure"));
 	fToolBar->AddAction(MSG_TOGGLE_STAT, this, SVGApplication::GetIcon("info", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show statistics"));
@@ -1356,6 +1358,7 @@ SVGMainWindow::_UpdateToolBarStates()
 		_SetToolBarItemEnabled(fToolBar, MSG_ZOOM_ORIGINAL, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_CENTER, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_FIT_WINDOW, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_TRANSPARENCY, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_BOUNDINGBOX, hasDocument);
 	}
 
@@ -1414,6 +1417,9 @@ SVGMainWindow::_UpdateToggleButtonStates()
 
 		bool boundingBoxVisible = fSVGView && (fSVGView->BoundingBoxStyle() != SVG_BBOX_NONE);
 		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_BOUNDINGBOX, boundingBoxVisible);
+
+		bool transparentGridEnabled = fSVGView && fSVGView->ShowTransparency();
+		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_TRANSPARENCY, transparentGridEnabled);
 
 		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_STAT, fShowStatView);
 		_SetToolBarButtonPressed(fToolBar, MSG_TOGGLE_STRUCTURE, fShowStructureView);
