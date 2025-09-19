@@ -45,6 +45,9 @@ private:
 	void _ZoomAtPoint(float newScale, BPoint zoomCenter);
 	void _DrawPlaceholder();
 	void _DrawVectorizationBitmap();
+	void _DrawOverlayText(const char* text, alignment horizontal = B_ALIGN_RIGHT,
+						vertical_alignment vertical = B_ALIGN_TOP, float margin = 10.0,
+						float padding = 8.0, float cornerRadius = 6.0);
 	BRect _GetVectorizationBitmapRect() const;
 
 private:

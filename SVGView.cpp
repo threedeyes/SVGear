@@ -57,6 +57,9 @@ SVGView::Draw(BRect updateRect)
 	} else {
 		_DrawPlaceholder();
 	}
+
+	if (fVectorizationBitmap)
+		_DrawOverlayText(B_TRANSLATE("Hold the right mouse button to view the original raster image"));
 }
 
 void
@@ -110,6 +113,75 @@ SVGView::_DrawVectorizationBitmap()
 	SetDrawingMode(B_OP_ALPHA);
 	DrawBitmap(fVectorizationBitmap, bitmapRect);
 	SetDrawingMode(B_OP_COPY);
+}
+
+void
+SVGView::_DrawOverlayText(const char* text, alignment horizontal, vertical_alignment vertical,
+						float margin, float padding, float cornerRadius)
+{
+	if (!text)
+		return;
+
+	BFont font;
+	GetFont(&font);
+
+	font_height fh;
+	font.GetHeight(&fh);
+	float textWidth = font.StringWidth(text);
+
+	BRect bounds = Bounds();
+	float textX, textY;
+
+	switch (horizontal) {
+		case B_ALIGN_LEFT:
+			textX = margin + padding;
+			break;
+		case B_ALIGN_CENTER:
+			textX = (bounds.Width() - textWidth) / 2.0;
+			break;
+		case B_ALIGN_RIGHT:
+		default:
+			textX = bounds.right - margin - padding - textWidth;
+			break;
+	}
+
+	switch (vertical) {
+		case B_ALIGN_MIDDLE:
+			textY = (bounds.Height() + fh.ascent - fh.descent) / 2.0;
+			break;
+		case B_ALIGN_BOTTOM:
+			textY = bounds.bottom - margin - padding - fh.descent;
+			break;
+		case B_ALIGN_TOP:
+		default:
+			textY = margin + padding + fh.ascent;
+			break;
+	}
+
+	BPoint textPos(textX, textY);
+	BRect textBg(textPos.x - padding, textPos.y - fh.ascent - padding,
+				textPos.x + textWidth + padding, textPos.y + fh.descent + padding);
+
+	PushState();
+	SetDrawingMode(B_OP_ALPHA);
+
+	BRect shadowRect = textBg;
+	shadowRect.OffsetBy(2, 2);
+	SetHighColor(0, 0, 0, 50);
+	FillRoundRect(shadowRect, cornerRadius, cornerRadius);
+
+	SetHighColor(240, 240, 240, 220);
+	FillRoundRect(textBg, cornerRadius, cornerRadius);
+
+	SetHighColor(180, 180, 180, 255);
+	StrokeRoundRect(textBg, cornerRadius, cornerRadius);
+
+	SetHighColor(0, 0, 0);
+
+	SetDrawingMode(B_OP_COPY);
+	DrawString(text, textPos);
+
+	PopState();
 }
 
 BRect
