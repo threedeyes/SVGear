@@ -90,6 +90,8 @@ private:
 	bool             fFirstShow;
 	bool             fUpdatingControls;
 
+	static const char* kSVGDescription;
+
 	// Preset control
 	BMenuField*     fPresetMenu;
 

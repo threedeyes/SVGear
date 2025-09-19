@@ -136,4 +136,7 @@ enum VectorizationStatus {
 #define MSG_FILE_SAVED B_TRANSLATE("File saved successfully")
 #define MSG_FILE_EXPORTED B_TRANSLATE("File exported successfully")
 
+// SVG Description
+#define MSG_SVG_DESCRIPTION "Vectorized with SVGear 1.0 for Haiku"
+
 #endif

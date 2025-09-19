@@ -21,6 +21,8 @@
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "SVGVectorizationDialog"
 
+const char* SVGVectorizationDialog::kSVGDescription = MSG_SVG_DESCRIPTION;
+
 SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* target)
 	: BWindow(BRect(100, 100, 600, 500), B_TRANSLATE("Vectorization Settings"),
 			B_FLOATING_WINDOW_LOOK, B_FLOATING_SUBSET_WINDOW_FEEL,
@@ -943,7 +945,7 @@ SVGVectorizationDialog::_ApplyPreset()
 			return;
 	}
 
-	fOptions.fCustomDescription = "Vectorized with SVGear 1.0 for Haiku";
+	fOptions.fCustomDescription = kSVGDescription;
 
 	fUpdatingControls = false;
 	_UpdateControls();
@@ -1057,6 +1059,7 @@ SVGVectorizationDialog::_LoadCustomPreset()
 	fOptions.fUseViewBox = gSettings->GetBool(kVectorizationCustomUseViewBox, fOptions.fUseViewBox);
 	fOptions.fOptimizeSvg = gSettings->GetBool(kVectorizationCustomOptimizeSvg, fOptions.fOptimizeSvg);
 	fOptions.fRemoveDuplicates = gSettings->GetBool(kVectorizationCustomRemoveDuplicates, fOptions.fRemoveDuplicates);
+	fOptions.fCustomDescription = kSVGDescription;
 }
 
 void
