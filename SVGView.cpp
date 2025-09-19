@@ -31,8 +31,11 @@ const float SVGView::kScaleStep = 1.2f;
 SVGView::SVGView(const char* name)
 	: BSVGView(name),
 	fIsDragging(false),
+	fIsRightDragging(false),
 	fTarget(NULL),
-	fPlaceholderIcon(NULL)
+	fPlaceholderIcon(NULL),
+	fVectorizationBitmap(NULL),
+	fShowVectorizationBitmap(false)
 {
 	SetExplicitMinSize(BSize(256, 192));
 	SetFlags(Flags() | B_FULL_UPDATE_ON_RESIZE);
@@ -41,15 +44,19 @@ SVGView::SVGView(const char* name)
 
 SVGView::~SVGView()
 {
+	delete fVectorizationBitmap;
 }
 
 void
 SVGView::Draw(BRect updateRect)
 {
-	if (IsLoaded())
+	if (fShowVectorizationBitmap && fVectorizationBitmap) {
+		_DrawVectorizationBitmap();
+	} else if (IsLoaded()) {
 		BSVGView::Draw(updateRect);
-	else
+	} else {
 		_DrawPlaceholder();
+	}
 }
 
 void
@@ -84,9 +91,51 @@ SVGView::_DrawPlaceholder()
 }
 
 void
+SVGView::_DrawVectorizationBitmap()
+{
+	if (!fVectorizationBitmap)
+		return;
+
+	BRect bounds = Bounds();
+
+	if (fShowTransparency) {
+		_DrawTransparencyGrid();
+	} else {
+		SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+		FillRect(bounds);
+	}
+
+	BRect bitmapRect = _GetVectorizationBitmapRect();
+
+	SetDrawingMode(B_OP_ALPHA);
+	DrawBitmap(fVectorizationBitmap, bitmapRect);
+	SetDrawingMode(B_OP_COPY);
+}
+
+BRect
+SVGView::_GetVectorizationBitmapRect() const
+{
+	if (!fVectorizationBitmap)
+		return BRect();
+
+	BRect bitmapBounds = fVectorizationBitmap->Bounds();
+	float bitmapWidth = bitmapBounds.Width() + 1;
+	float bitmapHeight = bitmapBounds.Height() + 1;
+
+	// Use the same scaling and offset as the SVG
+	float scaledWidth = bitmapWidth * fScale;
+	float scaledHeight = bitmapHeight * fScale;
+
+	float x = fOffsetX;
+	float y = fOffsetY;
+
+	return BRect(x, y, x + scaledWidth - 1, y + scaledHeight - 1);
+}
+
+void
 SVGView::MouseDown(BPoint where)
 {
-	if (!fSVGImage)
+	if (!fSVGImage && !fVectorizationBitmap)
 		return;
 
 	BMessage* currentMessage = Window()->CurrentMessage();
@@ -95,6 +144,17 @@ SVGView::MouseDown(BPoint where)
 
 	if (buttons & B_PRIMARY_MOUSE_BUTTON) {
 		fIsDragging = true;
+		fIsRightDragging = false;
+		fLastMousePosition = where;
+		SetMouseEventMask(B_POINTER_EVENTS, B_LOCK_WINDOW_FOCUS);
+	} else if (buttons & B_SECONDARY_MOUSE_BUTTON) {
+		if (fVectorizationBitmap) {
+			fShowVectorizationBitmap = true;
+			Invalidate();
+		}
+
+		fIsRightDragging = true;
+		fIsDragging = false;
 		fLastMousePosition = where;
 		SetMouseEventMask(B_POINTER_EVENTS, B_LOCK_WINDOW_FOCUS);
 	}
@@ -105,12 +165,17 @@ SVGView::MouseUp(BPoint where)
 {
 	if (fIsDragging)
 		fIsDragging = false;
+	if (fIsRightDragging)
+		fIsRightDragging = false;
+
+	fShowVectorizationBitmap = false;
+	Invalidate();
 }
 
 void
 SVGView::MouseMoved(BPoint where, uint32 code, const BMessage* dragMessage)
 {
-	if (fIsDragging && fSVGImage) {
+	if ((fIsDragging || fIsRightDragging) && (fSVGImage || fVectorizationBitmap)) {
 		BPoint delta = where - fLastMousePosition;
 		fOffsetX += delta.x;
 		fOffsetY += delta.y;
@@ -155,7 +220,7 @@ SVGView::MessageReceived(BMessage* message)
 			break;
 		}
 		case B_MOUSE_WHEEL_CHANGED: {
-			if (!fSVGImage)
+			if (!fSVGImage && !fVectorizationBitmap)
 				break;
 
 			float deltaY = 0;
@@ -244,7 +309,7 @@ SVGView::LoadFromFile(const char* filename, const char* units, float dpi)
 void
 SVGView::ZoomIn(BPoint center)
 {
-	if (!fSVGImage)
+	if (!fSVGImage && !fVectorizationBitmap)
 		return;
 
 	fAutoScale = false;
@@ -265,7 +330,7 @@ SVGView::ZoomIn(BPoint center)
 void
 SVGView::ZoomOut(BPoint center)
 {
-	if (!fSVGImage)
+	if (!fSVGImage && !fVectorizationBitmap)
 		return;
 
 	fAutoScale = false;
@@ -300,10 +365,43 @@ SVGView::ZoomToOriginal()
 void
 SVGView::ResetView()
 {
-	if (fSVGImage) {
+	if (fSVGImage || fVectorizationBitmap) {
 		fAutoScale = true;
 		_CalculateAutoScale();
 		_UpdateStatus();
+		Invalidate();
+	}
+}
+
+void
+SVGView::SetVectorizationBitmap(BBitmap* bitmap)
+{
+	delete fVectorizationBitmap;
+	fVectorizationBitmap = bitmap;
+
+	if (fVectorizationBitmap && !fSVGImage) {
+		fScale = 1.0f;
+		fOffsetX = 0.0f;
+		fOffsetY = 0.0f;
+	}
+
+	Invalidate();
+}
+
+void
+SVGView::ClearVectorizationBitmap()
+{
+	delete fVectorizationBitmap;
+	fVectorizationBitmap = NULL;
+	fShowVectorizationBitmap = false;
+	Invalidate();
+}
+
+void
+SVGView::SetShowVectorizationBitmap(bool show)
+{
+	if (fShowVectorizationBitmap != show) {
+		fShowVectorizationBitmap = show;
 		Invalidate();
 	}
 }
@@ -327,7 +425,7 @@ SVGView::_UpdateStatus()
 void
 SVGView::_ZoomAtPoint(float newScale, BPoint zoomCenter)
 {
-	if (!fSVGImage)
+	if (!fSVGImage && !fVectorizationBitmap)
 		return;
 
 	fAutoScale = false;

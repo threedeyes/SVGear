@@ -34,16 +34,28 @@ public:
 
 	void SetTarget(BHandler* target) { fTarget = target; }
 
+	void SetVectorizationBitmap(BBitmap* bitmap);
+	void ClearVectorizationBitmap();
+	bool HasVectorizationBitmap() const { return fVectorizationBitmap != NULL; }
+	void SetShowVectorizationBitmap(bool show);
+	bool IsShowingVectorizationBitmap() const { return fShowVectorizationBitmap; }
+
 private:
 	void _UpdateStatus();
 	void _ZoomAtPoint(float newScale, BPoint zoomCenter);
 	void _DrawPlaceholder();
+	void _DrawVectorizationBitmap();
+	BRect _GetVectorizationBitmapRect() const;
 
 private:
 	bool		fIsDragging;
+	bool		fIsRightDragging;
 	BPoint		fLastMousePosition;
 	BHandler*	fTarget;
 	BBitmap*	fPlaceholderIcon;
+
+	BBitmap*	fVectorizationBitmap;
+	bool		fShowVectorizationBitmap;
 
 	static const float kMinScale;
 	static const float kMaxScale;

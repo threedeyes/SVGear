@@ -16,6 +16,7 @@
 #include <Directory.h>
 #include <GroupView.h>
 #include <Catalog.h>
+#include <TranslationUtils.h>
 
 #include <private/interface/AboutWindow.h>
 
@@ -754,102 +755,108 @@ SVGMainWindow::_HandleExportMessages(BMessage* message)
 void
 SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 {
-    switch (message->what) {
-        case MSG_VECTORIZATION_PREVIEW:
-        {
-            BString imagePath;
-            TracingOptions* options;
-            ssize_t size;
+	switch (message->what) {
+		case MSG_VECTORIZATION_PREVIEW:
+		{
+			BString imagePath;
+			TracingOptions* options;
+			ssize_t size;
 
-            if (message->FindString("image_path", &imagePath) == B_OK &&
-                message->FindData("options", B_RAW_TYPE,
-                                (const void**)&options, &size) == B_OK) {
-                if (fVectorizationWorker && size == sizeof(TracingOptions))
-                    fVectorizationWorker->StartVectorization(imagePath, *options);
-            }
-            break;
-        }
+			if (message->FindString("image_path", &imagePath) == B_OK &&
+				message->FindData("options", B_RAW_TYPE,
+								(const void**)&options, &size) == B_OK) {
+				if (fVectorizationWorker && size == sizeof(TracingOptions))
+					fVectorizationWorker->StartVectorization(imagePath, *options);
+			}
+			break;
+		}
 
-        case MSG_VECTORIZATION_COMPLETED:
-        {
-            BString svgData;
-            BString imagePath;
+		case MSG_VECTORIZATION_COMPLETED:
+		{
+			BString svgData;
+			BString imagePath;
 
-            if (message->FindString("svg_data", &svgData) == B_OK &&
-                message->FindString("image_path", &imagePath) == B_OK) {
+			if (message->FindString("svg_data", &svgData) == B_OK &&
+				message->FindString("image_path", &imagePath) == B_OK) {
 
-                fCurrentSource = svgData;
-                if (fSVGView)
-                    fSVGView->LoadFromMemory(svgData.String());
+				fCurrentSource = svgData;
+				if (fSVGView)
+					fSVGView->LoadFromMemory(svgData.String());
 
-                _GenerateHVIFFromSVG();
-                _UpdateAllTabs();
-                _UpdateStatus();
-                _UpdateUIState();
-                _UpdateStatView();
-            }
+				_GenerateHVIFFromSVG();
+				_UpdateAllTabs();
+				_UpdateStatus();
+				_UpdateUIState();
+				_UpdateStatView();
+			}
 
 			if (fVectorizationDialog)
 				fVectorizationDialog->SetVectorizationStatus(STATUS_IDLE);
 
-            break;
-        }
+			break;
+		}
 
-        case MSG_VECTORIZATION_ERROR:
-        {
-            BString error;
-            if (message->FindString("error", &error) == B_OK) {
-                _ShowError(error.String());
-                if (fVectorizationDialog)
+		case MSG_VECTORIZATION_ERROR:
+		{
+			BString error;
+			if (message->FindString("error", &error) == B_OK) {
+				_ShowError(error.String());
+				if (fVectorizationDialog)
 					fVectorizationDialog->SetVectorizationError(error.String());
-            }
-            break;
-        }
+			}
+			break;
+		}
 
-        case MSG_VECTORIZATION_OK:
-        {
-            if (fVectorizationDialog) {
-                BPath path(fVectorizationDialog->GetImagePath().String());
-                BString title("SVGear - ");
-                title << path.Leaf() << " (vectorized)";
-                SetTitle(title.String());
-            }
+		case MSG_VECTORIZATION_OK:
+		{
+			if (fSVGView)
+				fSVGView->ClearVectorizationBitmap();
 
-            fCurrentFilePath = "";
-            fOriginalSourceText = fCurrentSource;
-            fDocumentModified = true;
+			if (fVectorizationDialog) {
+				BPath path(fVectorizationDialog->GetImagePath().String());
+				BString title("SVGear - ");
+				title << path.Leaf() << " (vectorized)";
+				SetTitle(title.String());
+			}
 
-            if (fFileManager)
-                fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
+			fCurrentFilePath = "";
+			fOriginalSourceText = fCurrentSource;
+			fDocumentModified = true;
 
-            if (fVectorizationDialog) {
-                fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
-                fVectorizationDialog = NULL;
-            }
+			if (fFileManager)
+				fFileManager->SetLastLoadedFileType(FILE_TYPE_NEW);
 
-            _ClearBackupState();
+			if (fVectorizationDialog) {
+				fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
+				fVectorizationDialog = NULL;
+			}
+
+			_ClearBackupState();
 
 			fSVGView->ResetView();
-            _UpdateUIState();
-            break;
-        }
+			_UpdateUIState();
+			break;
+		}
 
-        case MSG_VECTORIZATION_CANCEL:
-        {
-            if (fVectorizationWorker)
-                fVectorizationWorker->StopVectorization();
+		case MSG_VECTORIZATION_CANCEL:
+		{
+			if (fVectorizationWorker)
+				fVectorizationWorker->StopVectorization();
 
-            if (fVectorizationDialog) {
-                fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
-                fVectorizationDialog = NULL;
-            }
+			if (fSVGView)
+				fSVGView->ClearVectorizationBitmap();
 
-            _RestoreBackupState();
-            fSVGView->ResetView();
-            _UpdateUIState();
-            break;
-        }
-    }
+			if (fVectorizationDialog) {
+				fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
+				fVectorizationDialog = NULL;
+			}
+
+			_RestoreBackupState();
+			fSVGView->ResetView();
+			_UpdateUIState();
+			break;
+		}
+	}
 }
 
 void
@@ -949,6 +956,12 @@ SVGMainWindow::_StartRasterImageVectorization(const char* filePath)
 	}
 
 	_BackupCurrentState();
+
+	BBitmap* bitmap = BTranslationUtils::GetBitmap(filePath);
+	if (bitmap && fSVGView) {
+		fSVGView->SetVectorizationBitmap(bitmap);
+		fSVGView->ResetView();
+	}
 
 	fVectorizationDialog = new SVGVectorizationDialog(filePath, this);
 	fVectorizationDialog->Show();
