@@ -108,6 +108,8 @@ SVGView::_DrawVectorizationBitmap()
 		FillRect(bounds);
 	}
 
+	_DrawBoundingBox();
+
 	BRect bitmapRect = _GetVectorizationBitmapRect();
 
 	SetDrawingMode(B_OP_ALPHA);
@@ -194,7 +196,6 @@ SVGView::_GetVectorizationBitmapRect() const
 	float bitmapWidth = bitmapBounds.Width() + 1;
 	float bitmapHeight = bitmapBounds.Height() + 1;
 
-	// Use the same scaling and offset as the SVG
 	float scaledWidth = bitmapWidth * fScale;
 	float scaledHeight = bitmapHeight * fScale;
 
