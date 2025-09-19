@@ -187,6 +187,7 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case MSG_EDIT_APPLY:
 		case MSG_EDIT_WORD_WRAP:
 		case MSG_RELOAD_FROM_SOURCE:
+		case MSG_SET_SELECTION:
 		case B_UNDO:
 		case B_REDO:
 			_HandleEditMessages(message);
@@ -211,7 +212,7 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			break;
 
 		case MSG_SELECTION_CHANGED:
-			_OnSelectionChanged();
+			_HandleSelectionMessages(message);
 			break;
 
 		case MSG_ABOUT:
@@ -630,6 +631,24 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 			}
 			break;
 
+		case MSG_SET_SELECTION:
+			{
+				int32 from = message->GetInt32("from", -1);
+				int32 to = message->GetInt32("to", -1);
+				if (from < 0 || to < 0)
+					break;
+
+				fSVGTextView->MakeFocus(true);
+				int from_current, to_current;
+				fSVGTextView->GetSelection(&from_current, &to_current);
+
+				if (from_current != from || to_current != to)
+					fSVGTextView->Select(from, to);
+
+				fSVGTextView->ScrollToOffset(to);  // hack for smart scroll
+				fSVGTextView->ScrollToSelection();
+			}
+			break;
 		case MSG_EDIT_APPLY:
 		case MSG_RELOAD_FROM_SOURCE:
 			_ReloadFromSource();
@@ -640,9 +659,31 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 }
 
 void
+SVGMainWindow::_HandleSelectionMessages(BMessage *message)
+{
+	switch (message->what) {
+		case MSG_SELECTION_CHANGED:
+		{
+			_CheckTextSelectionState();
+			_UpdateUIState();
+
+			if (fStructureView && fShowStructureView) {
+				int32 from = message->GetInt32("from", 0);
+				int32 to = message->GetInt32("to", 0);
+				if (from == to)
+					fStructureView->AutoSelect(from);
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
+void
 SVGMainWindow::_HandleDropMessages(BMessage* message)
 {
-	message->PrintToStream();
 	if (fVectorizationDialog != NULL)
 		return;
 
@@ -1541,13 +1582,6 @@ SVGMainWindow::_CheckTextSelectionState()
 void
 SVGMainWindow::_OnTextModified()
 {
-	_UpdateUIState();
-}
-
-void
-SVGMainWindow::_OnSelectionChanged()
-{
-	_CheckTextSelectionState();
 	_UpdateUIState();
 }
 

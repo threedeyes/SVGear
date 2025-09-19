@@ -300,6 +300,8 @@ SVGTextEdit::Select(int32 startOffset, int32 endOffset)
 	BWindow* window = Window();
 	if (window) {
 		BMessage msg(MSG_SELECTION_CHANGED);
+		msg.AddInt32("from", startOffset);
+		msg.AddInt32("to", endOffset);
 		window->PostMessage(&msg);
 	}
 }

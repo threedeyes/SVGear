@@ -37,7 +37,8 @@ SVGStructureView::SVGStructureView(const char* name)
 	fRadialGradientIcon(NULL),
 	fSelectedShape(-1),
 	fSelectedPath(-1),
-	fMaxTextItemWidth(0)
+	fMaxTextItemWidth(0),
+	fAutoSelectFlag(false)
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 
@@ -406,8 +407,10 @@ void
 SVGStructureView::_HandleShapeSelection(BMessage* message)
 {
 	int32 selection = fShapesList->CurrentSelection();
-	if (selection < 0)
+	if (selection < 0) {
+		fSVGView->ClearHighlight();
 		return;
+	}
 
 	SVGListItem* item = dynamic_cast<SVGListItem*>(fShapesList->ItemAt(selection));
 	if (!item || item->GetType() != SVG_ITEM_SHAPE)
@@ -415,19 +418,22 @@ SVGStructureView::_HandleShapeSelection(BMessage* message)
 
 	fSelectedShape = item->GetIndex();
 	fSelectedPath = -1;
+	fSVGView->SetHighlightedShape(fSelectedShape);
 
-	if (fSVGView)
-		fSVGView->SetHighlightedShape(fSelectedShape);
+	if (!fAutoSelectFlag)
+		_MoveTextCursor(item->GetShape()->start_pos, item->GetShape()->end_pos);
 
-	_MoveTextCursor(item->GetShape()->start_pos, item->GetShape()->end_pos);
+	fAutoSelectFlag = false;
 }
 
 void
 SVGStructureView::_HandlePathSelection(BMessage* message)
 {
 	int32 selection = fPathsList->CurrentSelection();
-	if (selection < 0)
+	if (selection < 0) {
+		fSVGView->ClearHighlight();
 		return;
+	}
 
 	SVGListItem* item = dynamic_cast<SVGListItem*>(fPathsList->ItemAt(selection));
 	if (!item || item->GetType() != SVG_ITEM_PATH)
@@ -435,30 +441,34 @@ SVGStructureView::_HandlePathSelection(BMessage* message)
 
 	fSelectedShape = item->GetShapeIndex();
 	fSelectedPath = item->GetPathIndex();
+	fSVGView->SetHighlightControlPoints(fSelectedShape, fSelectedPath, true);
 
-	if (fSVGView)
-		fSVGView->SetHighlightControlPoints(fSelectedShape, fSelectedPath, true);
+	if (!fAutoSelectFlag)
+		_MoveTextCursor(item->GetPath()->start_pos, item->GetPath()->end_pos);
 
-	_MoveTextCursor(item->GetPath()->start_pos, item->GetPath()->end_pos);
+	fAutoSelectFlag = false;
 }
 
 void
 SVGStructureView::_HandlePaintSelection(BMessage* message)
 {
 	int32 selection = fPaintsList->CurrentSelection();
-	if (selection < 0)
+	if (selection < 0) {
+		fSVGView->ClearHighlight();
 		return;
+	}
 
 	SVGListItem* item = dynamic_cast<SVGListItem*>(fPaintsList->ItemAt(selection));
 	if (!item || item->GetType() != SVG_ITEM_PAINT)
 		return;
 
 	fSelectedShape = item->GetShapeIndex();
+	fSVGView->SetHighlightedShape(fSelectedShape);
 
-	if (fSVGView)
-		fSVGView->SetHighlightedShape(fSelectedShape);
+	if (!fAutoSelectFlag)
+		_MoveTextCursor(item->GetPaint()->start_pos, item->GetPaint()->end_pos);
 
-	_MoveTextCursor(item->GetPaint()->start_pos, item->GetPaint()->end_pos);
+	fAutoSelectFlag = false;
 }
 
 void
@@ -501,11 +511,65 @@ SVGStructureView::_MoveTextCursor(size_t from, size_t to)
 	if (!fSVGTextEdit)
 		return;
 
-	if (fSVGTextEdit->LockLooperWithTimeout(10000) == B_OK) {
-		fSVGTextEdit->MakeFocus(true);
-		fSVGTextEdit->Select(from, from);
-		fSVGTextEdit->ScrollToOffset(from);
-		fSVGTextEdit->UnlockLooper();
-		fSVGTextEdit->Invalidate();
+	BMessage* msg = new BMessage(MSG_SET_SELECTION);
+	msg->AddInt32("from", from);
+	msg->AddInt32("to", to);
+	Window()->PostMessage(msg);
+}
+
+void SVGStructureView::AutoSelect(int32 position)
+{
+	if (!fShapesList || !fPathsList || !fPaintsList)
+		return;
+
+	fAutoSelectFlag = true;
+
+	switch (fTabView->Selection()) {
+		case 0:
+			{
+				for(int i=0; i < fShapesList->CountItems(); i++) {
+					SVGListItem* item = dynamic_cast<SVGListItem*>(fShapesList->ItemAt(i));
+					NSVGshape* shape = item->GetShape();
+					if (position >= shape->start_pos && position <= shape->end_pos) {
+						fShapesList->Select(i);
+						fShapesList->ScrollToSelection();
+						return;
+					}
+				}
+				fShapesList->DeselectAll();
+				break;
+			}
+
+		case 1:
+			{
+				for(int i=0; i < fPathsList->CountItems(); i++) {
+					SVGListItem* item = dynamic_cast<SVGListItem*>(fPathsList->ItemAt(i));
+					NSVGpath* shape = item->GetPath();
+					if (position >= shape->start_pos && position <= shape->end_pos) {
+						fPathsList->Select(i);
+						fPathsList->ScrollToSelection();
+						return;
+					}
+				}
+				fPathsList->DeselectAll();
+				break;
+			}
+
+		case 2:
+			{
+				for(int i=0; i < fPaintsList->CountItems(); i++) {
+					SVGListItem* item = dynamic_cast<SVGListItem*>(fPaintsList->ItemAt(i));
+					NSVGpaint* shape = item->GetPaint();
+					if (position >= shape->start_pos && position <= shape->end_pos) {
+						fPaintsList->Select(i);
+						fPaintsList->ScrollToSelection();
+						return;
+					}
+				}
+				fPaintsList->DeselectAll();
+				break;
+			}
+		default:
+			break;
 	}
 }

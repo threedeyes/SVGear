@@ -88,6 +88,7 @@ const uint32 MSG_PATH_SELECTED = 'pths';
 const uint32 MSG_PAINT_SELECTED = 'pnsl';
 const uint32 MSG_CONTROL_POINTS_SELECTED = 'ctps';
 const uint32 MSG_CLEAR_SELECTION = 'clrs';
+const uint32 MSG_SET_SELECTION = 'stsl';
 
 // Vectorization
 const uint32 MSG_VECTORIZATION_SETTINGS_CHANGED = 'vcsc';

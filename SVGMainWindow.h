@@ -75,6 +75,7 @@ private:
 	void _HandleDropMessages(BMessage* message);
 	void _HandleExportMessages(BMessage* message);
 	void _HandleVectorizationMessages(BMessage* message);
+	void _HandleSelectionMessages(BMessage *message);
 
 	// Tools handlers
 	void _HandleOpenInIconOMatic();
@@ -133,7 +134,6 @@ private:
 	void _CheckClipboardState();
 	void _CheckTextSelectionState();
 	void _OnTextModified();
-	void _OnSelectionChanged();
 
 	// Settings management
 	void _SaveSettings();

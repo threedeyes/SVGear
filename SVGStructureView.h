@@ -42,6 +42,7 @@ public:
 	void UpdateStructure();
 	void ClearSelection();
 	void ForceUpdatePanelWidth();
+	void AutoSelect(int32 position);
 
 private:
 	void _BuildInterface();
@@ -53,6 +54,7 @@ private:
 	void _HandleShapeSelection(BMessage* message);
 	void _HandlePathSelection(BMessage* message);
 	void _HandlePaintSelection(BMessage* message);
+
 	const char* _GetPaintTypeName(int paintType);
 	BBitmap* _GetPaintIcon(NSVGpaint* paint);
 	float _CalculatePreferredWidth();
@@ -86,6 +88,8 @@ private:
 	int32 fSelectedPath;
 
 	float fMaxTextItemWidth;
+
+	bool fAutoSelectFlag;
 };
 
 #endif
