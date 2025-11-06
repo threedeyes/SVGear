@@ -199,6 +199,7 @@ SVGVectorizationDialog::_BuildInterface()
 	_BuildSimplificationTab();
 	_BuildGeometryTab();
 	_BuildFilteringTab();
+	_BuildGradientsTab();
 	_BuildOutputTab();
 
 	const char* presets[] = {
@@ -299,11 +300,8 @@ SVGVectorizationDialog::_BuildPreprocessingTab()
 	fRemoveBackgroundCheck->SetFont(fBoldFont);
 
 	const char* bgMethods[] = {
-		B_TRANSLATE("Edge analysis"),
-		B_TRANSLATE("Flood fill"), 
-		B_TRANSLATE("Dominant color"),
-		B_TRANSLATE("Clustering"),
-		B_TRANSLATE("Combined"),
+		B_TRANSLATE("Simple"),
+		B_TRANSLATE("Auto"),
 		NULL
 	};
 	fBackgroundMethodMenu = _CreateMenuField("bg_method", B_TRANSLATE("Background method"),
@@ -548,6 +546,67 @@ SVGVectorizationDialog::_BuildFilteringTab()
 }
 
 void
+SVGVectorizationDialog::_BuildGradientsTab()
+{
+	BGroupView* gradientsGroup = new BGroupView(B_VERTICAL, B_USE_DEFAULT_SPACING);
+
+	fDetectGradientsCheck = _CreateCheckBox("detect_gradients", B_TRANSLATE("Detect gradients"),
+										fOptions.fDetectGradients);
+	fDetectGradientsCheck->SetFont(fBoldFont);
+
+	BView* sampleStrideGroup = _CreateSliderWithLabels("gradient_sample_stride", B_TRANSLATE("Sample stride"),
+									1, 8, fOptions.fGradientSampleStride,
+									&fGradientSampleStrideSlider, &fGradientSampleStrideValueLabel);
+	BView* minR2Group = _CreateSliderWithLabels("gradient_min_r2", B_TRANSLATE("Min R² threshold"),
+									0.1f, 1.0f, fOptions.fGradientMinR2,
+									&fGradientMinR2Slider, &fGradientMinR2ValueLabel);
+	BView* minDeltaGroup = _CreateSliderWithLabels("gradient_min_delta", B_TRANSLATE("Min RGB delta"),
+									5.0f, 50.0f, fOptions.fGradientMinDelta,
+									&fGradientMinDeltaSlider, &fGradientMinDeltaValueLabel);
+	BView* minSizeGroup = _CreateSliderWithLabels("gradient_min_size", B_TRANSLATE("Min gradient size"),
+									2.0f, 20.0f, fOptions.fGradientMinSize,
+									&fGradientMinSizeSlider, &fGradientMinSizeValueLabel);
+	BView* maxSubdivGroup = _CreateSliderWithLabels("gradient_max_subdiv", B_TRANSLATE("Max subdivisions"),
+									2, 16, fOptions.fGradientMaxSubdiv,
+									&fGradientMaxSubdivSlider, &fGradientMaxSubdivValueLabel);
+	BView* minSamplesGroup = _CreateSliderWithLabels("gradient_min_samples", B_TRANSLATE("Min samples"),
+									10, 100, fOptions.fGradientMinSamples,
+									&fGradientMinSamplesSlider, &fGradientMinSamplesValueLabel);
+
+	BBox* gradientBox = new BBox("gradient_box");
+	gradientBox->SetLabel(fDetectGradientsCheck);
+	BLayoutBuilder::Group<>(gradientBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.AddStrut(B_USE_DEFAULT_SPACING)
+		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
+			.AddGroup(B_VERTICAL, B_USE_DEFAULT_SPACING)
+				.Add(sampleStrideGroup)
+				.Add(minR2Group)
+				.Add(minDeltaGroup)
+				.AddGlue()
+			.End()
+			.AddGroup(B_VERTICAL, B_USE_DEFAULT_SPACING)
+				.Add(minSizeGroup)
+				.Add(maxSubdivGroup)
+				.Add(minSamplesGroup)
+				.AddGlue()
+			.End()
+		.End()
+		.AddGlue()
+	.End();
+
+	BLayoutBuilder::Group<>(gradientsGroup, B_VERTICAL, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_DEFAULT_SPACING)
+		.Add(gradientBox)
+		.AddGlue()
+	.End();
+
+	BTab* gradientsTab = new BTab();
+	fTabView->AddTab(gradientsGroup, gradientsTab);
+	gradientsTab->SetLabel(B_TRANSLATE("Gradients"));
+}
+
+void
 SVGVectorizationDialog::_BuildOutputTab()
 {
 	BGroupView* outputGroup = new BGroupView(B_VERTICAL, B_USE_DEFAULT_SPACING);
@@ -710,6 +769,19 @@ SVGVectorizationDialog::_UpdateSliderLabels()
 	if (fMinObjectPerimeterValueLabel)
 		fMinObjectPerimeterValueLabel->SetText(_FormatSliderValue(fMinObjectPerimeterSlider->Value() / 100.0f).String());
 
+	if (fGradientSampleStrideValueLabel)
+		fGradientSampleStrideValueLabel->SetText(_FormatSliderValue(fGradientSampleStrideSlider->Value() / 100.0f, 0).String());
+	if (fGradientMinR2ValueLabel)
+		fGradientMinR2ValueLabel->SetText(_FormatSliderValue(fGradientMinR2Slider->Value() / 100.0f).String());
+	if (fGradientMinDeltaValueLabel)
+		fGradientMinDeltaValueLabel->SetText(_FormatSliderValue(fGradientMinDeltaSlider->Value() / 100.0f).String());
+	if (fGradientMinSizeValueLabel)
+		fGradientMinSizeValueLabel->SetText(_FormatSliderValue(fGradientMinSizeSlider->Value() / 100.0f).String());
+	if (fGradientMaxSubdivValueLabel)
+		fGradientMaxSubdivValueLabel->SetText(_FormatSliderValue(fGradientMaxSubdivSlider->Value() / 100.0f, 0).String());
+	if (fGradientMinSamplesValueLabel)
+		fGradientMinSamplesValueLabel->SetText(_FormatSliderValue(fGradientMinSamplesSlider->Value() / 100.0f, 0).String());
+
 	if (fScaleValueLabel)
 		fScaleValueLabel->SetText(_FormatSliderValue(fScaleSlider->Value() / 100.0f).String());
 	if (fRoundCoordinatesValueLabel)
@@ -802,10 +874,16 @@ SVGVectorizationDialog::_UpdateFromControls()
 	fOptions.fMinObjectHeight = fMinObjectHeightSlider->Value() / 100.0f;
 	fOptions.fMinObjectPerimeter = fMinObjectPerimeterSlider->Value() / 100.0f;
 
+	fOptions.fDetectGradients = (fDetectGradientsCheck->Value() == B_CONTROL_ON);
+	fOptions.fGradientSampleStride = fGradientSampleStrideSlider->Value() / 100.0f;
+	fOptions.fGradientMinR2 = fGradientMinR2Slider->Value() / 100.0f;
+	fOptions.fGradientMinDelta = fGradientMinDeltaSlider->Value() / 100.0f;
+	fOptions.fGradientMinSize = fGradientMinSizeSlider->Value() / 100.0f;
+	fOptions.fGradientMaxSubdiv = fGradientMaxSubdivSlider->Value() / 100.0f;
+	fOptions.fGradientMinSamples = fGradientMinSamplesSlider->Value() / 100.0f;
+
 	fOptions.fScale = fScaleSlider->Value() / 100.0f;
 	fOptions.fRoundCoordinates = fRoundCoordinatesSlider->Value() / 100.0f;
-	fOptions.fLineControlPointRadius = 0;
-	fOptions.fQuadraticControlPointRadius = 0;
 	fOptions.fShowDescription = (fShowDescriptionCheck->Value() == B_CONTROL_ON);
 	fOptions.fUseViewBox = (fUseViewBoxCheck->Value() == B_CONTROL_ON);
 	fOptions.fOptimizeSvg = (fOptimizeSvgCheck->Value() == B_CONTROL_ON);
@@ -856,6 +934,14 @@ SVGVectorizationDialog::_UpdateControls()
 	fMinObjectHeightSlider->SetValue((int32)(fOptions.fMinObjectHeight * 100));
 	fMinObjectPerimeterSlider->SetValue((int32)(fOptions.fMinObjectPerimeter * 100));
 
+	fDetectGradientsCheck->SetValue(fOptions.fDetectGradients ? B_CONTROL_ON : B_CONTROL_OFF);
+	fGradientSampleStrideSlider->SetValue((int32)(fOptions.fGradientSampleStride * 100));
+	fGradientMinR2Slider->SetValue((int32)(fOptions.fGradientMinR2 * 100));
+	fGradientMinDeltaSlider->SetValue((int32)(fOptions.fGradientMinDelta * 100));
+	fGradientMinSizeSlider->SetValue((int32)(fOptions.fGradientMinSize * 100));
+	fGradientMaxSubdivSlider->SetValue((int32)(fOptions.fGradientMaxSubdiv * 100));
+	fGradientMinSamplesSlider->SetValue((int32)(fOptions.fGradientMinSamples * 100));
+
 	fScaleSlider->SetValue((int32)(fOptions.fScale * 100));
 	fRoundCoordinatesSlider->SetValue((int32)(fOptions.fRoundCoordinates * 100));
 	fShowDescriptionCheck->SetValue(fOptions.fShowDescription ? B_CONTROL_ON : B_CONTROL_OFF);
@@ -893,6 +979,14 @@ SVGVectorizationDialog::_UpdateControlStates()
 	fMinObjectWidthSlider->SetEnabled(filterSmallObjectsEnabled);
 	fMinObjectHeightSlider->SetEnabled(filterSmallObjectsEnabled);
 	fMinObjectPerimeterSlider->SetEnabled(filterSmallObjectsEnabled);
+
+	bool detectGradientsEnabled = (fDetectGradientsCheck->Value() == B_CONTROL_ON);
+	fGradientSampleStrideSlider->SetEnabled(detectGradientsEnabled);
+	fGradientMinR2Slider->SetEnabled(detectGradientsEnabled);
+	fGradientMinDeltaSlider->SetEnabled(detectGradientsEnabled);
+	fGradientMinSizeSlider->SetEnabled(detectGradientsEnabled);
+	fGradientMaxSubdivSlider->SetEnabled(detectGradientsEnabled);
+	fGradientMinSamplesSlider->SetEnabled(detectGradientsEnabled);
 }
 
 void
@@ -1034,6 +1128,13 @@ SVGVectorizationDialog::_SaveCustomPreset()
 	gSettings->SetFloat(kVectorizationCustomMinObjectWidth, fOptions.fMinObjectWidth);
 	gSettings->SetFloat(kVectorizationCustomMinObjectHeight, fOptions.fMinObjectHeight);
 	gSettings->SetFloat(kVectorizationCustomMinObjectPerimeter, fOptions.fMinObjectPerimeter);
+	gSettings->SetBool(kVectorizationCustomDetectGradients, fOptions.fDetectGradients);
+	gSettings->SetFloat(kVectorizationCustomGradientSampleStride, fOptions.fGradientSampleStride);
+	gSettings->SetFloat(kVectorizationCustomGradientMinR2, fOptions.fGradientMinR2);
+	gSettings->SetFloat(kVectorizationCustomGradientMinDelta, fOptions.fGradientMinDelta);
+	gSettings->SetFloat(kVectorizationCustomGradientMinSize, fOptions.fGradientMinSize);
+	gSettings->SetFloat(kVectorizationCustomGradientMaxSubdiv, fOptions.fGradientMaxSubdiv);
+	gSettings->SetFloat(kVectorizationCustomGradientMinSamples, fOptions.fGradientMinSamples);
 	gSettings->SetFloat(kVectorizationCustomScale, fOptions.fScale);
 	gSettings->SetFloat(kVectorizationCustomRoundCoordinates, fOptions.fRoundCoordinates);
 	gSettings->SetBool(kVectorizationCustomShowDescription, fOptions.fShowDescription);
@@ -1077,6 +1178,13 @@ SVGVectorizationDialog::_LoadCustomPreset()
 	fOptions.fMinObjectWidth = gSettings->GetFloat(kVectorizationCustomMinObjectWidth, fOptions.fMinObjectWidth);
 	fOptions.fMinObjectHeight = gSettings->GetFloat(kVectorizationCustomMinObjectHeight, fOptions.fMinObjectHeight);
 	fOptions.fMinObjectPerimeter = gSettings->GetFloat(kVectorizationCustomMinObjectPerimeter, fOptions.fMinObjectPerimeter);
+	fOptions.fDetectGradients = gSettings->GetBool(kVectorizationCustomDetectGradients, fOptions.fDetectGradients);
+	fOptions.fGradientSampleStride = gSettings->GetFloat(kVectorizationCustomGradientSampleStride, fOptions.fGradientSampleStride);
+	fOptions.fGradientMinR2 = gSettings->GetFloat(kVectorizationCustomGradientMinR2, fOptions.fGradientMinR2);
+	fOptions.fGradientMinDelta = gSettings->GetFloat(kVectorizationCustomGradientMinDelta, fOptions.fGradientMinDelta);
+	fOptions.fGradientMinSize = gSettings->GetFloat(kVectorizationCustomGradientMinSize, fOptions.fGradientMinSize);
+	fOptions.fGradientMaxSubdiv = gSettings->GetFloat(kVectorizationCustomGradientMaxSubdiv, fOptions.fGradientMaxSubdiv);
+	fOptions.fGradientMinSamples = gSettings->GetFloat(kVectorizationCustomGradientMinSamples, fOptions.fGradientMinSamples);
 	fOptions.fScale = gSettings->GetFloat(kVectorizationCustomScale, fOptions.fScale);
 	fOptions.fRoundCoordinates = gSettings->GetFloat(kVectorizationCustomRoundCoordinates, fOptions.fRoundCoordinates);
 	fOptions.fShowDescription = gSettings->GetBool(kVectorizationCustomShowDescription, fOptions.fShowDescription);

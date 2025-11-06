@@ -48,6 +48,7 @@ private:
 	void _BuildSimplificationTab();
 	void _BuildGeometryTab();
 	void _BuildFilteringTab();
+	void _BuildGradientsTab();
 	void _BuildOutputTab();
 
 	void _UpdateFromControls();
@@ -137,6 +138,15 @@ private:
 	BSlider*        fMinObjectHeightSlider;
 	BSlider*        fMinObjectPerimeterSlider;
 
+	// Gradients tab controls
+	BCheckBox*      fDetectGradientsCheck;
+	BSlider*        fGradientSampleStrideSlider;
+	BSlider*        fGradientMinR2Slider;
+	BSlider*        fGradientMinDeltaSlider;
+	BSlider*        fGradientMinSizeSlider;
+	BSlider*        fGradientMaxSubdivSlider;
+	BSlider*        fGradientMinSamplesSlider;
+
 	// Output tab controls
 	BSlider*        fScaleSlider;
 	BSlider*        fRoundCoordinatesSlider;
@@ -174,6 +184,12 @@ private:
 	BStringView*    fMinObjectWidthValueLabel;
 	BStringView*    fMinObjectHeightValueLabel;
 	BStringView*    fMinObjectPerimeterValueLabel;
+	BStringView*    fGradientSampleStrideValueLabel;
+	BStringView*    fGradientMinR2ValueLabel;
+	BStringView*    fGradientMinDeltaValueLabel;
+	BStringView*    fGradientMinSizeValueLabel;
+	BStringView*    fGradientMaxSubdivValueLabel;
+	BStringView*    fGradientMinSamplesValueLabel;
 	BStringView*    fScaleValueLabel;
 	BStringView*    fRoundCoordinatesValueLabel;
 };

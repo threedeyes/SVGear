@@ -33,11 +33,15 @@ SRCS = \
 	External/hvif-tools/src/img2svg/processing/PathScanner.cpp \
 	External/hvif-tools/src/img2svg/processing/PathSimplifier.cpp \
 	External/hvif-tools/src/img2svg/processing/PathTracer.cpp \
+	External/hvif-tools/src/img2svg/processing/PathHierarchy.cpp \
 	External/hvif-tools/src/img2svg/processing/SelectiveBlur.cpp \
 	External/hvif-tools/src/img2svg/processing/VisvalingamWhyatt.cpp \
+	External/hvif-tools/src/img2svg/processing/RegionMerger.cpp \
+	External/hvif-tools/src/img2svg/processing/SharedEdgeRegistry.cpp \
 	External/hvif-tools/src/img2svg/quantization/ColorCube.cpp \
 	External/hvif-tools/src/img2svg/quantization/ColorNode.cpp \
 	External/hvif-tools/src/img2svg/quantization/ColorQuantizer.cpp \
+	External/hvif-tools/src/img2svg/utils/MathUtils.cpp \
 	main.cpp
 RDEFS = Resources.rdef
 LIBS = be tracker translation shared localestub $(STDCPPLIBS)

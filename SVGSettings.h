@@ -66,6 +66,13 @@ extern const char* const kVectorizationCustomRemoveDuplicates;
 extern const char* const kVectorizationSelectedPreset;
 extern const char* const kVectorizationCustomVisvalingamWhyattEnabled;
 extern const char* const kVectorizationCustomVisvalingamWhyattTolerance;
+extern const char* const kVectorizationCustomDetectGradients;
+extern const char* const kVectorizationCustomGradientSampleStride;
+extern const char* const kVectorizationCustomGradientMinR2;
+extern const char* const kVectorizationCustomGradientMinDelta;
+extern const char* const kVectorizationCustomGradientMinSize;
+extern const char* const kVectorizationCustomGradientMaxSubdiv;
+extern const char* const kVectorizationCustomGradientMinSamples;
 
 class SVGSettings {
 public:

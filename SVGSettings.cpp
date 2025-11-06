@@ -66,6 +66,13 @@ const char* const kVectorizationCustomRemoveDuplicates = "vectorization_custom_r
 const char* const kVectorizationSelectedPreset = "vectorization_selected_preset";
 const char* const kVectorizationCustomVisvalingamWhyattEnabled = "vectorization_custom_visvalingam_whyatt_enabled";
 const char* const kVectorizationCustomVisvalingamWhyattTolerance = "vectorization_custom_visvalingam_whyatt_tolerance";
+const char* const kVectorizationCustomDetectGradients = "vectorization_custom_detect_gradients";
+const char* const kVectorizationCustomGradientSampleStride = "vectorization_custom_gradient_sample_stride";
+const char* const kVectorizationCustomGradientMinR2 = "vectorization_custom_gradient_min_r2";
+const char* const kVectorizationCustomGradientMinDelta = "vectorization_custom_gradient_min_delta";
+const char* const kVectorizationCustomGradientMinSize = "vectorization_custom_gradient_min_size";
+const char* const kVectorizationCustomGradientMaxSubdiv = "vectorization_custom_gradient_max_subdiv";
+const char* const kVectorizationCustomGradientMinSamples = "vectorization_custom_gradient_min_samples";
 
 SVGSettings* gSettings = NULL;
 
