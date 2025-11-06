@@ -793,7 +793,7 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 			}
 
 			if (fVectorizationDialog)
-				fVectorizationDialog->SetVectorizationStatus(STATUS_IDLE);
+				fVectorizationDialog->ResetProgress(3000000);
 
 			break;
 		}

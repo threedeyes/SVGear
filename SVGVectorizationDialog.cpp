@@ -3,6 +3,8 @@
  * Distributed under the terms of the MIT License.
  */
 
+#include <Message.h>
+#include <MessageRunner.h>
 #include <LayoutBuilder.h>
 #include <CardLayout.h>
 #include <ScrollView.h>
@@ -23,6 +25,31 @@
 
 const char* SVGVectorizationDialog::kSVGDescription = MSG_SVG_DESCRIPTION;
 
+static const char*
+GetVectorizationStageName(int stage)
+{
+	switch (stage) {
+		case STAGE_STARTING: return B_TRANSLATE("Starting vectorization");
+		case STAGE_REMOVE_BACKGROUND: return B_TRANSLATE("Removing background");
+		case STAGE_BLUR: return B_TRANSLATE("Applying blur");
+		case STAGE_CREATE_PALETTE: return B_TRANSLATE("Creating palette");
+		case STAGE_QUANTIZE_COLORS: return B_TRANSLATE("Quantizing colors");
+		case STAGE_MERGE_REGIONS: return B_TRANSLATE("Merging regions");
+		case STAGE_SCAN_PATHS: return B_TRANSLATE("Scanning paths");
+		case STAGE_TRACE_PATHS: return B_TRANSLATE("Tracing paths");
+		case STAGE_SIMPLIFY_VW: return B_TRANSLATE("Simplifying (VW)");
+		case STAGE_FILTER_SMALL: return B_TRANSLATE("Filtering objects");
+		case STAGE_SIMPLIFY_DP: return B_TRANSLATE("Simplifying (DP)");
+		case STAGE_SIMPLIFY_ADVANCED: return B_TRANSLATE("Advanced simplification");
+		case STAGE_DETECT_GEOMETRY: return B_TRANSLATE("Detecting geometry");
+		case STAGE_UNIFY_EDGES: return B_TRANSLATE("Unifying edges");
+		case STAGE_FIX_WINDING: return B_TRANSLATE("Fixing winding");
+		case STAGE_DETECT_GRADIENTS: return B_TRANSLATE("Detecting gradients");
+		case STAGE_COMPLETE: return B_TRANSLATE("Complete");
+		default: return B_TRANSLATE("Processing");
+	}
+}
+
 SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* target)
 	: BWindow(BRect(100, 100, 600, 500), B_TRANSLATE("Vectorization Settings"),
 			B_FLOATING_WINDOW_LOOK, B_FLOATING_SUBSET_WINDOW_FEEL,
@@ -31,10 +58,7 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 	fImagePath(imagePath),
 	fFirstShow(true),
 	fUpdatingControls(false),
-	fStatusView(NULL),
-	fStatusAnimationRunner(NULL),
-	fCurrentStatus(STATUS_IDLE),
-	fAnimationDots(0)
+	fProgressBar(NULL)
 {
 	fBoldFont = new BFont(be_plain_font);
 	fBoldFont->SetFace(B_BOLD_FACE);
@@ -57,7 +81,6 @@ SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* t
 
 SVGVectorizationDialog::~SVGVectorizationDialog()
 {
-	_StopStatusAnimation();
 	delete fBoldFont;
 }
 
@@ -92,7 +115,7 @@ SVGVectorizationDialog::Show()
 
 	if (fFirstShow) {
 		fFirstShow = false;
-		_StartVectorization();
+		PostMessage(MSG_VECTORIZATION_START);
 	}
 }
 
@@ -100,6 +123,10 @@ void
 SVGVectorizationDialog::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
+		case MSG_VECTORIZATION_START:
+			_StartVectorization();
+			break;
+
 		case MSG_VECTORIZATION_SETTINGS_CHANGED:
 			if (!fUpdatingControls) {
 				_SwitchToCustomPreset();
@@ -110,6 +137,26 @@ SVGVectorizationDialog::MessageReceived(BMessage* message)
 				_StartVectorization();
 			}
 			break;
+
+		case MSG_VECTORIZATION_PROGRESS:
+		{
+			int stage, percent;
+			if (message->FindInt32("stage", &stage) == B_OK &&
+				message->FindInt32("percent", &percent) == B_OK) {
+				_UpdateVectorizationProgress(stage, percent);
+			}
+			break;
+		}
+
+		case MSG_VECTORIZATION_RESET_PROGRESS:
+			if (fProgressBar) {
+				if (!fProgressBar->IsHidden())
+					fProgressBar->Hide();
+				fProgressBar->Reset();
+				fProgressBar->SetBarColor(ui_color(B_CONTROL_HIGHLIGHT_COLOR));
+			}
+			break;
+
 		case MSG_VECTORIZATION_OK:
 			_SaveCustomPreset();
 			if (fTarget) {
@@ -119,31 +166,32 @@ SVGVectorizationDialog::MessageReceived(BMessage* message)
 			}
 			PostMessage(B_QUIT_REQUESTED);
 			break;
+
 		case MSG_VECTORIZATION_CANCEL:
 			fTarget->Looper()->PostMessage(new BMessage(MSG_VECTORIZATION_CANCEL), fTarget);
 			PostMessage(B_QUIT_REQUESTED);
 			break;
-		case MSG_VECTORIZATION_RESET:
-			_ResetToDefaults();
-			break;
+
 		case MSG_VECTORIZATION_PRESET:
 			_ApplyPreset();
 			break;
-		case MSG_VECTORIZATION_STATUS_ANIMATION:
-			_UpdateStatusAnimation();
-			break;
-		case MSG_VECTORIZATION_COMPLETED:
-			_SetVectorizationStatus(STATUS_COMPLETED, B_TRANSLATE("Vectorization completed"));
-			break;
+
 		case MSG_VECTORIZATION_ERROR:
-			_SetVectorizationStatus(STATUS_ERROR, B_TRANSLATE("Vectorization error"));
-			break;
-		case MSG_VECTORIZATION_CLEAR_STATUS:
-			if (fStatusView) {
-				fStatusView->SetText("");
-				fStatusView->SetHighColor(0, 0, 0);
+		{
+			const char* errorMsg = B_TRANSLATE("Vectorization error");
+			message->FindString("error", &errorMsg);
+			if (fProgressBar) {
+				fProgressBar->Reset();
+				fProgressBar->SetText(errorMsg);
+				fProgressBar->SetBarColor((rgb_color){255, 0, 0, 255});
+				if (fProgressBar->IsHidden())
+					fProgressBar->Show();
+
+				ResetProgress(5000000);
 			}
 			break;
+		}
+
 		default:
 			BWindow::MessageReceived(message);
 			break;
@@ -157,22 +205,30 @@ SVGVectorizationDialog::QuitRequested()
 }
 
 void
-SVGVectorizationDialog::SetVectorizationStatus(VectorizationStatus status, const char* message)
-{
-	_SetVectorizationStatus(status, message);
-}
-
-void
 SVGVectorizationDialog::SetVectorizationCompleted()
 {
-	_SetVectorizationStatus(STATUS_COMPLETED, B_TRANSLATE("Vectorization completed"));
+	ResetProgress(3000000);
 }
 
 void
 SVGVectorizationDialog::SetVectorizationError(const char* errorMessage)
 {
-	const char* message = errorMessage ? errorMessage : B_TRANSLATE("Vectorization failed");
-	_SetVectorizationStatus(STATUS_ERROR, message);
+	BMessage msg(MSG_VECTORIZATION_ERROR);
+	if (errorMessage)
+		msg.AddString("error", errorMessage);
+	PostMessage(&msg);
+}
+
+void
+SVGVectorizationDialog::ResetProgress(bigtime_t delay)
+{
+	if (delay == 0) {
+		PostMessage(MSG_VECTORIZATION_RESET_PROGRESS);
+	} else {
+		BMessage* resetMsg = new BMessage(MSG_VECTORIZATION_RESET_PROGRESS);
+		BMessageRunner* runner = new BMessageRunner(this, resetMsg, delay);
+		runner->SetCount(1);
+	}
 }
 
 TracingOptions
@@ -212,12 +268,13 @@ SVGVectorizationDialog::_BuildInterface()
 	};
 	fPresetMenu = _CreateMenuField("preset", B_TRANSLATE("Preset"), presets, 0);
 
-	fStatusView = new BStringView("status", "");
-	fStatusView->SetExplicitMinSize(BSize(200, B_SIZE_UNSET));
+	fProgressBar = new BStatusBar("progress_bar", NULL, NULL);
+	fProgressBar->SetMaxValue(100.0f);
+	fProgressBar->SetBarHeight(fBoldFont->Size());
+	fProgressBar->Hide();
 
 	fOKButton = new BButton("ok", B_TRANSLATE("OK"), new BMessage(MSG_VECTORIZATION_OK));
 	fCancelButton = new BButton("cancel", B_TRANSLATE("Cancel"), new BMessage(MSG_VECTORIZATION_CANCEL));
-	fResetButton = new BButton("reset", B_TRANSLATE("Reset to defaults"), new BMessage(MSG_VECTORIZATION_RESET));
 
 	fOKButton->MakeDefault(true);
 
@@ -226,11 +283,10 @@ SVGVectorizationDialog::_BuildInterface()
 		.AddGroup(B_HORIZONTAL)
 			.Add(fPresetMenu)
 			.AddGlue()
-			.Add(fStatusView)
 		.End()
 		.Add(fTabView)
 		.AddGroup(B_HORIZONTAL)
-			.Add(fResetButton)
+			.Add(fProgressBar, 2.0f)
 			.AddGlue()
 			.Add(fCancelButton)
 			.Add(fOKButton)
@@ -990,14 +1046,6 @@ SVGVectorizationDialog::_UpdateControlStates()
 }
 
 void
-SVGVectorizationDialog::_ResetToDefaults()
-{
-	fOptions.SetDefaults();
-	_UpdateControls();
-	_StartVectorization();
-}
-
-void
 SVGVectorizationDialog::_ApplyPreset()
 {
 	BMenuItem* item = fPresetMenu->Menu()->FindMarked();
@@ -1071,7 +1119,15 @@ SVGVectorizationDialog::_ApplyPreset()
 void
 SVGVectorizationDialog::_StartVectorization()
 {
-	_SetVectorizationStatus(STATUS_VECTORIZING, B_TRANSLATE("Vectorizing"));
+	if (fProgressBar) {
+		fProgressBar->Reset();
+		fProgressBar->SetBarColor(ui_color(B_CONTROL_HIGHLIGHT_COLOR));
+		fProgressBar->SetTo(0.0f, B_TRANSLATE("Starting"));
+		if (fProgressBar->IsHidden())
+			fProgressBar->Show();
+	}
+
+	fOptions.SetProgressCallback(ProgressCallbackStatic, this);
 
 	if (fTarget) {
 		BMessage msg(MSG_VECTORIZATION_PREVIEW);
@@ -1079,6 +1135,25 @@ SVGVectorizationDialog::_StartVectorization()
 		msg.AddData("options", B_RAW_TYPE, &fOptions, sizeof(TracingOptions));
 		fTarget->Looper()->PostMessage(&msg, fTarget);
 	}
+}
+
+void
+SVGVectorizationDialog::_UpdateVectorizationProgress(int stage, int percent)
+{
+	if (!fProgressBar)
+		return;
+
+	const char* stageName = GetVectorizationStageName(stage);
+	fProgressBar->SetTo((float)percent, stageName);
+
+	if (stage == STAGE_COMPLETE && percent == 100) {
+		fProgressBar->SetBarColor((rgb_color){0, 200, 0, 255});
+	} else {
+		fProgressBar->SetBarColor(ui_color(B_CONTROL_HIGHLIGHT_COLOR));
+	}
+
+	if (fProgressBar->IsHidden())
+		fProgressBar->Show();
 }
 
 void
@@ -1222,84 +1297,16 @@ SVGVectorizationDialog::_LoadSelectedPreset()
 }
 
 void
-SVGVectorizationDialog::_SetVectorizationStatus(VectorizationStatus status, const char* message)
+SVGVectorizationDialog::ProgressCallbackStatic(int stage, int percent, void* userData)
 {
-	if (LockLooperWithTimeout(100000) != B_OK)
+	SVGVectorizationDialog* dialog = static_cast<SVGVectorizationDialog*>(userData);
+	if (!dialog || !dialog->LockLooper())
 		return;
 
-	fCurrentStatus = status;
+	BMessage msg(MSG_VECTORIZATION_PROGRESS);
+	msg.AddInt32("stage", stage);
+	msg.AddInt32("percent", percent);
+	dialog->PostMessage(&msg);
 
-	if (message)
-		fBaseStatusMessage = message;
-	else
-		fBaseStatusMessage = "";
-
-	switch (status) {
-		case STATUS_IDLE:
-			_StopStatusAnimation();
-			if (fStatusView)
-				fStatusView->SetText("");
-			break;
-
-		case STATUS_VECTORIZING:
-			fAnimationDots = 0;
-			_StartStatusAnimation();
-			break;
-
-		case STATUS_COMPLETED:
-			_StopStatusAnimation();
-			if (fStatusView) {
-				fStatusView->SetText(fBaseStatusMessage.String());
-				BMessage* clearMsg = new BMessage(MSG_VECTORIZATION_CLEAR_STATUS);
-				BMessageRunner::StartSending(this, clearMsg, 3000000, 1);
-			}
-			break;
-
-		case STATUS_ERROR:
-			_StopStatusAnimation();
-			if (fStatusView) {
-				fStatusView->SetText(fBaseStatusMessage.String());
-				fStatusView->SetHighColor(255, 0, 0);
-				BMessage* clearMsg = new BMessage(MSG_VECTORIZATION_CLEAR_STATUS);
-				BMessageRunner::StartSending(this, clearMsg, 5000000, 1);
-			}
-			break;
-	}
-	UnlockLooper();
-}
-
-void
-SVGVectorizationDialog::_UpdateStatusAnimation()
-{
-	if (fCurrentStatus != STATUS_VECTORIZING || !fStatusView)
-		return;
-
-	fAnimationDots = (fAnimationDots % 3) + 1;
-
-	BString animatedText = fBaseStatusMessage;
-	for (int32 i = 0; i < fAnimationDots; i++)
-		animatedText += ".";
-
-	fStatusView->SetText(animatedText.String());
-}
-
-void
-SVGVectorizationDialog::_StartStatusAnimation()
-{
-	_StopStatusAnimation();
-
-	if (fCurrentStatus == STATUS_VECTORIZING) {
-		BMessage animateMsg(MSG_VECTORIZATION_STATUS_ANIMATION);
-		fStatusAnimationRunner = new BMessageRunner(this, &animateMsg, 500000);
-		_UpdateStatusAnimation();
-	}
-}
-
-void
-SVGVectorizationDialog::_StopStatusAnimation()
-{
-	if (fStatusAnimationRunner) {
-		delete fStatusAnimationRunner;
-		fStatusAnimationRunner = NULL;
-	}
+	dialog->UnlockLooper();
 }

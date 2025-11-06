@@ -17,10 +17,11 @@
 #include <Message.h>
 #include <String.h>
 #include <StringView.h>
-#include <MessageRunner.h>
+#include <StatusBar.h>
 
 #include "TracingOptions.h"
 #include "SVGConstants.h"
+#include "VectorizationProgress.h"
 
 class SVGVectorizationDialog : public BWindow {
 public:
@@ -31,14 +32,16 @@ public:
 	virtual void MessageReceived(BMessage* message);
 	virtual bool QuitRequested();
 
-	void SetVectorizationStatus(VectorizationStatus status, const char* message = NULL);
 	void SetVectorizationCompleted();
 	void SetVectorizationError(const char* errorMessage = NULL);
+	void ResetProgress(bigtime_t delay = 0); 
 
 	TracingOptions GetCurrentOptions() const;
 	void SetOptions(const TracingOptions& options);
 
 	BString GetImagePath() const { return fImagePath; }
+
+	static void ProgressCallbackStatic(int stage, int percent, void* userData);
 
 private:
 	void _BuildInterface();
@@ -54,7 +57,6 @@ private:
 	void _UpdateFromControls();
 	void _UpdateControls();
 	void _UpdateControlStates();
-	void _ResetToDefaults();
 	void _ApplyPreset();
 	void _StartVectorization();
 
@@ -64,10 +66,7 @@ private:
 	void _SaveSelectedPreset(int32 presetIndex);
 	void _LoadSelectedPreset();
 
-	void _SetVectorizationStatus(VectorizationStatus status, const char* message = NULL);
-	void _UpdateStatusAnimation();
-	void _StartStatusAnimation();
-	void _StopStatusAnimation();
+	void _UpdateVectorizationProgress(int stage, int percent);
 
 	BSlider* _CreateSlider(const char* name, const char* label, float min, float max, float value);
 	BCheckBox* _CreateCheckBox(const char* name, const char* label, bool value);
@@ -83,11 +82,7 @@ private:
 	BString          fImagePath;
 	BFont*           fBoldFont;
 	TracingOptions   fOptions;
-	BStringView*     fStatusView;
-	BMessageRunner*  fStatusAnimationRunner;
-	VectorizationStatus fCurrentStatus;
-	BString          fBaseStatusMessage;
-	int32            fAnimationDots;
+	BStatusBar*      fProgressBar;
 	bool             fFirstShow;
 	bool             fUpdatingControls;
 
@@ -158,7 +153,6 @@ private:
 	// Buttons
 	BButton*        fOKButton;
 	BButton*        fCancelButton;
-	BButton*        fResetButton;
 
 	// Labels
 	BStringView*    fLineThresholdValueLabel;
