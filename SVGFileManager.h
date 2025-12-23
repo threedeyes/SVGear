@@ -53,12 +53,14 @@ public:
 	void ShowExportHVIFPanel(BHandler* target);
 	void ShowExportRDefPanel(BHandler* target);
 	void ShowExportCPPPanel(BHandler* target);
+	void ShowExportIOMPanel(BHandler* target);
+	void ShowExportPNGPanel(BHandler* target, int32 size);
 
 	status_t ExportHVIF(const char* filePath, const unsigned char* data, size_t size);
 	status_t ExportRDef(const char* filePath, const unsigned char* data, size_t size);
 	status_t ExportCPP(const char* filePath, const unsigned char* data, size_t size);
 
-	bool HandleExportSavePanel(BMessage* message, const unsigned char* hvifData, size_t hvifSize);
+	bool HandleExportSavePanel(BMessage* message, const BString& svgSource, const unsigned char* hvifData, size_t hvifSize);
 
 	BFilePanel* GetOpenPanel() { return fOpenPanel; }
 	BFilePanel* GetSavePanel() { return fSavePanel; }
@@ -73,6 +75,7 @@ private:
 	BFilePanel* fExportPanel;
 	file_type fLastFileType;
 	uint32 fCurrentExportType;
+	int32 fCurrentExportSize;
 
 	bool _LoadVectorIconFile(const char* filePath, haiku::IconFormat format, HVIFView* iconView, BString& source);
 	bool _LoadSVGFile(const char* filePath, SVGView* svgView, HVIFView* iconView, BString& source);
@@ -80,6 +83,9 @@ private:
 	void _ShowError(const char* message);
 	bool _IsSVGFile(const char* filePath) const;
 	bool _EnsureSVGExtension(BString& filePath) const;
+
+	status_t _ExportIOM(const char* filePath, const BString& svgSource);
+	status_t _ExportPNG(const char* filePath, const BString& svgSource, int32 size);
 
 	void _ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType, BHandler* target);
 	status_t _SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime);

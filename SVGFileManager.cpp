@@ -29,7 +29,8 @@ SVGFileManager::SVGFileManager()
 	fSavePanel(NULL),
 	fExportPanel(NULL),
 	fLastFileType(FILE_TYPE_UNKNOWN),
-	fCurrentExportType(0)
+	fCurrentExportType(0),
+	fCurrentExportSize(64)
 {
 }
 
@@ -373,6 +374,21 @@ SVGFileManager::ShowExportCPPPanel(BHandler* target)
 	_ShowExportPanel("icon", ".cpp", MSG_EXPORT_CPP, target);
 }
 
+void
+SVGFileManager::ShowExportIOMPanel(BHandler* target)
+{
+	_ShowExportPanel("icon", ".iom", MSG_EXPORT_IOM, target);
+}
+
+void
+SVGFileManager::ShowExportPNGPanel(BHandler* target, int32 size)
+{
+	fCurrentExportSize = size;
+	BString defaultName;
+	defaultName.SetToFormat("icon_%ldx%ld", size, size);
+	_ShowExportPanel(defaultName.String(), ".png", MSG_EXPORT_PNG, target);
+}
+
 status_t
 SVGFileManager::ExportHVIF(const char* filePath, const unsigned char* data, size_t size)
 {
@@ -415,8 +431,59 @@ SVGFileManager::ExportCPP(const char* filePath, const unsigned char* data, size_
 	return SaveFile(fullPath.String(), cppContent, MIME_CPP_SIGNATURE);
 }
 
+status_t
+SVGFileManager::_ExportIOM(const char* filePath, const BString& svgSource)
+{
+	if (svgSource.IsEmpty())
+		return B_BAD_VALUE;
+
+	BString fullPath = filePath;
+	if (!fullPath.EndsWith(".iom"))
+		fullPath << ".iom";
+
+	std::vector<uint8_t> svgData(svgSource.String(), svgSource.String() + svgSource.Length());
+	haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
+
+	if (!haiku::IconConverter::GetLastError().empty())
+		return B_ERROR;
+
+	std::vector<uint8_t> iomData;
+	if (!haiku::IconConverter::SaveToBuffer(icon, iomData, haiku::FORMAT_IOM))
+		return B_ERROR;
+
+	return _SaveBinaryData(fullPath.String(), iomData.data(), iomData.size(), "application/x-vnd.haiku-icon");
+}
+
+status_t
+SVGFileManager::_ExportPNG(const char* filePath, const BString& svgSource, int32 size)
+{
+	if (svgSource.IsEmpty())
+		return B_BAD_VALUE;
+
+	BString fullPath = filePath;
+	if (!fullPath.EndsWith(".png"))
+		fullPath << ".png";
+
+	std::vector<uint8_t> svgData(svgSource.String(), svgSource.String() + svgSource.Length());
+	haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
+
+	if (!haiku::IconConverter::GetLastError().empty())
+		return B_ERROR;
+
+	haiku::ConvertOptions opts;
+	opts.pngWidth = size;
+	opts.pngHeight = size;
+	opts.pngScale = 1.0f;
+
+	std::vector<uint8_t> pngData;
+	if (!haiku::IconConverter::SaveToBuffer(icon, pngData, haiku::FORMAT_PNG, opts))
+		return B_ERROR;
+
+	return _SaveBinaryData(fullPath.String(), pngData.data(), pngData.size(), "image/png");
+}
+
 bool
-SVGFileManager::HandleExportSavePanel(BMessage* message, const unsigned char* hvifData, size_t hvifSize)
+SVGFileManager::HandleExportSavePanel(BMessage* message, const BString& svgSource, const unsigned char* hvifData, size_t hvifSize)
 {
 	entry_ref dirRef;
 	BString fileName;
@@ -450,11 +517,20 @@ SVGFileManager::HandleExportSavePanel(BMessage* message, const unsigned char* hv
 		case MSG_EXPORT_CPP:
 			result = ExportCPP(fullPath.String(), hvifData, hvifSize);
 			break;
+
+		case MSG_EXPORT_IOM:
+			result = _ExportIOM(fullPath.String(), svgSource);
+			break;
+
+		case MSG_EXPORT_PNG:
+			result = _ExportPNG(fullPath.String(), svgSource, fCurrentExportSize);
+			break;
 	}
 
 	fCurrentExportType = 0;
 	return (result == B_OK);
 }
+
 
 void
 SVGFileManager::_ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType, BHandler* target)

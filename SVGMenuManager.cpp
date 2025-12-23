@@ -61,7 +61,7 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 	BMenu* fileMenu = new BMenu(B_TRANSLATE("File"));
 	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("New"), new BMessage(MSG_NEW_FILE), 'N'));
 
-	BMenuItem* fMenuItemOpen = new BMenuItem(BRecentFilesList::NewFileListMenu( B_TRANSLATE("Open" B_UTF8_ELLIPSIS),
+	BMenuItem* fMenuItemOpen = new BMenuItem(BRecentFilesList::NewFileListMenu(B_TRANSLATE("Open" B_UTF8_ELLIPSIS),
 		NULL, NULL, be_app, 10, true, NULL, APP_SIGNATURE), new BMessage(MSG_OPEN_FILE));
 	fMenuItemOpen->SetShortcut('O', 0);
 	fileMenu->AddItem(fMenuItemOpen);
@@ -77,6 +77,22 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 
 	fExportSubMenu = new BMenu(B_TRANSLATE("Export"));
 	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("HVIF Icon" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_HVIF)));
+	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("Icon-O-Matic" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_IOM)));
+
+	BMenu* pngSubMenu = new BMenu(B_TRANSLATE("PNG Image"));
+	const int32 sizes[] = { 16, 24, 32, 48, 64, 128, 256, 512 };
+	for (int i = 0; i < 8; i++) {
+		BMessage* msg = new BMessage(MSG_EXPORT_PNG);
+		msg->AddInt32("size", sizes[i]);
+		BString label;
+		label << sizes[i] << "x" << sizes[i];
+		pngSubMenu->AddItem(new BMenuItem(label.String(), msg));
+	}
+	pngSubMenu->SetTargetForItems(target);
+	fExportSubMenu->AddItem(pngSubMenu);
+
+	fExportSubMenu->AddSeparatorItem();
+
 	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("RDef resource" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_RDEF)));
 	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("C++ array" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_CPP)));
 	fExportSubMenu->SetTargetForItems(target);

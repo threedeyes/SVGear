@@ -65,6 +65,8 @@ const uint32 MSG_OPEN_IN_ICON_O_MATIC = 'oiom';
 const uint32 MSG_EXPORT_HVIF = 'exhv';
 const uint32 MSG_EXPORT_RDEF = 'exrd';
 const uint32 MSG_EXPORT_CPP = 'excx';
+const uint32 MSG_EXPORT_IOM  = 'exim';
+const uint32 MSG_EXPORT_PNG  = 'expn';
 
 // Tab selection message
 const uint32 MSG_TAB_SELECTION = 'tabs';

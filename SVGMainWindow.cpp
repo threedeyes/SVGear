@@ -146,6 +146,8 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case MSG_EXPORT_HVIF:
 		case MSG_EXPORT_RDEF:
 		case MSG_EXPORT_CPP:
+		case MSG_EXPORT_IOM:
+		case MSG_EXPORT_PNG:
 			_HandleExportMessages(message);
 			break;
 
@@ -459,7 +461,7 @@ SVGMainWindow::_HandleFileMessages(BMessage* message)
 			if (fFileManager && fFileManager->GetExportPanel() &&
 				fFileManager->GetExportPanel()->Window() &&
 				fFileManager->GetExportPanel()->Window()->IsActive()) {
-				if (fFileManager->HandleExportSavePanel(message, fCurrentHVIFData, fCurrentHVIFSize)) {
+				if (fFileManager->HandleExportSavePanel(message, fCurrentSource, fCurrentHVIFData, fCurrentHVIFSize)) {
 					_ShowSuccess(MSG_FILE_EXPORTED);
 				} else {
 					_ShowError(ERROR_EXPORT_FAILED);
@@ -740,20 +742,51 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 void
 SVGMainWindow::_HandleExportMessages(BMessage* message)
 {
-	if (!fFileManager || !fCurrentHVIFData || fCurrentHVIFSize == 0) {
-		_ShowError(B_TRANSLATE("No HVIF data available for export"));
+	if (!fFileManager)
 		return;
-	}
 
 	switch (message->what) {
 		case MSG_EXPORT_HVIF:
+			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+				_ShowError(B_TRANSLATE("No HVIF data generated"));
+				return;
+			}
 			fFileManager->ShowExportHVIFPanel(this);
 			break;
+
 		case MSG_EXPORT_RDEF:
+			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+				_ShowError(B_TRANSLATE("No HVIF data generated"));
+				return;
+			}
 			fFileManager->ShowExportRDefPanel(this);
 			break;
+
 		case MSG_EXPORT_CPP:
+			if (!fCurrentHVIFData || fCurrentHVIFSize == 0) {
+				_ShowError(B_TRANSLATE("No HVIF data generated"));
+				return;
+			}
 			fFileManager->ShowExportCPPPanel(this);
+			break;
+
+		case MSG_EXPORT_IOM:
+			if (fCurrentSource.IsEmpty()) {
+				_ShowError(B_TRANSLATE("No data available for export"));
+				return;
+			}
+			fFileManager->ShowExportIOMPanel(this);
+			break;
+
+		case MSG_EXPORT_PNG:
+			if (fCurrentSource.IsEmpty()) {
+				_ShowError(B_TRANSLATE("No data available for export"));
+				return;
+			}
+			int32 size;
+			if (message->FindInt32("size", &size) == B_OK) {
+				fFileManager->ShowExportPNGPanel(this, size);
+			}
 			break;
 	}
 }
