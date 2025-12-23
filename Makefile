@@ -18,44 +18,23 @@ SRCS = \
 	SVGVectorizationDialog.cpp \
 	SVGVectorizationWorker.cpp \
 	External/BSVGView/BSVGView.cpp \
-	External/hvif-tools/src/hvif2svg/HVIFParser.cpp \
-	External/hvif-tools/src/hvif2svg/SVGRenderer.cpp \
-	External/hvif-tools/src/svg2hvif/HVIFWriter.cpp \
-	External/hvif-tools/src/svg2hvif/SVGParser.cpp \
-	External/hvif-tools/src/img2svg/core/BitmapData.cpp \
-	External/hvif-tools/src/img2svg/core/ImageTracer.cpp \
-	External/hvif-tools/src/img2svg/core/IndexedBitmap.cpp \
-	External/hvif-tools/src/img2svg/core/TracingOptions.cpp \
-	External/hvif-tools/src/img2svg/output/SvgWriter.cpp \
-	External/hvif-tools/src/img2svg/processing/BackgroundRemover.cpp \
-	External/hvif-tools/src/img2svg/processing/GeometryDetector.cpp \
-	External/hvif-tools/src/img2svg/processing/GradientDetector.cpp \
-	External/hvif-tools/src/img2svg/processing/PathScanner.cpp \
-	External/hvif-tools/src/img2svg/processing/PathSimplifier.cpp \
-	External/hvif-tools/src/img2svg/processing/PathTracer.cpp \
-	External/hvif-tools/src/img2svg/processing/PathHierarchy.cpp \
-	External/hvif-tools/src/img2svg/processing/SelectiveBlur.cpp \
-	External/hvif-tools/src/img2svg/processing/VisvalingamWhyatt.cpp \
-	External/hvif-tools/src/img2svg/processing/RegionMerger.cpp \
-	External/hvif-tools/src/img2svg/processing/SharedEdgeRegistry.cpp \
-	External/hvif-tools/src/img2svg/quantization/ColorCube.cpp \
-	External/hvif-tools/src/img2svg/quantization/ColorNode.cpp \
-	External/hvif-tools/src/img2svg/quantization/ColorQuantizer.cpp \
-	External/hvif-tools/src/img2svg/utils/MathUtils.cpp \
 	main.cpp
 RDEFS = Resources.rdef
-LIBS = be tracker translation shared localestub $(STDCPPLIBS)
-SYSTEM_INCLUDE_PATHS = /system/develop/headers/private/interface
+LIBS = be tracker translation shared localestub hviftools imagetracer $(STDCPPLIBS)
+SYSTEM_INCLUDE_PATHS = \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/interface \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/common \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/import \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/export \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/core \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/output \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/processing \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/quantization \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/utils
 LOCAL_INCLUDE_PATHS = \
 	./External/BSVGView \
-	./External/nanosvg_ext/src \
-	./External/hvif-tools/src/common \
-	./External/hvif-tools/src/hvif2svg \
-	./External/hvif-tools/src/svg2hvif \
-	./External/hvif-tools/src/img2svg/core \
-	./External/hvif-tools/src/img2svg/output \
-	./External/hvif-tools/src/img2svg/processing \
-	./External/hvif-tools/src/img2svg/quantization
+	./External/nanosvg_ext/src
 OPTIMIZE := FULL
 LOCALES = en ru
 DEFINES =

@@ -33,10 +33,7 @@
 #include "SVGVectorizationWorker.h"
 #include "SVGVectorizationDialog.h"
 
-#include "HVIFParser.h"
-#include "HVIFWriter.h"
-#include "SVGParser.h"
-#include "SVGRenderer.h"
+#include "IconConverter.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "SVGMainWindow"
@@ -699,22 +696,29 @@ SVGMainWindow::_HandleDropMessages(BMessage* message)
 		if (message->FindData("icon", B_VECTOR_ICON_TYPE, &data, &size) != B_OK)
 			return;
 
-		std::vector<uint8_t> icondata((uint8_t*)data, (uint8_t*)data + size);
+		std::vector<uint8_t> hvifData(static_cast<const uint8_t*>(data),
+									  static_cast<const uint8_t*>(data) + size);
+		std::vector<uint8_t> svgData;
 
-		hvif::HVIFParser parser;
-		if (!parser.ParseData(icondata)) {
+		haiku::ConvertOptions convertOpts;
+		convertOpts.svgWidth = 64;
+		convertOpts.svgHeight = 64;
+		convertOpts.preserveNames = true;
+
+		bool status = haiku::IconConverter::ConvertBuffer(
+			hvifData, haiku::FORMAT_HVIF,
+			svgData, haiku::FORMAT_SVG,
+			convertOpts);
+
+		if (!status)
 			return;
-		}
 
 		delete[] fCurrentHVIFData;
-		fCurrentHVIFSize = parser.GetIconDataSize();
+		fCurrentHVIFSize = hvifData.size();
 		fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
-		memcpy(fCurrentHVIFData, parser.GetIconData(), fCurrentHVIFSize);
+		memcpy(fCurrentHVIFData, hvifData.data(), fCurrentHVIFSize);
 
-		const hvif::HVIFIcon& icon = parser.GetIcon();
-		hvif::SVGRenderer renderer;
-		std::string svg = renderer.RenderIcon(icon, 64, 64);
-		fCurrentSource.SetTo(svg.c_str());
+		fCurrentSource.SetTo(reinterpret_cast<const char*>(svgData.data()), svgData.size());
 		fOriginalSourceText = fCurrentSource;
 		fDocumentModified = true;
 
@@ -1105,26 +1109,40 @@ SVGMainWindow::_GenerateHVIFFromSVG()
 	if (fCurrentSource.IsEmpty())
 		return;
 
+	delete[] fCurrentHVIFData;
+	fCurrentHVIFData = NULL;
+	fCurrentHVIFSize = 0;
+
 	try {
-		hvif::HVIFWriter writer;
-		hvif::SVGParser parser;
+		std::vector<uint8_t> svgData(fCurrentSource.String(),
+									 fCurrentSource.String() + fCurrentSource.Length());
 
-		if (parser.ParseString(fCurrentSource.String(), writer)) {
-			std::vector<uint8_t> hvifData = writer.WriteToBuffer();
+		haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
 
-			delete[] fCurrentHVIFData;
-			fCurrentHVIFData = NULL;
+		std::string errorMsg = haiku::IconConverter::GetLastError();
+		if (!errorMsg.empty()) {
+			if (fIconView)
+				fIconView->RemoveIcon();
+			return;
+		}
+
+		std::vector<uint8_t> hvifData;
+		haiku::ConvertOptions opts;
+
+		if (haiku::IconConverter::SaveToBuffer(icon, hvifData, haiku::FORMAT_HVIF, opts) && !hvifData.empty()) {
 			fCurrentHVIFSize = hvifData.size();
-			if (!hvifData.empty()) {
-				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
-				memcpy(fCurrentHVIFData, &hvifData[0], fCurrentHVIFSize);
-			}
+			fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
+			memcpy(fCurrentHVIFData, hvifData.data(), fCurrentHVIFSize);
 		}
 	} catch (...) {
 	}
 
-	if (fIconView)
-		fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
+	if (fIconView) {
+		if (fCurrentHVIFData && fCurrentHVIFSize > 0)
+			fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
+		else
+			fIconView->RemoveIcon();
+	}
 }
 
 void

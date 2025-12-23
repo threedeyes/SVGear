@@ -8,6 +8,7 @@
 #include <Node.h>
 #include <NodeInfo.h>
 #include <Catalog.h>
+#include <TranslationUtils.h>
 
 #include "SVGConstants.h"
 #include "SVGFileManager.h"
@@ -18,10 +19,7 @@
 #include "SVGVectorizationWorker.h"
 #include "SVGVectorizationDialog.h"
 
-#include "HVIFParser.h"
-#include "HVIFWriter.h"
-#include "SVGParser.h"
-#include "SVGRenderer.h"
+#include "IconConverter.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "SVGFileManager"
@@ -52,41 +50,98 @@ SVGFileManager::LoadFile(const char* filePath, SVGView* svgView, HVIFView* iconV
 
 	fLastFileType = FILE_TYPE_UNKNOWN;
 
-	if (hvif::HVIFParser::IsValidHVIFFile(filePath)) {
-		fLastFileType = FILE_TYPE_HVIF;
-		return _LoadHVIFFile(filePath, iconView, source);
-	} else if (svgView && _IsSVGFile(filePath)) {
-		fLastFileType = FILE_TYPE_SVG;
-		return _LoadSVGFile(filePath, svgView, iconView, source);
-	} else if (IsRasterImage(filePath)) {
+	haiku::IconFormat format = haiku::IconConverter::DetectFormatBySignature(filePath);
+
+	switch (format) {
+		case haiku::FORMAT_HVIF:
+			fLastFileType = FILE_TYPE_HVIF;
+			return _LoadVectorIconFile(filePath, haiku::FORMAT_HVIF, iconView, source);
+
+		case haiku::FORMAT_IOM:
+			fLastFileType = FILE_TYPE_HVIF;
+			return _LoadVectorIconFile(filePath, haiku::FORMAT_IOM, iconView, source);
+
+		case haiku::FORMAT_SVG:
+			fLastFileType = FILE_TYPE_SVG;
+			return _LoadSVGFile(filePath, svgView, iconView, source);
+
+		case haiku::FORMAT_PNG:
+			fLastFileType = FILE_TYPE_RASTER;
+			return false;
+
+		default:
+			break;
+	}
+
+	BBitmap* bitmap = BTranslationUtils::GetBitmap(filePath);
+	if (bitmap != NULL) {
+		delete bitmap;
 		fLastFileType = FILE_TYPE_RASTER;
 		return false;
-	} else {
-		fLastFileType = FILE_TYPE_FROM_ATTRIBUTES;
-		return _LoadFromFileAttributes(filePath, iconView, source);
 	}
+
+	fLastFileType = FILE_TYPE_FROM_ATTRIBUTES;
+	if (_LoadFromFileAttributes(filePath, iconView, source)) {
+		return true;
+	}
+
+	BString error;
+	error.SetToFormat(B_TRANSLATE("Unable to load file: %s\nUnknown or unsupported format"), filePath);
+	_ShowError(error.String());
+	return false;
 }
 
 bool
-SVGFileManager::_LoadHVIFFile(const char* filePath, HVIFView* iconView, BString& source)
+SVGFileManager::_LoadVectorIconFile(const char* filePath, haiku::IconFormat format,	HVIFView* iconView, BString& source)
 {
-	hvif::HVIFParser parser;
-	if (!parser.ParseFile(filePath)) {
+	haiku::Icon icon = haiku::IconConverter::Load(filePath, format);
+
+	std::string errorMsg = haiku::IconConverter::GetLastError();
+	if (!errorMsg.empty()) {
 		BString error;
-		error.SetToFormat(B_TRANSLATE("Error parsing HVIF file: %s"), parser.GetLastError().c_str());
+		const char* formatName = (format == haiku::FORMAT_HVIF) ? "HVIF" : "IOM";
+		error.SetToFormat(B_TRANSLATE("Error loading %s file: %s"), formatName, errorMsg.c_str());
 		_ShowError(error.String());
 		return false;
 	}
 
 	if (iconView) {
-		iconView->SetIcon(parser.GetIconData(), parser.GetIconDataSize());
+		std::vector<uint8_t> hvifData;
+
+		if (format == haiku::FORMAT_HVIF) {
+			BFile file(filePath, B_READ_ONLY);
+			if (file.InitCheck() == B_OK) {
+				off_t size;
+				if (file.GetSize(&size) == B_OK && size > 0) {
+					hvifData.resize(size);
+					file.Read(hvifData.data(), size);
+				}
+			}
+		} else {
+			haiku::ConvertOptions opts;
+			haiku::IconConverter::SaveToBuffer(icon, hvifData, haiku::FORMAT_HVIF, opts);
+		}
+
+		if (!hvifData.empty()) {
+			iconView->SetIcon(hvifData.data(), hvifData.size());
+		}
 	}
 
-	const hvif::HVIFIcon& icon = parser.GetIcon();
-	hvif::SVGRenderer renderer;
-	std::string svg = renderer.RenderIcon(icon, 64, 64);
-	source.SetTo(svg.c_str());
+	haiku::ConvertOptions opts;
+	opts.svgWidth = 64;
+	opts.svgHeight = 64;
+	opts.preserveNames = false; //TODO: fix hvif-tools naming
 
+	std::vector<uint8_t> svgBuffer;
+	if (!haiku::IconConverter::SaveToBuffer(icon, svgBuffer, haiku::FORMAT_SVG, opts)) {
+		const char* formatName = (format == haiku::FORMAT_HVIF) ? "HVIF" : "IOM";
+		BString error;
+		error.SetToFormat(B_TRANSLATE("Error converting %s to SVG"), formatName);
+		_ShowError(error.String());
+		return false;
+	}
+
+	source.SetTo(reinterpret_cast<const char*>(svgBuffer.data()), svgBuffer.size());
 	return true;
 }
 
@@ -98,20 +153,27 @@ SVGFileManager::_LoadSVGFile(const char* filePath, SVGView* svgView, HVIFView* i
 		return false;
 	}
 
-	status_t result = svgView->LoadFromFile(filePath);
-	if (result != B_OK) {
-		BString error;
-		error.SetToFormat(B_TRANSLATE("Error loading SVG file: %s"), filePath);
-		_ShowError(error.String());
-		return false;
+	if (svgView) {
+		status_t result = svgView->LoadFromFile(filePath);
+		if (result != B_OK) {
+			BString error;
+			error.SetToFormat(B_TRANSLATE("Error loading SVG file: %s"), filePath);
+			_ShowError(error.String());
+			return false;
+		}
 	}
 
 	if (iconView) {
-		hvif::HVIFWriter writer;
-		hvif::SVGParser parser;
-		parser.ParseFile(filePath, writer);
-		std::vector<uint8_t> hvifData = writer.WriteToBuffer();
-		iconView->SetIcon(hvifData.data(), hvifData.size());
+		std::vector<uint8_t> svgData(source.String(), source.String() + source.Length());
+		haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
+
+		if (haiku::IconConverter::GetLastError().empty()) {
+			std::vector<uint8_t> hvifData;
+			haiku::ConvertOptions opts;
+			if (haiku::IconConverter::SaveToBuffer(icon, hvifData, haiku::FORMAT_HVIF, opts)) {
+				iconView->SetIcon(hvifData.data(), hvifData.size());
+			}
+		}
 	}
 
 	return true;
@@ -122,25 +184,16 @@ SVGFileManager::_LoadFromFileAttributes(const char* filePath, HVIFView* iconView
 {
 	BEntry entry(filePath, true);
 	if (entry.InitCheck() != B_OK) {
-		BString error;
-		error.SetToFormat(B_TRANSLATE("Error accessing file: %s"), filePath);
-		_ShowError(error.String());
 		return false;
 	}
 
 	BNode node(&entry);
 	if (node.InitCheck() != B_OK) {
-		BString error;
-		error.SetToFormat(B_TRANSLATE("Error importing HVIF icon from file: %s"), filePath);
-		_ShowError(error.String());
 		return false;
 	}
 
 	attr_info info;
 	if (node.GetAttrInfo("BEOS:ICON", &info) != B_OK) {
-		BString error;
-		error.SetToFormat(B_TRANSLATE("Error getting HVIF icon info from file: %s"), filePath);
-		_ShowError(error.String());
 		return false;
 	}
 
@@ -149,27 +202,31 @@ SVGFileManager::_LoadFromFileAttributes(const char* filePath, HVIFView* iconView
 								data.data(), data.size());
 
 	if (read != static_cast<ssize_t>(data.size())) {
-		BString error;
-		error.SetToFormat(B_TRANSLATE("Error reading HVIF icon data from file: %s"), filePath);
-		_ShowError(error.String());
 		return false;
 	}
 
-	hvif::HVIFParser parser;
-	if (!parser.ParseData(data, filePath)) {
-		_ShowError(B_TRANSLATE("Error parsing HVIF data from file attributes"));
+	haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(data, haiku::FORMAT_HVIF);
+
+	std::string errorMsg = haiku::IconConverter::GetLastError();
+	if (!errorMsg.empty()) {
 		return false;
 	}
 
 	if (iconView) {
-		iconView->SetIcon(parser.GetIconData(), parser.GetIconDataSize());
+		iconView->SetIcon(data.data(), data.size());
 	}
 
-	const hvif::HVIFIcon& icon = parser.GetIcon();
-	hvif::SVGRenderer renderer;
-	std::string svg = renderer.RenderIcon(icon, 64, 64);
-	source.SetTo(svg.c_str());
+	haiku::ConvertOptions opts;
+	opts.svgWidth = 64;
+	opts.svgHeight = 64;
+	opts.preserveNames = false;
 
+	std::vector<uint8_t> svgBuffer;
+	if (!haiku::IconConverter::SaveToBuffer(icon, svgBuffer, haiku::FORMAT_SVG, opts)) {
+		return false;
+	}
+
+	source.SetTo(reinterpret_cast<const char*>(svgBuffer.data()), svgBuffer.size());
 	return true;
 }
 
@@ -202,37 +259,25 @@ status_t
 SVGFileManager::SaveFile(const char* filePath, const BString& source, const char* mime)
 {
 	if (!filePath || source.IsEmpty()) {
-		printf("SaveFile: Invalid parameters - filePath: %s, source empty: %s\n",
-			   filePath ? filePath : "NULL", source.IsEmpty() ? "true" : "false");
 		return B_BAD_VALUE;
 	}
-
-	printf("SaveFile: Attempting to save to %s\n", filePath);
-	printf("SaveFile: Source length: %d\n", source.Length());
 
 	BFile file(filePath, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
 	status_t initResult = file.InitCheck();
 	if (initResult != B_OK) {
-		printf("SaveFile: File init failed: %s\n", strerror(initResult));
 		return initResult;
 	}
 
 	ssize_t bytesWritten = file.Write(source.String(), source.Length());
 	if (bytesWritten != source.Length()) {
-		printf("SaveFile: Write failed - expected %d bytes, wrote %d\n", 
-			   source.Length(), (int)bytesWritten);
 		return B_ERROR;
 	}
 
 	BNodeInfo nodeInfo(&file);
 	if (nodeInfo.InitCheck() == B_OK) {
-		status_t mimeResult = nodeInfo.SetType(mime);
-		if (mimeResult != B_OK) {
-			printf("SaveFile: Warning - could not set MIME type: %s\n", strerror(mimeResult));
-		}
+		nodeInfo.SetType(mime);
 	}
 
-	printf("SaveFile: Successfully saved %d bytes to %s\n", (int)bytesWritten, filePath);
 	return B_OK;
 }
 
@@ -275,17 +320,12 @@ SVGFileManager::IsRasterImage(const char* filePath) const
 	if (!filePath)
 		return false;
 
-	BNode node(filePath);
-	if (node.InitCheck() == B_OK) {
-		BNodeInfo info(&node);
-		if (info.InitCheck() == B_OK) {
-			BString mimeType;
-			info.GetType(mimeType.LockBuffer(B_MIME_TYPE_LENGTH));
-			mimeType.UnlockBuffer();
-			if (mimeType.IFindFirst("image/") != B_ERROR)
-				return true;
-		}
+	BBitmap* bitmap = BTranslationUtils::GetBitmap(filePath);
+	if (bitmap != NULL) {
+		delete bitmap;
+		return true;
 	}
+
 	return false;
 }
 
@@ -449,29 +489,23 @@ status_t
 SVGFileManager::_SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime)
 {
 	if (!filePath || !data || size == 0) {
-		printf("_SaveBinaryData: Invalid parameters\n");
 		return B_BAD_VALUE;
 	}
 
 	BFile file(filePath, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
 	status_t initResult = file.InitCheck();
 	if (initResult != B_OK) {
-		printf("_SaveBinaryData: File init failed: %s\n", strerror(initResult));
 		return initResult;
 	}
 
 	ssize_t bytesWritten = file.Write(data, size);
 	if (bytesWritten != (ssize_t)size) {
-		printf("_SaveBinaryData: Write failed - expected %d, wrote %d\n", (int)size, (int)bytesWritten);
 		return B_ERROR;
 	}
 
 	BNodeInfo nodeInfo(&file);
 	if (nodeInfo.InitCheck() == B_OK) {
-		status_t mimeResult = nodeInfo.SetType(mime);
-		if (mimeResult != B_OK) {
-			printf("SaveFile: Warning - could not set MIME type: %s\n", strerror(mimeResult));
-		}
+		nodeInfo.SetType(mime);
 	}
 
 	return B_OK;
@@ -505,4 +539,3 @@ SVGFileManager::_ShowError(const char* message)
 							  B_WIDTH_AS_USUAL, B_STOP_ALERT);
 	alert->Go();
 }
-

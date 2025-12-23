@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "SVGConstants.h"
+#include "IconConverter.h"
 
 class SVGView;
 class HVIFView;
@@ -73,7 +74,7 @@ private:
 	file_type fLastFileType;
 	uint32 fCurrentExportType;
 
-	bool _LoadHVIFFile(const char* filePath, HVIFView* iconView, BString& source);
+	bool _LoadVectorIconFile(const char* filePath, haiku::IconFormat format, HVIFView* iconView, BString& source);
 	bool _LoadSVGFile(const char* filePath, SVGView* svgView, HVIFView* iconView, BString& source);
 	bool _LoadFromFileAttributes(const char* filePath, HVIFView* iconView, BString& source);
 	void _ShowError(const char* message);
@@ -82,8 +83,6 @@ private:
 
 	void _ShowExportPanel(const char* defaultName, const char* extension, uint32 exportType, BHandler* target);
 	status_t _SaveBinaryData(const char* filePath, const unsigned char* data, size_t size, const char* mime);
-	BString _ConvertToRDef(const unsigned char* data, size_t size);
-	BString _ConvertToCPP(const unsigned char* data, size_t size);
 };
 
 #endif
