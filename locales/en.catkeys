@@ -1,14 +1,10 @@
-1	English	application/x-vnd.svgear	4127275414
-Failed to save file	SVGMainWindow		Failed to save file
+1	English	application/x-vnd.svgear	3227514244
 Outline	SVGMainWindow		Outline
-Min Y:	SVGStatView		Min Y:
-Filtering	SVGVectorizationDialog		Filtering
-Show description	SVGVectorizationDialog		Show description
-Minimum circle radius	SVGVectorizationDialog		Minimum circle radius
+Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
+Min samples	SVGVectorizationDialog		Min samples
 Simple	SVGVectorizationDialog		Simple
-Quit	SVGMenuManager		Quit
+Minimum circle radius	SVGVectorizationDialog		Minimum circle radius
 Text wrap	SVGMainWindow		Text wrap
-C++ array…	SVGMenuManager		C++ array…
 OK	SVGFileManager		OK
 Zoom out	SVGMainWindow		Zoom out
 View	SVGMenuManager		View
@@ -16,165 +12,195 @@ Outline	SVGMenuManager		Outline
 Filter small objects	SVGVectorizationDialog		Filter small objects
 Redo	SVGMainWindow		Redo
 File	SVGMenuManager		File
-Number of colors	SVGVectorizationDialog		Number of colors
 Points:	SVGStatView		Points:
-Show Source Code	SVGMainWindow		Show Source Code
-Error parsing HVIF data from file attributes	SVGFileManager		Error parsing HVIF data from file attributes
-Zoom In	SVGMenuManager		Zoom In
 Show Statistics Panel	SVGMenuManager		Show Statistics Panel
-Linear Gradient	SVGStructureView		Linear Gradient
+Zoom In	SVGMenuManager		Zoom In
 Blur radius	SVGVectorizationDialog		Blur radius
-Save	SVGMenuManager		Save
-Maximum circle radius	SVGVectorizationDialog		Maximum circle radius
-Colors	SVGVectorizationDialog		Colors
 Show Structure	SVGMainWindow		Show Structure
-Geometry	SVGVectorizationDialog		Geometry
+Colors	SVGVectorizationDialog		Colors
+Removing background	SVGVectorizationDialog		Removing background
 Curve protection	SVGVectorizationDialog		Curve protection
-RDef resource…	SVGMenuManager		RDef resource…
-Gradients:	SVGStatView		Gradients:
+Geometry	SVGVectorizationDialog		Geometry
 New	SVGMenuManager		New
-Save as…	SVGMenuManager		Save as…
-Paths:	SVGStatView		Paths:
+Gradients:	SVGStatView		Gradients:
 File path not specified	SVGFileManager		File path not specified
 Remove duplicate paths	SVGVectorizationDialog		Remove duplicate paths
 Content	SVGStatView		Content
+Tracing paths	SVGVectorizationDialog		Tracing paths
 Output scale	SVGVectorizationDialog		Output scale
-Fill Only	SVGMainWindow		Fill Only
-Export	SVGMenuManager		Export
 No SVG loaded	SVGMainWindow		No SVG loaded
 Error	SVGFileManager		Error
 Quantization cycles	SVGVectorizationDialog		Quantization cycles
-No HVIF data available for export	SVGMainWindow		No HVIF data available for export
-Document	SVGMainWindow		Document
-Closed paths:	SVGStatView		Closed paths:
 Error reading SVG file	SVGFileManager		Error reading SVG file
 Zoom original	SVGMainWindow		Zoom original
+Closed paths:	SVGStatView		Closed paths:
 Save	SVGMainWindow		Save
 Invalid file path	SVGMainWindow		Invalid file path
 Zoom in	SVGMainWindow		Zoom in
-Failed to export file	SVGMainWindow		Failed to export file
 Document Style	SVGMenuManager		Document Style
 Open…	SVGMenuManager		Open…
-Best fit	SVGMainWindow		Best fit
-Height:	SVGStatView		Height:
-Error loading SVG file: %s	SVGFileManager		Error loading SVG file: %s
+Min RGB delta	SVGVectorizationDialog		Min RGB delta
 Width:	SVGStatView		Width:
-Douglas-Peucker simplification	SVGVectorizationDialog		Douglas-Peucker simplification
+Error loading SVG file: %s	SVGFileManager		Error loading SVG file: %s
+Filtering objects	SVGVectorizationDialog		Filtering objects
 SVG Size:	SVGStatView		SVG Size:
-Combined	SVGVectorizationDialog		Combined
-Optimize SVG output	SVGVectorizationDialog		Optimize SVG output
-Color	SVGStructureView		Color
 Background method	SVGVectorizationDialog		Background method
-Shape %ld Stroke	SVGStructureView		Shape %ld Stroke
-SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).
 Stroke Only	SVGMenuManager		Stroke Only
-Max X:	SVGStatView		Max X:
 About SVGear…	SVGMenuManager		About SVGear…
+Max X:	SVGStatView		Max X:
 Round coordinates	SVGVectorizationDialog		Round coordinates
-Background tolerance	SVGVectorizationDialog		Background tolerance
-Fit to Window	SVGMenuManager		Fit to Window
 Undo	SVGMainWindow		Undo
+No HVIF data generated	SVGMainWindow		No HVIF data generated
 Show Sources Panel	SVGMenuManager		Show Sources Panel
-Radial Gradient	SVGStructureView		Radial Gradient
-Aggressive simplification	SVGVectorizationDialog		Aggressive simplification
 Shapes:	SVGStatView		Shapes:
-Edge analysis	SVGVectorizationDialog		Edge analysis
-Ready	SVGMainWindow		Ready
-Reset View	SVGMenuManager		Reset View
 Blur settings	SVGVectorizationDialog		Blur settings
-Preset	SVGVectorizationDialog		Preset
-Min X:	SVGStatView		Min X:
-Error importing HVIF icon from file: %s	SVGFileManager		Error importing HVIF icon from file: %s
-Min background ratio	SVGVectorizationDialog		Min background ratio
-Error parsing HVIF file: %s	SVGFileManager		Error parsing HVIF file: %s
-File saved successfully	SVGMainWindow		File saved successfully
-Quality	SVGVectorizationDialog		Quality
+Tools	SVGMenuManager		Tools
 Output	SVGVectorizationDialog		Output
-Line threshold	SVGVectorizationDialog		Line threshold
-Error saving file: %s	SVGFileManager		Error saving file: %s
 File	SVGStatView		File
+Error saving file: %s	SVGFileManager		Error saving file: %s
 Simplification tolerance	SVGVectorizationDialog		Simplification tolerance
-Apply (Alt+Enter)	SVGMainWindow		Apply (Alt+Enter)
-Flood fill	SVGVectorizationDialog		Flood fill
-Filled shapes:	SVGStatView		Filled shapes:
 Show Bounding Box	SVGMainWindow		Show Bounding Box
+Filled shapes:	SVGStatView		Filled shapes:
+Advanced simplification	SVGVectorizationDialog		Advanced simplification
 Show statistics	SVGMainWindow		Show statistics
-Cut	SVGMainWindow		Cut
-Error reading HVIF icon data from file: %s	SVGFileManager		Error reading HVIF icon data from file: %s
-Stroked shapes:	SVGStatView		Stroked shapes:
 Unknown	SVGMainWindow		Unknown
-Remove background	SVGVectorizationDialog		Remove background
 Shape %ld	SVGListItem		Shape %ld
-Paste	SVGMainWindow		Paste
 HVIF Icon…	SVGMenuManager		HVIF Icon…
-Show Structure Panel	SVGMenuManager		Show Structure Panel
+Paste	SVGMainWindow		Paste
 Could not get export file information	SVGFileManager		Could not get export file information
 Zoom Out	SVGMenuManager		Zoom Out
-Transparent Gray	SVGMenuManager		Transparent Gray
+Detecting gradients	SVGVectorizationDialog		Detecting gradients
+Hold the right mouse button to view the original raster image	SVGView		Hold the right mouse button to view the original raster image
 Bounds	SVGStatView		Bounds
-OK	SVGMainWindow		OK
-Display Mode	SVGMenuManager		Display Mode
 Bounding Box	SVGMenuManager		Bounding Box
-Simplification	SVGVectorizationDialog		Simplification
-Image	SVGStatView		Image
-Curve threshold	SVGVectorizationDialog		Curve threshold
-Vectorization Settings	SVGVectorizationDialog		Vectorization Settings
-Minimum object perimeter	SVGVectorizationDialog		Minimum object perimeter
+OK	SVGMainWindow		OK
+Scanning paths	SVGVectorizationDialog		Scanning paths
 Minimum object area	SVGVectorizationDialog		Minimum object area
 Error	SVGMainWindow		Error
-Error accessing file: %s	SVGFileManager		Error accessing file: %s
  Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s
+Fixing winding	SVGVectorizationDialog		Fixing winding
+Applying blur	SVGVectorizationDialog		Applying blur
+HVIF Size:	SVGStatView		HVIF Size:
+None	SVGMenuManager		None
+PNG Image	SVGMenuManager		PNG Image
+OK	SVGVectorizationDialog		OK
+Collinear tolerance	SVGVectorizationDialog		Collinear tolerance
+Copy	SVGMainWindow		Copy
+File exported successfully	SVGMainWindow		File exported successfully
+Shape %ld Fill	SVGStructureView		Shape %ld Fill
+Use ViewBox	SVGVectorizationDialog		Use ViewBox
+Normal	SVGMainWindow		Normal
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Error parsing SVG from source code. Please check the syntax.
+Gradients	SVGVectorizationDialog		Gradients
+Paints	SVGStructureView		Paints
+Min segment length	SVGVectorizationDialog		Min segment length
+New	SVGMainWindow		New
+Simple Frame	SVGMenuManager		Simple Frame
+Line detection tolerance	SVGVectorizationDialog		Line detection tolerance
+Basic	SVGVectorizationDialog		Basic
+Min R² threshold	SVGVectorizationDialog		Min R² threshold
+Starting	SVGVectorizationDialog		Starting
+Path omit threshold	SVGVectorizationDialog		Path omit threshold
+Paths	SVGStructureView		Paths
+Merging regions	SVGVectorizationDialog		Merging regions
+None	SVGStructureView		None
+Zoom Original	SVGMenuManager		Zoom Original
+Error converting %s to SVG	SVGFileManager		Error converting %s to SVG
+Failed to save file	SVGMainWindow		Failed to save file
+Vectorization error	SVGVectorizationDialog		Vectorization error
+Min Y:	SVGStatView		Min Y:
+Filtering	SVGVectorizationDialog		Filtering
+Show description	SVGVectorizationDialog		Show description
+Quit	SVGMenuManager		Quit
+C++ array…	SVGMenuManager		C++ array…
+Creating palette	SVGVectorizationDialog		Creating palette
+Number of colors	SVGVectorizationDialog		Number of colors
+Unifying edges	SVGVectorizationDialog		Unifying edges
+Show Source Code	SVGMainWindow		Show Source Code
+Linear Gradient	SVGStructureView		Linear Gradient
+Save	SVGMenuManager		Save
+Unable to load file: %s\nUnknown or unsupported format	SVGFileManager		Unable to load file: %s\nUnknown or unsupported format
+Maximum circle radius	SVGVectorizationDialog		Maximum circle radius
+Show Transparency Grid	SVGMainWindow		Show Transparency Grid
+RDef resource…	SVGMenuManager		RDef resource…
+Save as…	SVGMenuManager		Save as…
+Paths:	SVGStatView		Paths:
+Export	SVGMenuManager		Export
+Fill Only	SVGMainWindow		Fill Only
+Document	SVGMainWindow		Document
+Douglas-Peucker	SVGVectorizationDialog		Douglas-Peucker
+Min gradient size	SVGVectorizationDialog		Min gradient size
+Failed to export file	SVGMainWindow		Failed to export file
+Best fit	SVGMainWindow		Best fit
+Height:	SVGStatView		Height:
+Optimize SVG output	SVGVectorizationDialog		Optimize SVG output
+Color	SVGStructureView		Color
+Quantizing colors	SVGVectorizationDialog		Quantizing colors
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).
+Shape %ld Stroke	SVGStructureView		Shape %ld Stroke
+Sample stride	SVGVectorizationDialog		Sample stride
+Background tolerance	SVGVectorizationDialog		Background tolerance
+Fit to Window	SVGMenuManager		Fit to Window
+Radial Gradient	SVGStructureView		Radial Gradient
+Reset View	SVGMenuManager		Reset View
+Ready	SVGMainWindow		Ready
+Preset	SVGVectorizationDialog		Preset
+Min X:	SVGStatView		Min X:
+Starting vectorization	SVGVectorizationDialog		Starting vectorization
+Min background ratio	SVGVectorizationDialog		Min background ratio
+File saved successfully	SVGMainWindow		File saved successfully
+Quality	SVGVectorizationDialog		Quality
+Line threshold	SVGVectorizationDialog		Line threshold
+Area tolerance	SVGVectorizationDialog		Area tolerance
+Apply (Alt+Enter)	SVGMainWindow		Apply (Alt+Enter)
+Optimal	SVGVectorizationDialog		Optimal
+Cut	SVGMainWindow		Cut
+Stroked shapes:	SVGStatView		Stroked shapes:
+Remove background	SVGVectorizationDialog		Remove background
+Show Structure Panel	SVGMenuManager		Show Structure Panel
+Transparent Gray	SVGMenuManager		Transparent Gray
+Display Mode	SVGMenuManager		Display Mode
+Simplification	SVGVectorizationDialog		Simplification
+Image	SVGStatView		Image
+Vectorization Settings	SVGVectorizationDialog		Vectorization Settings
+Curve threshold	SVGVectorizationDialog		Curve threshold
+Custom	SVGVectorizationDialog		Custom
+Minimum object perimeter	SVGVectorizationDialog		Minimum object perimeter
+Complete	SVGVectorizationDialog		Complete
+Error loading %s file: %s	SVGFileManager		Error loading %s file: %s
 Stroke Only	SVGMainWindow		Stroke Only
-Minimum object height	SVGVectorizationDialog		Minimum object height
-Path %ld.%ld (%d pts)	SVGListItem		Path %ld.%ld (%d pts)
 Center	SVGMenuManager		Center
+Path %ld.%ld (%d pts)	SVGListItem		Path %ld.%ld (%d pts)
+Minimum object height	SVGVectorizationDialog		Minimum object height
 Open	SVGMainWindow		Open
 Gray	SVGMainWindow		Gray
 Show Transparency Grid	SVGMenuManager		Show Transparency Grid
-HVIF Size:	SVGStatView		HVIF Size:
-Reset to defaults	SVGVectorizationDialog		Reset to defaults
+Detecting geometry	SVGVectorizationDialog		Detecting geometry
+Simplifying (DP)	SVGVectorizationDialog		Simplifying (DP)
+No data available for export	SVGMainWindow		No data available for export
 Blur delta	SVGVectorizationDialog		Blur delta
-None	SVGMenuManager		None
 No HVIF data available	SVGMainWindow		No HVIF data available
-Collinear tolerance	SVGVectorizationDialog		Collinear tolerance
-OK	SVGVectorizationDialog		OK
-Copy	SVGMainWindow		Copy
 None	SVGMainWindow		None
-File exported successfully	SVGMainWindow		File exported successfully
-Shape %ld Fill	SVGStructureView		Shape %ld Fill
-Error getting HVIF icon info from file: %s	SVGFileManager		Error getting HVIF icon info from file: %s
-Use ViewBox	SVGVectorizationDialog		Use ViewBox
-Normal	SVGMainWindow		Normal
+Auto	SVGVectorizationDialog		Auto
 Source code is empty.	SVGMainWindow		Source code is empty.
-Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Error parsing SVG from source code. Please check the syntax.
 Minimum object width	SVGVectorizationDialog		Minimum object width
-Dominant color	SVGVectorizationDialog		Dominant color
-Default	SVGVectorizationDialog		Default
+Simplifying (VW)	SVGVectorizationDialog		Simplifying (VW)
 Fast	SVGVectorizationDialog		Fast
-Paints	SVGStructureView		Paints
-Min segment length	SVGVectorizationDialog		Min segment length
-Processing	SVGVectorizationDialog		Processing
 Could not find directory reference	SVGMainWindow		Could not find directory reference
-New	SVGMainWindow		New
-Simple Frame	SVGMenuManager		Simple Frame
+Processing	SVGVectorizationDialog		Processing
+Max subdivisions	SVGVectorizationDialog		Max subdivisions
 Curve smoothing	SVGVectorizationDialog		Curve smoothing
 Cancel	SVGVectorizationDialog		Cancel
-Line detection tolerance	SVGVectorizationDialog		Line detection tolerance
-Basic	SVGVectorizationDialog		Basic
-Detailed	SVGVectorizationDialog		Detailed
-Path omit threshold	SVGVectorizationDialog		Path omit threshold
+Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
+Detect gradients	SVGVectorizationDialog		Detect gradients
 Drop a file to view or vectorize	SVGView		Drop a file to view or vectorize
-Paths	SVGStructureView		Paths
 Max Y:	SVGStatView		Max Y:
-Detect geometric shapes	SVGVectorizationDialog		Detect geometric shapes
 Fill Only	SVGMenuManager		Fill Only
+Detect geometric shapes	SVGVectorizationDialog		Detect geometric shapes
 Center	SVGMainWindow		Center
 Shapes	SVGStructureView		Shapes
-Clustering	SVGVectorizationDialog		Clustering
 Help	SVGMenuManager		Help
 Simple	SVGMainWindow		Simple
-None	SVGStructureView		None
 Normal	SVGMenuManager		Normal
-Zoom Original	SVGMenuManager		Zoom Original
-Circle detection tolerance	SVGVectorizationDialog		Circle detection tolerance
 Could not find file name	SVGMainWindow		Could not find file name
+Circle detection tolerance	SVGVectorizationDialog		Circle detection tolerance

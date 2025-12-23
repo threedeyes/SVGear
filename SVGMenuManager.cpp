@@ -182,7 +182,7 @@ SVGMenuManager::_CreateToolsMenu(BHandler* target)
 {
 	fToolsMenu = new BMenu(B_TRANSLATE("Tools"));
 
-	fOpenInIconOMaticItem = new BMenuItem(B_TRANSLATE("Icon-O-Matic"), new BMessage(MSG_OPEN_IN_ICON_O_MATIC));
+	fOpenInIconOMaticItem = new BMenuItem(B_TRANSLATE("Icon-O-Matic"B_UTF8_ELLIPSIS), new BMessage(MSG_OPEN_IN_ICON_O_MATIC));
 	fOpenInIconOMaticItem->SetEnabled(false);
 	fToolsMenu->AddItem(fOpenInIconOMaticItem);
 
