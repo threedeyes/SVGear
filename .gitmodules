@@ -1,9 +1,6 @@
 [submodule "External/nanosvg_ext"]
 	path = External/nanosvg_ext
 	url = https://github.com/threedeyes/nanosvg_ext
-[submodule "hvif-tools"]
-	path = External/hvif-tools
-	url = https://github.com/threedeyes/hvif-tools
 [submodule "BSVGView"]
 	path = External/BSVGView
 	url = https://github.com/threedeyes/BSVGView
