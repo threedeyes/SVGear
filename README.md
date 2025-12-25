@@ -9,4 +9,5 @@ pkgman install agg_devel hvif_tools_devel
 git clone --recursive https://github.com/threedeyes/SVGear
 cd SVGear
 make
+make bindcatalogs
 ```
