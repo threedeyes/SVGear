@@ -51,7 +51,7 @@ GetVectorizationStageName(int stage)
 }
 
 SVGVectorizationDialog::SVGVectorizationDialog(const char* imagePath, BWindow* target)
-	: BWindow(BRect(100, 100, 600, 500), B_TRANSLATE("Vectorization Settings"),
+	: BWindow(BRect(100, 100, 600, 500), B_TRANSLATE("Vectorization settings"),
 			B_FLOATING_WINDOW_LOOK, B_FLOATING_SUBSET_WINDOW_FEEL,
 			B_ASYNCHRONOUS_CONTROLS | B_NOT_RESIZABLE | B_NOT_ZOOMABLE | B_NOT_CLOSABLE),
 	fTarget(target),

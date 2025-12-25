@@ -79,7 +79,7 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("HVIF Icon" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_HVIF)));
 	fExportSubMenu->AddItem(new BMenuItem(B_TRANSLATE("Icon-O-Matic" B_UTF8_ELLIPSIS), new BMessage(MSG_EXPORT_IOM)));
 
-	BMenu* pngSubMenu = new BMenu(B_TRANSLATE("PNG Image"));
+	BMenu* pngSubMenu = new BMenu(B_TRANSLATE("PNG image"));
 	const int32 sizes[] = { 16, 24, 32, 48, 64, 128, 256, 512 };
 	for (int i = 0; i < 8; i++) {
 		BMessage* msg = new BMessage(MSG_EXPORT_PNG);
@@ -116,17 +116,17 @@ void
 SVGMenuManager::_CreateViewMenu(BHandler* target)
 {
 	BMenu* viewMenu = new BMenu(B_TRANSLATE("View"));
-	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom In"), new BMessage(MSG_ZOOM_IN), '+'));
-	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom Out"), new BMessage(MSG_ZOOM_OUT), '-'));
-	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom Original"), new BMessage(MSG_ZOOM_ORIGINAL), '1'));
-	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Fit to Window"), new BMessage(MSG_FIT_WINDOW), 'F'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom in"), new BMessage(MSG_ZOOM_IN), '+'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom out"), new BMessage(MSG_ZOOM_OUT), '-'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Zoom original"), new BMessage(MSG_ZOOM_ORIGINAL), '1'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Fit to window"), new BMessage(MSG_FIT_WINDOW), 'F'));
 	viewMenu->AddSeparatorItem();
 	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Center"), new BMessage(MSG_CENTER), 'C', B_SHIFT_KEY));
 	viewMenu->AddSeparatorItem();
-	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Reset View"), new BMessage(MSG_RESET_VIEW), '0'));
+	viewMenu->AddItem(new BMenuItem(B_TRANSLATE("Reset view"), new BMessage(MSG_RESET_VIEW), '0'));
 	viewMenu->AddSeparatorItem();
 
-	fDisplaySubMenu = new BMenu(B_TRANSLATE("Display Mode"));
+	fDisplaySubMenu = new BMenu(B_TRANSLATE("Display mode"));
 
 	fNormalItem = new BMenuItem(B_TRANSLATE("Normal"), new BMessage(MSG_DISPLAY_NORMAL));
 	fNormalItem->SetMarked(true);
@@ -135,28 +135,28 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 	fOutlineItem = new BMenuItem(B_TRANSLATE("Outline"), new BMessage(MSG_DISPLAY_OUTLINE));
 	fDisplaySubMenu->AddItem(fOutlineItem);
 
-	fFillOnlyItem = new BMenuItem(B_TRANSLATE("Fill Only"), new BMessage(MSG_DISPLAY_FILL_ONLY));
+	fFillOnlyItem = new BMenuItem(B_TRANSLATE("Fill only"), new BMessage(MSG_DISPLAY_FILL_ONLY));
 	fDisplaySubMenu->AddItem(fFillOnlyItem);
 
-	fStrokeOnlyItem = new BMenuItem(B_TRANSLATE("Stroke Only"), new BMessage(MSG_DISPLAY_STROKE_ONLY));
+	fStrokeOnlyItem = new BMenuItem(B_TRANSLATE("Stroke only"), new BMessage(MSG_DISPLAY_STROKE_ONLY));
 	fDisplaySubMenu->AddItem(fStrokeOnlyItem);
 
 	fDisplaySubMenu->SetTargetForItems(target);
 	viewMenu->AddItem(fDisplaySubMenu);
 
-	fBoundingBoxSubMenu = new BMenu(B_TRANSLATE("Bounding Box"));
+	fBoundingBoxSubMenu = new BMenu(B_TRANSLATE("Bounding box"));
 
 	fBBoxNoneItem = new BMenuItem(B_TRANSLATE("None"), new BMessage(MSG_BBOX_NONE));
 	fBBoxNoneItem->SetMarked(true);
 	fBoundingBoxSubMenu->AddItem(fBBoxNoneItem);
 
-	fBBoxDocumentItem = new BMenuItem(B_TRANSLATE("Document Style"), new BMessage(MSG_BBOX_DOCUMENT));
+	fBBoxDocumentItem = new BMenuItem(B_TRANSLATE("Document style"), new BMessage(MSG_BBOX_DOCUMENT));
 	fBoundingBoxSubMenu->AddItem(fBBoxDocumentItem);
 
-	fBBoxSimpleFrameItem = new BMenuItem(B_TRANSLATE("Simple Frame"), new BMessage(MSG_BBOX_SIMPLE_FRAME));
+	fBBoxSimpleFrameItem = new BMenuItem(B_TRANSLATE("Simple frame"), new BMessage(MSG_BBOX_SIMPLE_FRAME));
 	fBoundingBoxSubMenu->AddItem(fBBoxSimpleFrameItem);
 
-	fBBoxTransparentGrayItem = new BMenuItem(B_TRANSLATE("Transparent Gray"), new BMessage(MSG_BBOX_TRANSPARENT_GRAY));
+	fBBoxTransparentGrayItem = new BMenuItem(B_TRANSLATE("Transparent gray"), new BMessage(MSG_BBOX_TRANSPARENT_GRAY));
 	fBoundingBoxSubMenu->AddItem(fBBoxTransparentGrayItem);
 
 	fBoundingBoxSubMenu->SetTargetForItems(target);
@@ -164,19 +164,19 @@ SVGMenuManager::_CreateViewMenu(BHandler* target)
 
 	viewMenu->AddSeparatorItem();
 
-	fTransparencyItem = new BMenuItem(B_TRANSLATE("Show Transparency Grid"), new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
+	fTransparencyItem = new BMenuItem(B_TRANSLATE("Show transparency grid"), new BMessage(MSG_TOGGLE_TRANSPARENCY), 'G');
 	fTransparencyItem->SetMarked(true);
 	viewMenu->AddItem(fTransparencyItem);
 
 	viewMenu->AddSeparatorItem();
 
-	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show Sources Panel"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'U');
+	fSourceViewItem = new BMenuItem(B_TRANSLATE("Show sources panel"), new BMessage(MSG_TOGGLE_SOURCE_VIEW), 'U');
 	viewMenu->AddItem(fSourceViewItem);
 
-	fStructureViewItem = new BMenuItem(B_TRANSLATE("Show Structure Panel"), new BMessage(MSG_TOGGLE_STRUCTURE));
+	fStructureViewItem = new BMenuItem(B_TRANSLATE("Show structure panel"), new BMessage(MSG_TOGGLE_STRUCTURE));
 	viewMenu->AddItem(fStructureViewItem);
 
-	fStatViewItem = new BMenuItem(B_TRANSLATE("Show Statistics Panel"), new BMessage(MSG_TOGGLE_STAT));
+	fStatViewItem = new BMenuItem(B_TRANSLATE("Show statistics panel"), new BMessage(MSG_TOGGLE_STAT));
 	viewMenu->AddItem(fStatViewItem);
 
 	viewMenu->SetTargetForItems(target);
@@ -188,7 +188,7 @@ SVGMenuManager::_CreateToolsMenu(BHandler* target)
 {
 	fToolsMenu = new BMenu(B_TRANSLATE("Tools"));
 
-	fOpenInIconOMaticItem = new BMenuItem(B_TRANSLATE("Icon-O-Matic"B_UTF8_ELLIPSIS), new BMessage(MSG_OPEN_IN_ICON_O_MATIC));
+	fOpenInIconOMaticItem = new BMenuItem(B_TRANSLATE("Icon-O-Matic" B_UTF8_ELLIPSIS), new BMessage(MSG_OPEN_IN_ICON_O_MATIC));
 	fOpenInIconOMaticItem->SetEnabled(false);
 	fToolsMenu->AddItem(fOpenInIconOMaticItem);
 

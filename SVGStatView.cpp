@@ -34,8 +34,8 @@ SVGStatView::SVGStatView(const char* name)
 	fileTitle->SetFont(&font, B_FONT_FACE);
 	view->AddChild(fileTitle);
 
-	view->AddChild(new BStringView("svg-size", B_TRANSLATE("SVG Size:")));
-	view->AddChild(new BStringView("hvif-size", B_TRANSLATE("HVIF Size:")));
+	view->AddChild(new BStringView("svg-size", B_TRANSLATE("SVG size:")));
+	view->AddChild(new BStringView("hvif-size", B_TRANSLATE("HVIF size:")));
 
 	BStringView *imageTitle = new BStringView("image", B_TRANSLATE("Image"));
 	imageTitle->SetAlignment(B_ALIGN_CENTER);
