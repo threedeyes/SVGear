@@ -99,6 +99,7 @@ SVGStructureView::_BuildInterface()
 
 	fShapesList = new BListView("shapes_list", B_SINGLE_SELECTION_LIST);
 	fShapesList->SetSelectionMessage(new BMessage(MSG_SHAPE_SELECTED));
+	fShapesList->SetFlags(fShapesList->Flags() | B_FULL_UPDATE_ON_RESIZE);
 	fShapesScroll = new BScrollView("shapes_scroll", fShapesList,
 									B_WILL_DRAW | B_FRAME_EVENTS,
 									false, true, B_NO_BORDER);
@@ -109,6 +110,7 @@ SVGStructureView::_BuildInterface()
 
 	fPathsList = new BListView("paths_list", B_SINGLE_SELECTION_LIST);
 	fPathsList->SetSelectionMessage(new BMessage(MSG_PATH_SELECTED));
+	fPathsList->SetFlags(fPathsList->Flags() | B_FULL_UPDATE_ON_RESIZE);
 	fPathsScroll = new BScrollView("paths_scroll", fPathsList,
 									B_WILL_DRAW | B_FRAME_EVENTS,
 									false, true, B_NO_BORDER);
@@ -119,6 +121,7 @@ SVGStructureView::_BuildInterface()
 
 	fPaintsList = new BListView("paints_list", B_SINGLE_SELECTION_LIST);
 	fPaintsList->SetSelectionMessage(new BMessage(MSG_PAINT_SELECTED));
+	fPaintsList->SetFlags(fPaintsList->Flags() | B_FULL_UPDATE_ON_RESIZE);
 	fPaintsScroll = new BScrollView("paints_scroll", fPaintsList,
 									B_WILL_DRAW | B_FRAME_EVENTS,
 									false, true, B_NO_BORDER);
