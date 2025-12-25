@@ -810,7 +810,7 @@ SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
 				msg->AddInt32("size", sizes[i]);
 
 				BString label;
-				label.SetToFormat("%ldpx", sizes[i]);
+				label.SetToFormat(B_TRANSLATE("%ld px"), sizes[i]);
 
 				menu->AddItem(new BMenuItem(label.String(), msg));
 			}
@@ -1589,12 +1589,17 @@ SVGMainWindow::_UpdateStatus()
 	BString status;
 
 	if (fSVGView && fSVGView->IsLoaded()) {
+		BString heightData, scaleData, widthData;
 		float scale = fSVGView->Scale();
 		float width = fSVGView->SVGWidth();
 		float height = fSVGView->SVGHeight();
+		fNumberFormat.Format(heightData, height);
+		fNumberFormat.Format(widthData, width);
+		fNumberFormat.SetPrecision(1);
+		fNumberFormat.FormatPercent(scaleData, scale);
 
-		status.SetToFormat(B_TRANSLATE(" Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s"),
-				width, height, scale * 100.0f,
+		status.SetToFormat(B_TRANSLATE("Size: %s × %s | Scale: %s | Mode: %s | BBox: %s"),
+				widthData.String(), heightData.String(), scaleData.String(),
 				_GetDisplayModeName().String(),
 				_GetBoundingBoxStyleName().String());
 	} else {

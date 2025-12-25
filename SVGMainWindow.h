@@ -18,6 +18,7 @@
 #include <MenuItem.h>
 #include <Menu.h>
 #include <MessageRunner.h>
+#include <NumberFormat.h>
 
 #include "SVGConstants.h"
 #include "SVGStatView.h"
@@ -211,6 +212,9 @@ private:
 	BMessageRunner*  fStateUpdateRunner;
 	bool             fClipboardHasData;
 	bool             fTextHasSelection;
+
+	// Number formatting
+	BNumberFormat    fNumberFormat;
 
 	// HVIF data for export
 	unsigned char*   fCurrentHVIFData;

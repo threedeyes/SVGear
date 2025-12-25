@@ -37,6 +37,7 @@ class SVGStatView : public BView {
 
 		BGroupView *view;
 		BFont font;
+		BNumberFormat fNumberFormat;
 		NSVGimage* svgImage;
 };
 

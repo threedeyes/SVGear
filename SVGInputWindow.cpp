@@ -4,6 +4,7 @@
  */
 
 #include "SVGInputWindow.h"
+#include "SVGMainWindow.h"
 
 #undef  B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT          "SVGInputWindow"
@@ -21,7 +22,7 @@ SVGInputWindow::SVGInputWindow(const char* title, BWindow* target, uint32 messag
 	fCurrentTabContentView(NULL),
 	fCurrentTabName("")
 {
-	fOkButton = new BButton("OK", new BMessage(MSG_INPUT_OK));
+	fOkButton = new BButton(B_TRANSLATE("OK"), new BMessage(MSG_INPUT_OK));
 	fOkButton->SetEnabled(false);
 
 	fTabNames.clear();
@@ -88,8 +89,10 @@ SVGInputWindow::AddIntegerField(const char* name, const char* label, int default
 void
 SVGInputWindow::AddFloatField(const char* name, const char* label, float defaultValue, float minValue, float maxValue)
 {
-	BString defaultValueStr;
-	defaultValueStr.SetToFormat("%.2f", defaultValue);
+	BString data, defaultValueStr;
+	fNumberFormat.SetPrecision(2);
+	fNumberFormat.Format(data, defaultValue);
+	defaultValueStr.SetToFormat("%s", data.String);
 
 	FieldInfo field;
 	field.type = FLOAT_FIELD;
@@ -713,9 +716,9 @@ SVGInputWindow::SetFloatFieldValue(const char* name, float value)
 		if (field && field->type == FLOAT_FIELD) {
 			BTextControl* control = dynamic_cast<BTextControl*>(field->control);
 			if (control) {
-				BString text;
-				text.SetToFormat("%.2f", value);
-				control->SetText(text);
+				BString data;
+				fNumberFormat.Format(data, value);
+				control->SetText(data.String());
 			}
 		}
 		UnlockLooper();
@@ -738,9 +741,10 @@ SVGInputWindow::SetSliderFieldValue(const char* name, float value)
 
 			if (helper) {
 				BString label;
-				label.SetToFormat("%.2f", value);
+				fNumberFormat.SetPrecision(2);
+				fNumberFormat.Format(label, value);
 				if (BString(helper->Text()) != label)
-					helper->SetText(label);
+					helper->SetText(label.String());
 			}
 		}
 		UnlockLooper();
