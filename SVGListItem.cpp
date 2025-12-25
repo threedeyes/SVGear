@@ -171,8 +171,11 @@ SVGListItem::_UpdateDisplayText()
 		case SVG_ITEM_SHAPE:
 			if (fShape) {
 				fDisplayText.SetToFormat(B_TRANSLATE("Shape %ld"), fIndex);
-				if (fShape->id && strlen(fShape->id) > 0)
+				if (fShape->mask != NULL && fShape->mask->shapes != NULL) {
+					fDisplayText << " (mask)";
+				} else if (fShape->id && strlen(fShape->id) > 0) {
 					fDisplayText << " (" << fShape->id << ")";
+				}
 			}
 			break;
 
