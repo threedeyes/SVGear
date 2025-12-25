@@ -243,12 +243,14 @@ SVGStatView::SetFloatValue(const char *param, float value, bool exp)
 	BStringView *item = (BStringView*)view->FindView(param);
 	if (item != NULL) {
 		if (item->LockLooper()) {
-			BString valueTxt;
+			BString data, valueTxt;
 
 			if (exp)
-				valueTxt.SetToFormat(" %g", value);
+				fNumberFormat.Format(data, value);
 			else
-				valueTxt.SetToFormat(" %.2f", value);
+				fNumberFormat.SetPrecision(2);
+				fNumberFormat.Format(data, value);
+				valueTxt.SetToFormat(" %s", data.String());
 
 			BString text = item->Text();
 			text = text.Truncate(text.FindFirst(':') + 1);
@@ -265,10 +267,12 @@ SVGStatView::SetIntValue(const char *param, int value)
 	BStringView *item = (BStringView*)view->FindView(param);
 	if (item != NULL) {
 		if (item->LockLooper()) {
+			BString data, valueTxt;
+			fNumberFormat.Format(data, value);
+			valueTxt.SetToFormat(" %s", data.String());
 			BString text = item->Text();
 			text = text.Truncate(text.FindFirst(':') + 1);
-			text << " ";
-			text << value;
+			text << valueTxt;
 			item->SetText(text);
 			item->UnlockLooper();
 		}
