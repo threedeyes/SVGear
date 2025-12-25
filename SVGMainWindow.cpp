@@ -669,7 +669,8 @@ SVGMainWindow::_HandleSelectionMessages(BMessage *message)
 			_CheckTextSelectionState();
 			_UpdateUIState();
 
-			if (fStructureView && fShowStructureView) {
+			const void* source = message->GetPointer("source");
+			if (source == fSVGTextView && fStructureView && fShowStructureView) {
 				int32 from = message->GetInt32("from", 0);
 				int32 to = message->GetInt32("to", 0);
 				if (from == to)

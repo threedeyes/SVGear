@@ -302,6 +302,7 @@ SVGTextEdit::Select(int32 startOffset, int32 endOffset)
 		BMessage msg(MSG_SELECTION_CHANGED);
 		msg.AddInt32("from", startOffset);
 		msg.AddInt32("to", endOffset);
+		msg.AddPointer("source", this);
 		window->PostMessage(&msg);
 	}
 }
