@@ -537,21 +537,25 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 		case MSG_DISPLAY_NORMAL:
 			fSVGView->SetDisplayMode(SVG_DISPLAY_NORMAL);
 			_UpdateDisplayModeMenu();
+			_UpdateStatus();
 			break;
 
 		case MSG_DISPLAY_OUTLINE:
 			fSVGView->SetDisplayMode(SVG_DISPLAY_OUTLINE);
 			_UpdateDisplayModeMenu();
+			_UpdateStatus();
 			break;
 
 		case MSG_DISPLAY_FILL_ONLY:
 			fSVGView->SetDisplayMode(SVG_DISPLAY_FILL_ONLY);
 			_UpdateDisplayModeMenu();
+			_UpdateStatus();
 			break;
 
 		case MSG_DISPLAY_STROKE_ONLY:
 			fSVGView->SetDisplayMode(SVG_DISPLAY_STROKE_ONLY);
 			_UpdateDisplayModeMenu();
+			_UpdateStatus();
 			break;
 
 		case MSG_TOGGLE_TRANSPARENCY:
@@ -564,6 +568,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			_UpdateUIState();
+			_UpdateStatus();
 			break;
 
 		case MSG_BBOX_NONE:
@@ -571,6 +576,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			_UpdateUIState();
+			_UpdateStatus();
 			break;
 
 		case MSG_BBOX_DOCUMENT:
@@ -579,6 +585,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			_UpdateUIState();
+			_UpdateStatus();
 			break;
 
 		case MSG_BBOX_SIMPLE_FRAME:
@@ -587,6 +594,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			_UpdateUIState();
+			_UpdateStatus();
 			break;
 
 		case MSG_BBOX_TRANSPARENT_GRAY:
@@ -595,6 +603,7 @@ SVGMainWindow::_HandleViewMessages(BMessage* message)
 			_UpdateBoundingBoxMenu();
 			_UpdateViewMenu();
 			_UpdateUIState();
+			_UpdateStatus();
 			break;
 
 		case MSG_TOGGLE_SOURCE_VIEW:
