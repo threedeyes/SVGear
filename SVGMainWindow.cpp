@@ -331,18 +331,18 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddAction(MSG_FIT_WINDOW, this, SVGApplication::GetIcon("zoom-fit-best", TOOLBAR_ICON_SIZE), B_TRANSLATE("Best fit"));
 	fToolBar->AddAction(MSG_CENTER, this, SVGApplication::GetIcon("go-center", TOOLBAR_ICON_SIZE), B_TRANSLATE("Center"));
 	fToolBar->AddSeparator();
-	fToolBar->AddAction(MSG_TOGGLE_TRANSPARENCY, this, SVGApplication::GetIcon("transparent", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Transparency Grid"));
-	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Bounding Box"));
+	fToolBar->AddAction(MSG_TOGGLE_TRANSPARENCY, this, SVGApplication::GetIcon("transparent", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show transparency grid"));
+	fToolBar->AddAction(MSG_TOGGLE_BOUNDINGBOX, this, SVGApplication::GetIcon("bounding-box", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show bounding box"));
 	fToolBar->AddSeparator();
-	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
-	fToolBar->AddAction(MSG_TOGGLE_STRUCTURE, this, SVGApplication::GetIcon("structure", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Structure"));
+	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show source code"));
+	fToolBar->AddAction(MSG_TOGGLE_STRUCTURE, this, SVGApplication::GetIcon("structure", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show structure"));
 	fToolBar->AddAction(MSG_TOGGLE_STAT, this, SVGApplication::GetIcon("info", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show statistics"));
 	fToolBar->AddSeparator();
-	fToolBar->AddAction(MSG_COPY_SVG_SOURCE, this, SVGApplication::GetIcon("copy-svg-text", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy SVG Source"));
+	fToolBar->AddAction(MSG_COPY_SVG_SOURCE, this, SVGApplication::GetIcon("copy-svg-text", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy SVG source"));
 	fToolBar->AddAction(MSG_COPY_SVG_BASE64, this, SVGApplication::GetIcon("copy-svg-base64", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy SVG as Base64"));
 	fToolBar->AddAction(MSG_COPY_HVIF_CPP, this, SVGApplication::GetIcon("copy-hvif-cpp", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy HVIF as C++ code"));
 	fToolBar->AddAction(MSG_COPY_HVIF_RDEF, this, SVGApplication::GetIcon("copy-hvif-rdef", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy HVIF as RDef code"));
-	fToolBar->AddAction(MSG_COPY_RASTER_IMAGE, this, SVGApplication::GetIcon("copy-image", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy Raster Image..."));
+	fToolBar->AddAction(MSG_COPY_RASTER_IMAGE, this, SVGApplication::GetIcon("copy-image", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy raster image" B_UTF_ELLIPSIS));
 	fToolBar->AddGlue();
 
 	fEditToolBar = new SVGToolBar();
@@ -362,8 +362,8 @@ SVGMainWindow::_BuildToolBars()
 	fSearchControl->SetExplicitMaxSize(BSize(200, B_SIZE_UNSET));
 	fSearchControl->TextView()->SetExplicitMinSize(BSize(150, B_SIZE_UNSET));
 	fEditToolBar->AddView(fSearchControl);
-	fEditToolBar->AddAction(MSG_SEARCH_PREV, this, SVGApplication::GetIcon("go-up", TOOLBAR_ICON_SIZE), B_TRANSLATE("Find Previous"));
-	fEditToolBar->AddAction(MSG_SEARCH_NEXT, this, SVGApplication::GetIcon("go-down", TOOLBAR_ICON_SIZE), B_TRANSLATE("Find Next"));
+	fEditToolBar->AddAction(MSG_SEARCH_PREV, this, SVGApplication::GetIcon("go-up", TOOLBAR_ICON_SIZE), B_TRANSLATE("Find previous"));
+	fEditToolBar->AddAction(MSG_SEARCH_NEXT, this, SVGApplication::GetIcon("go-down", TOOLBAR_ICON_SIZE), B_TRANSLATE("Find next"));
 }
 
 void
@@ -2069,9 +2069,9 @@ SVGMainWindow::_GetDisplayModeName() const
 		case SVG_DISPLAY_OUTLINE:
 			return B_TRANSLATE("Outline");
 		case SVG_DISPLAY_FILL_ONLY:
-			return B_TRANSLATE("Fill Only");
+			return B_TRANSLATE("Fill only");
 		case SVG_DISPLAY_STROKE_ONLY:
-			return B_TRANSLATE("Stroke Only");
+			return B_TRANSLATE("Stroke only");
 		default:
 			return B_TRANSLATE("Unknown");
 	}

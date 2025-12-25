@@ -500,9 +500,9 @@ SVGStructureView::_GetPaintTypeName(int paintType)
 		case NSVG_PAINT_COLOR:
 			return B_TRANSLATE("Color");
 		case NSVG_PAINT_LINEAR_GRADIENT:
-			return B_TRANSLATE("Linear Gradient");
+			return B_TRANSLATE("Linear gradient");
 		case NSVG_PAINT_RADIAL_GRADIENT:
-			return B_TRANSLATE("Radial Gradient");
+			return B_TRANSLATE("Radial gradient");
 		default:
 			return B_TRANSLATE("None");
 	}
