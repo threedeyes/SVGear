@@ -772,8 +772,10 @@ SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
 			BString source = _GetCurrentSource();
 			if (source.Length() > 0) {
 				BString base64 = _EncodeBase64(source);
-				_CopyToClipboard(base64.String());
-				_ShowSuccess(B_TRANSLATE("Base64 SVG copied to clipboard"));
+				BString htmlTag;
+				htmlTag.SetToFormat("<img src=\"data:image/svg+xml;base64,%s\" />", base64.String());				
+				_CopyToClipboard(htmlTag.String());
+				_ShowSuccess(B_TRANSLATE("HTML img tag with Base64 SVG copied"));
 			}
 			break;
 		}
