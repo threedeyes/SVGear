@@ -342,7 +342,7 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddAction(MSG_COPY_SVG_BASE64, this, SVGApplication::GetIcon("copy-svg-base64", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy SVG as Base64"));
 	fToolBar->AddAction(MSG_COPY_HVIF_CPP, this, SVGApplication::GetIcon("copy-hvif-cpp", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy HVIF as C++ code"));
 	fToolBar->AddAction(MSG_COPY_HVIF_RDEF, this, SVGApplication::GetIcon("copy-hvif-rdef", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy HVIF as RDef code"));
-	fToolBar->AddAction(MSG_COPY_RASTER_IMAGE, this, SVGApplication::GetIcon("copy-image", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy raster image" B_UTF_ELLIPSIS));
+	fToolBar->AddAction(MSG_COPY_RASTER_IMAGE, this, SVGApplication::GetIcon("copy-image", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy raster image" B_UTF8_ELLIPSIS));
 	fToolBar->AddGlue();
 
 	fEditToolBar = new SVGToolBar();
