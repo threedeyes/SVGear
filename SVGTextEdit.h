@@ -132,6 +132,7 @@ public:
 	void SetSyntaxType(syntax_type type);
 	syntax_type GetSyntaxType() const { return fSyntaxType; }
 	void ForceHighlightRefresh();
+	bool Find(const char* text, bool forward = true, bool wrap = true);
 
 private:
 	void _RequestAsyncHighlighting();

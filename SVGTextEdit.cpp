@@ -517,6 +517,46 @@ SVGTextEdit::ForceHighlightRefresh()
 	_RequestAsyncHighlighting();
 }
 
+bool
+SVGTextEdit::Find(const char* text, bool forward, bool wrap)
+{
+	if (!text || strlen(text) == 0)
+		return false;
+
+	BString content(Text());
+	int32 contentLength = content.Length();
+	int32 searchLen = strlen(text);
+
+	int32 selStart, selEnd;
+	GetSelection(&selStart, &selEnd);
+
+	int32 foundPos = B_ERROR;
+
+	if (forward) {
+		foundPos = content.FindFirst(text, selEnd);
+		if (foundPos == B_ERROR && wrap) {
+			foundPos = content.FindFirst(text, 0);
+		}
+	} else {
+		if (selStart > 0) {
+			BString sub = content;
+			sub.Truncate(selStart);
+			foundPos = sub.FindLast(text);
+		}
+		if (foundPos == B_ERROR && wrap) {
+			foundPos = content.FindLast(text);
+		}
+	}
+
+	if (foundPos != B_ERROR) {
+		Select(foundPos, foundPos + searchLen);
+		ScrollToSelection();
+		return true;
+	}
+
+	return false;
+}
+
 void
 SVGTextEdit::_RequestAsyncHighlighting()
 {

@@ -193,6 +193,12 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			_HandleEditMessages(message);
 			break;
 
+		case MSG_SEARCH_NEXT:
+		case MSG_SEARCH_PREV:
+		case MSG_SEARCH_ENTER:
+			_HandleSearchMessages(message);
+			break;
+
 		case MSG_VECTORIZATION_PREVIEW:
 		case MSG_VECTORIZATION_COMPLETED:
 		case MSG_VECTORIZATION_ERROR:
@@ -334,6 +340,13 @@ SVGMainWindow::_BuildToolBars()
 	fEditToolBar->AddSeparator();
 	fEditToolBar->AddAction(MSG_EDIT_APPLY, this, SVGApplication::GetIcon("dialog-ok-apply", TOOLBAR_ICON_SIZE), B_TRANSLATE("Apply (Alt+Enter)"));
 	fEditToolBar->AddGlue();
+	fSearchControl = new BTextControl("search_text", "", "", new BMessage(MSG_SEARCH_ENTER));
+	fSearchControl->SetExplicitMinSize(BSize(150, B_SIZE_UNSET));
+	fSearchControl->SetExplicitMaxSize(BSize(200, B_SIZE_UNSET));
+	fSearchControl->TextView()->SetExplicitMinSize(BSize(150, B_SIZE_UNSET));
+	fEditToolBar->AddView(fSearchControl);
+	fEditToolBar->AddAction(MSG_SEARCH_PREV, this, SVGApplication::GetIcon("go-up", TOOLBAR_ICON_SIZE), B_TRANSLATE("Find Previous"));
+	fEditToolBar->AddAction(MSG_SEARCH_NEXT, this, SVGApplication::GetIcon("go-down", TOOLBAR_ICON_SIZE), B_TRANSLATE("Find Next"));
 }
 
 void
@@ -681,6 +694,45 @@ SVGMainWindow::_HandleSelectionMessages(BMessage *message)
 
 		default:
 			break;
+	}
+}
+
+void
+SVGMainWindow::_HandleSearchMessages(BMessage* message)
+{
+	if (!fSVGTextView || !fSearchControl)
+		return;
+
+	SVGTextEdit* targetEditor = fSVGTextView;
+	if (fTabView && !fSplitView->IsItemCollapsed(1)) {
+		int32 selection = fTabView->Selection();
+		if (selection == TAB_RDEF) targetEditor = fRDefTextView;
+		else if (selection == TAB_CPP) targetEditor = fCPPTextView;
+	}
+
+	const char* searchText = fSearchControl->Text();
+	if (strlen(searchText) == 0) {
+		fSearchControl->MakeFocus(true);
+		return;
+	}
+
+	bool found = false;
+
+	switch (message->what) {
+		case MSG_SEARCH_NEXT:
+		case MSG_SEARCH_ENTER:
+			found = targetEditor->Find(searchText, true);
+			break;
+
+		case MSG_SEARCH_PREV:
+			found = targetEditor->Find(searchText, false);
+			break;
+	}
+
+	if (found) {
+		targetEditor->MakeFocus(true);
+	} else {
+		fSearchControl->MakeFocus(true);
 	}
 }
 

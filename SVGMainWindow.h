@@ -13,6 +13,7 @@
 #include <GroupView.h>
 #include <ScrollView.h>
 #include <TabView.h>
+#include <TextControl.h>
 #include <FilePanel.h>
 #include <MenuItem.h>
 #include <Menu.h>
@@ -76,6 +77,7 @@ private:
 	void _HandleExportMessages(BMessage* message);
 	void _HandleVectorizationMessages(BMessage* message);
 	void _HandleSelectionMessages(BMessage *message);
+	void _HandleSearchMessages(BMessage* message);
 
 	// Tools handlers
 	void _HandleOpenInIconOMatic();
@@ -179,6 +181,7 @@ private:
 	BSplitView*      fSplitView;
 	SVGToolBar*      fToolBar;
 	SVGToolBar*      fEditToolBar;
+	BTextControl*    fSearchControl;
 	SVGStatView*     fStatView;
 	SVGStructureView* fStructureView;
 
