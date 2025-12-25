@@ -1,4 +1,4 @@
-1	English	application/x-vnd.svgear	3227514244
+1	English	application/x-vnd.svgear	3069722912
 Outline	SVGMainWindow		Outline
 Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
 Min samples	SVGVectorizationDialog		Min samples
@@ -8,23 +8,26 @@ Text wrap	SVGMainWindow		Text wrap
 OK	SVGFileManager		OK
 Zoom out	SVGMainWindow		Zoom out
 View	SVGMenuManager		View
+Find Previous	SVGMainWindow		Find Previous
 Outline	SVGMenuManager		Outline
 Filter small objects	SVGVectorizationDialog		Filter small objects
 Redo	SVGMainWindow		Redo
 File	SVGMenuManager		File
 Points:	SVGStatView		Points:
-Show Statistics Panel	SVGMenuManager		Show Statistics Panel
 Zoom In	SVGMenuManager		Zoom In
+Show Statistics Panel	SVGMenuManager		Show Statistics Panel
 Blur radius	SVGVectorizationDialog		Blur radius
 Show Structure	SVGMainWindow		Show Structure
 Colors	SVGVectorizationDialog		Colors
 Removing background	SVGVectorizationDialog		Removing background
+Original size	SVGMainWindow		Original size
 Curve protection	SVGVectorizationDialog		Curve protection
 Geometry	SVGVectorizationDialog		Geometry
 New	SVGMenuManager		New
 Gradients:	SVGStatView		Gradients:
 File path not specified	SVGFileManager		File path not specified
 Remove duplicate paths	SVGVectorizationDialog		Remove duplicate paths
+Copy Raster Image...	SVGMainWindow		Copy Raster Image...
 Content	SVGStatView		Content
 Tracing paths	SVGVectorizationDialog		Tracing paths
 Output scale	SVGVectorizationDialog		Output scale
@@ -40,8 +43,8 @@ Zoom in	SVGMainWindow		Zoom in
 Document Style	SVGMenuManager		Document Style
 Open…	SVGMenuManager		Open…
 Min RGB delta	SVGVectorizationDialog		Min RGB delta
-Width:	SVGStatView		Width:
 Error loading SVG file: %s	SVGFileManager		Error loading SVG file: %s
+Width:	SVGStatView		Width:
 Filtering objects	SVGVectorizationDialog		Filtering objects
 SVG Size:	SVGStatView		SVG Size:
 Background method	SVGVectorizationDialog		Background method
@@ -54,10 +57,11 @@ No HVIF data generated	SVGMainWindow		No HVIF data generated
 Show Sources Panel	SVGMenuManager		Show Sources Panel
 Shapes:	SVGStatView		Shapes:
 Blur settings	SVGVectorizationDialog		Blur settings
+Copy SVG as Base64	SVGMainWindow		Copy SVG as Base64
 Tools	SVGMenuManager		Tools
 Output	SVGVectorizationDialog		Output
-File	SVGStatView		File
 Error saving file: %s	SVGFileManager		Error saving file: %s
+File	SVGStatView		File
 Simplification tolerance	SVGVectorizationDialog		Simplification tolerance
 Show Bounding Box	SVGMainWindow		Show Bounding Box
 Filled shapes:	SVGStatView		Filled shapes:
@@ -87,6 +91,7 @@ OK	SVGVectorizationDialog		OK
 Collinear tolerance	SVGVectorizationDialog		Collinear tolerance
 Copy	SVGMainWindow		Copy
 File exported successfully	SVGMainWindow		File exported successfully
+Original size	SVGMenuManager		Original size
 Shape %ld Fill	SVGStructureView		Shape %ld Fill
 Use ViewBox	SVGVectorizationDialog		Use ViewBox
 Normal	SVGMainWindow		Normal
@@ -106,6 +111,7 @@ Merging regions	SVGVectorizationDialog		Merging regions
 None	SVGStructureView		None
 Zoom Original	SVGMenuManager		Zoom Original
 Error converting %s to SVG	SVGFileManager		Error converting %s to SVG
+RDef code copied to clipboard	SVGMainWindow		RDef code copied to clipboard
 Failed to save file	SVGMainWindow		Failed to save file
 Vectorization error	SVGVectorizationDialog		Vectorization error
 Min Y:	SVGStatView		Min Y:
@@ -113,6 +119,7 @@ Filtering	SVGVectorizationDialog		Filtering
 Show description	SVGVectorizationDialog		Show description
 Quit	SVGMenuManager		Quit
 C++ array…	SVGMenuManager		C++ array…
+Copy HVIF as RDef code	SVGMainWindow		Copy HVIF as RDef code
 Creating palette	SVGVectorizationDialog		Creating palette
 Number of colors	SVGVectorizationDialog		Number of colors
 Unifying edges	SVGVectorizationDialog		Unifying edges
@@ -125,6 +132,7 @@ Show Transparency Grid	SVGMainWindow		Show Transparency Grid
 RDef resource…	SVGMenuManager		RDef resource…
 Save as…	SVGMenuManager		Save as…
 Paths:	SVGStatView		Paths:
+SVG source copied to clipboard	SVGMainWindow		SVG source copied to clipboard
 Export	SVGMenuManager		Export
 Fill Only	SVGMainWindow		Fill Only
 Document	SVGMainWindow		Document
@@ -133,6 +141,7 @@ Min gradient size	SVGVectorizationDialog		Min gradient size
 Failed to export file	SVGMainWindow		Failed to export file
 Best fit	SVGMainWindow		Best fit
 Height:	SVGStatView		Height:
+Image copied to clipboard	SVGMainWindow		Image copied to clipboard
 Optimize SVG output	SVGVectorizationDialog		Optimize SVG output
 Color	SVGStructureView		Color
 Quantizing colors	SVGVectorizationDialog		Quantizing colors
@@ -147,9 +156,12 @@ Ready	SVGMainWindow		Ready
 Preset	SVGVectorizationDialog		Preset
 Min X:	SVGStatView		Min X:
 Starting vectorization	SVGVectorizationDialog		Starting vectorization
+Failed to render image	SVGMainWindow		Failed to render image
 Min background ratio	SVGVectorizationDialog		Min background ratio
 File saved successfully	SVGMainWindow		File saved successfully
 Quality	SVGVectorizationDialog		Quality
+HTML img tag with Base64 SVG copied	SVGMainWindow		HTML img tag with Base64 SVG copied
+C++ code copied to clipboard	SVGMainWindow		C++ code copied to clipboard
 Line threshold	SVGVectorizationDialog		Line threshold
 Area tolerance	SVGVectorizationDialog		Area tolerance
 Apply (Alt+Enter)	SVGMainWindow		Apply (Alt+Enter)
@@ -157,7 +169,9 @@ Optimal	SVGVectorizationDialog		Optimal
 Cut	SVGMainWindow		Cut
 Stroked shapes:	SVGStatView		Stroked shapes:
 Remove background	SVGVectorizationDialog		Remove background
+Copy SVG Source	SVGMainWindow		Copy SVG Source
 Show Structure Panel	SVGMenuManager		Show Structure Panel
+Copy HVIF as C++ code	SVGMainWindow		Copy HVIF as C++ code
 Transparent Gray	SVGMenuManager		Transparent Gray
 Display Mode	SVGMenuManager		Display Mode
 Simplification	SVGVectorizationDialog		Simplification
@@ -169,11 +183,12 @@ Minimum object perimeter	SVGVectorizationDialog		Minimum object perimeter
 Complete	SVGVectorizationDialog		Complete
 Error loading %s file: %s	SVGFileManager		Error loading %s file: %s
 Stroke Only	SVGMainWindow		Stroke Only
+Minimum object height	SVGVectorizationDialog		Minimum object height
 Center	SVGMenuManager		Center
 Path %ld.%ld (%d pts)	SVGListItem		Path %ld.%ld (%d pts)
-Minimum object height	SVGVectorizationDialog		Minimum object height
 Open	SVGMainWindow		Open
 Gray	SVGMainWindow		Gray
+Find Next	SVGMainWindow		Find Next
 Show Transparency Grid	SVGMenuManager		Show Transparency Grid
 Detecting geometry	SVGVectorizationDialog		Detecting geometry
 Simplifying (DP)	SVGVectorizationDialog		Simplifying (DP)

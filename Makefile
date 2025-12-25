@@ -37,7 +37,7 @@ LOCAL_INCLUDE_PATHS = \
 	./External/BSVGView \
 	./External/nanosvg_ext/src
 OPTIMIZE := FULL
-LOCALES = en ru
+LOCALES = en ru de tr
 DEFINES =
 WARNINGS =
 SYMBOLS :=

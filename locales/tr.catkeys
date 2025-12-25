@@ -1,0 +1,221 @@
+1	Turkish	application/x-vnd.svgear	3069722912
+ Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Boyut: %.0f × %.0f | Ölçek: %%%.1f | Kip: %s | BBox: %s
+Apply (Alt+Enter)	SVGMainWindow		Uygula (Komut+Giriş)
+Best fit	SVGMainWindow		En iyi boyut
+C++ code copied to clipboard	SVGMainWindow		C++ kodu panoya kopyalandı
+Center	SVGMainWindow		Merkez
+Copy	SVGMainWindow		Kopyala
+Copy HVIF as C++ code	SVGMainWindow		HVIF’i C++ kodu olarak kopyala
+Copy HVIF as RDef code	SVGMainWindow		HVIF’i RDef kodu olarak kopyala
+Copy Raster Image...	SVGMainWindow		Raster görsel kopyala…
+Copy SVG as Base64	SVGMainWindow		SVG’yi Base64 olarak kopyala
+Copy SVG Source	SVGMainWindow		SVG kaynağını kopyala
+Could not find directory reference	SVGMainWindow		Dizin başvurusu bulunamadı
+Could not find file name	SVGMainWindow		Ad bulunamadı
+Cut	SVGMainWindow		Kes
+Document	SVGMainWindow		Belge
+Error	SVGMainWindow		Hata
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Kaynak kodundan SVG’yi ayrıştırırken hata. Lütfen sözdizimi denetleyin.
+Failed to export file	SVGMainWindow		Dosya dışa aktarılamadı
+Failed to render image	SVGMainWindow		Görsel sunulamadı
+Failed to save file	SVGMainWindow		Dosya kaydedilemedi
+File exported successfully	SVGMainWindow		Dosya başarıyla dışa aktarıldı
+File saved successfully	SVGMainWindow		Dosya başarıyla kaydedildi
+Fill Only	SVGMainWindow		Yalnızca dolgu
+Find Next	SVGMainWindow		Sonrakini bul
+Find Previous	SVGMainWindow		Öncekini bul
+Gray	SVGMainWindow		Gri
+HTML img tag with Base64 SVG copied	SVGMainWindow		Base64 SVG ile HTML img künyesi kopyalandı
+Image copied to clipboard	SVGMainWindow		Görsel panoya kopyalandı
+Invalid file path	SVGMainWindow		Geçersiz dosya yolu
+New	SVGMainWindow		Yeni
+No data available for export	SVGMainWindow		Dışa aktarmak için veri yok
+No HVIF data available	SVGMainWindow		Kullanılabilir HVIF verisi yok
+No HVIF data generated	SVGMainWindow		Üretilen HVIF verisi yok
+No SVG loaded	SVGMainWindow		Yüklenmiş SVG yok
+None	SVGMainWindow		Yok
+Normal	SVGMainWindow		Normal
+OK	SVGMainWindow		Tamam
+Open	SVGMainWindow		Aç
+Original size	SVGMainWindow		Özgün boyut
+Outline	SVGMainWindow		Dış hat
+Paste	SVGMainWindow		Yapıştır
+RDef code copied to clipboard	SVGMainWindow		RDef kodu panoya kopyalandı
+Ready	SVGMainWindow		Hazır
+Redo	SVGMainWindow		Yinele
+Save	SVGMainWindow		Kaydet
+Show Bounding Box	SVGMainWindow		Dış kutuyu göster
+Show Source Code	SVGMainWindow		Kaynak kodunu göster
+Show statistics	SVGMainWindow		İstatistikleri göster
+Show Structure	SVGMainWindow		Yapıyı göster
+Show Transparency Grid	SVGMainWindow		Saydamlık ızgarasını göster
+Simple	SVGMainWindow		Basit
+Source code is empty.	SVGMainWindow		Kaynak kodu boş
+Stroke Only	SVGMainWindow		Yalnızca kontur
+SVG source copied to clipboard	SVGMainWindow		SVG kaynağı panoya kopyalandı
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear, SVG (Scalable Vector Graphics — Ölçeklenebilir Vektör Grafikler) dosyalarını görüntülemek ve manipüle etmek için sezgisel bir arayüz sunar.\nUygulama; dönüştürme işlemlerini destekler, böylece kullanıcıların SVG dosyalarını başka vektör biçimlere (örneğin HVIF — Haiku Vektör Simge Biçimi) dörnüştürebilmelerine olanak tanır.
+Text wrap	SVGMainWindow		Metni kaydır
+Undo	SVGMainWindow		Geri al
+Unknown	SVGMainWindow		Bilinmeyen
+Zoom in	SVGMainWindow		Yakınlaştır
+Zoom original	SVGMainWindow		Özgüne yakınlaştır
+Zoom out	SVGMainWindow		Uzaklaştır
+About SVGear…	SVGMenuManager		SVGear hakkında…
+Bounding Box	SVGMenuManager		Dış kutu
+C++ array…	SVGMenuManager		C++ dizilişi…
+Center	SVGMenuManager		Merkez
+Display Mode	SVGMenuManager		Görüntü kipi
+Document Style	SVGMenuManager		Belge biçemi
+Export	SVGMenuManager		Dışa aktar
+File	SVGMenuManager		Dosya
+Fill Only	SVGMenuManager		Yalnızca dolgu
+Fit to Window	SVGMenuManager		Pencereye sığdır
+Help	SVGMenuManager		Yardım
+HVIF Icon…	SVGMenuManager		HVIF simgesi…
+Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
+New	SVGMenuManager		Yeni
+None	SVGMenuManager		Yok
+Normal	SVGMenuManager		Normal
+Open…	SVGMenuManager		Aç…
+Original size	SVGMenuManager		Özgün boyut
+Outline	SVGMenuManager		Dış hat
+PNG Image	SVGMenuManager		PNG görseli
+Quit	SVGMenuManager		Çık
+RDef resource…	SVGMenuManager		RDef özkaynağı…
+Reset View	SVGMenuManager		Görünümü sıfırla
+Save	SVGMenuManager		Kaydet
+Save as…	SVGMenuManager		Farklı kaydet…
+Show Sources Panel	SVGMenuManager		Kaynaklar panelini göster
+Show Statistics Panel	SVGMenuManager		İstatistikler panelini göster
+Show Structure Panel	SVGMenuManager		Yapı panelini göster
+Show Transparency Grid	SVGMenuManager		Saydamlık ızgarasını göster
+Simple Frame	SVGMenuManager		Basit çerçeve
+Stroke Only	SVGMenuManager		Yalnızca kontur
+Tools	SVGMenuManager		Araçlar
+Transparent Gray	SVGMenuManager		Saydam gri
+View	SVGMenuManager		Görüntü
+Zoom In	SVGMenuManager		Yakınlaştır
+Zoom Original	SVGMenuManager		Özgüne yakınlaştır
+Zoom Out	SVGMenuManager		Uzaklaştır
+Advanced simplification	SVGVectorizationDialog		Gelişmiş basitleştirme
+Applying blur	SVGVectorizationDialog		Bulanıklık uygulama
+Area tolerance	SVGVectorizationDialog		Alan toleransı
+Auto	SVGVectorizationDialog		Otomatik
+Background method	SVGVectorizationDialog		Arka plan yöntemi
+Background tolerance	SVGVectorizationDialog		Arka plan toleransı
+Basic	SVGVectorizationDialog		Basit
+Blur delta	SVGVectorizationDialog		Bulanıklık farkı
+Blur radius	SVGVectorizationDialog		Bulanıklık yarıçapı
+Blur settings	SVGVectorizationDialog		Bulanıklık ayarları
+Cancel	SVGVectorizationDialog		Vazgeç
+Circle detection tolerance	SVGVectorizationDialog		Çember algılama toleransı
+Collinear tolerance	SVGVectorizationDialog		Eş doğrusal tolerans
+Colors	SVGVectorizationDialog		Renkler
+Complete	SVGVectorizationDialog		Tam
+Creating palette	SVGVectorizationDialog		Palet oluşturuluyor
+Curve protection	SVGVectorizationDialog		Eğri koruması
+Curve smoothing	SVGVectorizationDialog		Eğri pürüzsüzleştirme
+Curve threshold	SVGVectorizationDialog		Eğri eşiği
+Custom	SVGVectorizationDialog		Özel
+Detect geometric shapes	SVGVectorizationDialog		Geometrik şekilleri algıla
+Detect gradients	SVGVectorizationDialog		Gradyanları algıla
+Detecting geometry	SVGVectorizationDialog		Geometri algılanıyor
+Detecting gradients	SVGVectorizationDialog		Gradyanlar algılanıyor
+Douglas-Peucker	SVGVectorizationDialog		Douglas-Peucker
+Fast	SVGVectorizationDialog		Hızlı
+Filter small objects	SVGVectorizationDialog		Küçük nesneleri süz
+Filtering	SVGVectorizationDialog		Süzme
+Filtering objects	SVGVectorizationDialog		Nesneler süzülüyor
+Fixing winding	SVGVectorizationDialog		Kurma onarılıyor
+Geometry	SVGVectorizationDialog		Geometri
+Gradients	SVGVectorizationDialog		Gradyanlar
+Line detection tolerance	SVGVectorizationDialog		Çizgi algılama toleransı
+Line threshold	SVGVectorizationDialog		Çizgi eşiği
+Max subdivisions	SVGVectorizationDialog		En çok alt bölme
+Maximum circle radius	SVGVectorizationDialog		En büyük daire yarıçapı
+Merging regions	SVGVectorizationDialog		Bölgeler birleştiriliyor
+Min background ratio	SVGVectorizationDialog		En küçük arka plan oranı
+Min gradient size	SVGVectorizationDialog		En küçük gradyan boyutu
+Min R² threshold	SVGVectorizationDialog		En küçük R² eşiği
+Min RGB delta	SVGVectorizationDialog		En küçük RGB farkı
+Min samples	SVGVectorizationDialog		En küçük örneklemler
+Min segment length	SVGVectorizationDialog		En küçük bölüt yüksekliği
+Minimum circle radius	SVGVectorizationDialog		En küçük daire yarıçapı
+Minimum object area	SVGVectorizationDialog		En küçük nesne alanı
+Minimum object height	SVGVectorizationDialog		En küçük nesne yüksekliği
+Minimum object perimeter	SVGVectorizationDialog		En küçük nesne çevresi
+Minimum object width	SVGVectorizationDialog		En küçük nesne genişliği
+Number of colors	SVGVectorizationDialog		Renk sayısı
+OK	SVGVectorizationDialog		Tamam
+Optimal	SVGVectorizationDialog		Eniyilenmiş
+Optimize SVG output	SVGVectorizationDialog		SVG çıktısını eniyile
+Output	SVGVectorizationDialog		Çıktı
+Output scale	SVGVectorizationDialog		Çıktı ölçeği
+Path omit threshold	SVGVectorizationDialog		Yol yok sayma eşiği
+Preset	SVGVectorizationDialog		Önayar
+Processing	SVGVectorizationDialog		İşleniyor
+Quality	SVGVectorizationDialog		Kalite
+Quantization cycles	SVGVectorizationDialog		Nicemleme döngüleri
+Quantizing colors	SVGVectorizationDialog		Renkler nicemleniyor
+Remove background	SVGVectorizationDialog		Arka planı kaldır
+Remove duplicate paths	SVGVectorizationDialog		Yinelenmiş yolları kaldır
+Removing background	SVGVectorizationDialog		Arka plan kaldırılıyor
+Round coordinates	SVGVectorizationDialog		Koordinatları yuvarla
+Sample stride	SVGVectorizationDialog		Örnek adım
+Scanning paths	SVGVectorizationDialog		Yollar taranıyor
+Show description	SVGVectorizationDialog		Açıklamayı göster
+Simple	SVGVectorizationDialog		Basit
+Simplification	SVGVectorizationDialog		Basitleştirme
+Simplification tolerance	SVGVectorizationDialog		Basitleştirme toleransı
+Simplifying (DP)	SVGVectorizationDialog		Basitleştiriliyor (DP)
+Simplifying (VW)	SVGVectorizationDialog		Basitleştiriliyor (VW)
+Starting	SVGVectorizationDialog		Başlanıyor
+Starting vectorization	SVGVectorizationDialog		Vektörleştirme başlatılıyor
+Tracing paths	SVGVectorizationDialog		Yollar izleniyor
+Unifying edges	SVGVectorizationDialog		Kenarlar birleştiriliyor
+Use ViewBox	SVGVectorizationDialog		ViewBox kullan
+Vectorization error	SVGVectorizationDialog		Vektörleştirme hatası
+Vectorization Settings	SVGVectorizationDialog		Vektörleştirme ayarları
+Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
+Bounds	SVGStatView		Sınırlar
+Closed paths:	SVGStatView		Kapalı yollar:
+Content	SVGStatView		İçerik
+File	SVGStatView		Dosya
+Filled shapes:	SVGStatView		Dolgulu şekiller:
+Gradients:	SVGStatView		Gradyanlar:
+Height:	SVGStatView		Yükseklik:
+HVIF Size:	SVGStatView		HVIF boyutu:
+Image	SVGStatView		Görsel
+Max X:	SVGStatView		En büyük X:
+Max Y:	SVGStatView		En büyük Y:
+Min X:	SVGStatView		En küçük X:
+Min Y:	SVGStatView		En küçük Y:
+Paths:	SVGStatView		Yollar:
+Points:	SVGStatView		Noktalar:
+Shapes:	SVGStatView		Şekiller:
+Stroked shapes:	SVGStatView		Konturlu şekiller:
+SVG Size:	SVGStatView		SVG boyutu:
+Width:	SVGStatView		Genişlik:
+Color	SVGStructureView		Renk
+Linear Gradient	SVGStructureView		Doğrusal gradyan
+None	SVGStructureView		Yok
+Paints	SVGStructureView		Noktalar
+Paths	SVGStructureView		Yollar
+Radial Gradient	SVGStructureView		Radyal gradyan
+Shape %ld Fill	SVGStructureView		%ld dolguyu şekillendir
+Shape %ld Stroke	SVGStructureView		%ld dolguyu konturlandır
+Shapes	SVGStructureView		Şekiller
+Could not get export file information	SVGFileManager		Dışa aktarılacak dosya bilgisi alınamadı
+Error	SVGFileManager		Hata
+Error converting %s to SVG	SVGFileManager		%s ögesini SVG’ye dönüştürürken hata
+Error loading %s file: %s	SVGFileManager		%s dosyası yüklenirken hata: %s
+Error loading SVG file: %s	SVGFileManager		SVG dosyası yüklenirken hata: %s
+Error reading SVG file	SVGFileManager		SVG dosyası okunurken hata
+Error saving file: %s	SVGFileManager		Dosya kaydedilirken hata: %s
+File path not specified	SVGFileManager		Dosya yolu belirtilmedi
+OK	SVGFileManager		Tamam
+Unable to load file: %s\nUnknown or unsupported format	SVGFileManager		Dosya yüklenemiyor: %s\nBilinmeyen veya desteklenmeyen biçim
+Drop a file to view or vectorize	SVGView		Görüntülemek veya vektörleştirmek için bir dosya bırakın
+Hold the right mouse button to view the original raster image	SVGView		Özgün raster görseli görüntülemek için sağ fare düğmesini basılı tutun
+Path %ld.%ld (%d pts)	SVGListItem		Yol %ld.%ld (%d pnt)
+Shape %ld	SVGListItem		Şekil %ld
