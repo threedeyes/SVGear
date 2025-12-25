@@ -85,9 +85,15 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 		BMessage* msg = new BMessage(MSG_EXPORT_PNG);
 		msg->AddInt32("size", sizes[i]);
 		BString label;
-		label << sizes[i] << "x" << sizes[i];
+		label << sizes[i] << "px";
 		pngSubMenu->AddItem(new BMenuItem(label.String(), msg));
 	}
+
+	pngSubMenu->AddSeparatorItem();
+	BMessage* originalPngMsg = new BMessage(MSG_EXPORT_PNG);
+	originalPngMsg->AddInt32("size", -1);
+	pngSubMenu->AddItem(new BMenuItem(B_TRANSLATE("Original size"), originalPngMsg));
+
 	pngSubMenu->SetTargetForItems(target);
 	fExportSubMenu->AddItem(pngSubMenu);
 

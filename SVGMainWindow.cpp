@@ -810,10 +810,17 @@ SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
 				msg->AddInt32("size", sizes[i]);
 
 				BString label;
-				label << sizes[i] << "x" << sizes[i];
+				label.SetToFormat("%ldpx", sizes[i]);
 
 				menu->AddItem(new BMenuItem(label.String(), msg));
 			}
+
+			menu->AddSeparatorItem();
+
+			BMessage* originalMsg = new BMessage(MSG_COPY_RASTER_IMAGE_DO);
+			originalMsg->AddInt32("size", -1);
+			menu->AddItem(new BMenuItem(B_TRANSLATE("Original size"), originalMsg));
+
 			menu->SetTargetForItems(this);
 
 			BPoint cursor;
@@ -828,32 +835,46 @@ SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
 			int32 size = message->GetInt32("size", 64);
 			BString source = _GetCurrentSource();
 
-			if (source.Length() > 0) {
+			if (source.Length() > 0 && fSVGView && fSVGView->SVGImage()) {
 				std::vector<uint8_t> svgData(source.String(), source.String() + source.Length());
 				haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
 
 				if (haiku::IconConverter::GetLastError().empty()) {
-					BBitmap* bitmap = new BBitmap(BRect(0, 0, size - 1, size - 1), B_RGBA32);
-					bool rendered = false;
-					if (fCurrentHVIFData && fCurrentHVIFSize > 0) {
-						if (BIconUtils::GetVectorIcon(fCurrentHVIFData, fCurrentHVIFSize, bitmap) == B_OK) {
-							rendered = true;
+					float svgW = fSVGView->SVGWidth();
+					float svgH = fSVGView->SVGHeight();
+					int32 targetW, targetH;
+
+					if (size == -1) {
+						targetW = (int32)svgW;
+						targetH = (int32)svgH;
+					} else {
+						if (svgW > svgH) {
+							targetW = size;
+							targetH = (int32)((svgH / svgW) * size);
+						} else {
+							targetH = size;
+							targetW = (int32)((svgW / svgH) * size);
 						}
+						if (targetW < 1) targetW = 1;
+						if (targetH < 1) targetH = 1;
 					}
 
-					if (!rendered) {
-						haiku::ConvertOptions opts;
-						opts.pngWidth = size;
-						opts.pngHeight = size;
-						std::vector<uint8_t> pngData;
-						if (haiku::IconConverter::SaveToBuffer(icon, pngData, haiku::FORMAT_PNG, opts)) {
-							BMemoryIO io(pngData.data(), pngData.size());
-							BBitmap* pngBmp = BTranslationUtils::GetBitmap(&io);
-							if (pngBmp) {
-								delete bitmap;
-								bitmap = pngBmp;
-								rendered = true;
-							}
+					BBitmap* bitmap = new BBitmap(BRect(0, 0, targetW - 1, targetH - 1), B_RGBA32);
+					bool rendered = false;
+
+					haiku::ConvertOptions opts;
+					opts.pngWidth = targetW;
+					opts.pngHeight = targetH;
+					opts.pngScale = 1.0f;
+
+					std::vector<uint8_t> pngData;
+					if (haiku::IconConverter::SaveToBuffer(icon, pngData, haiku::FORMAT_PNG, opts)) {
+						BMemoryIO io(pngData.data(), pngData.size());
+						BBitmap* pngBmp = BTranslationUtils::GetBitmap(&io);
+						if (pngBmp) {
+							delete bitmap;
+							bitmap = pngBmp;
+							rendered = true;
 						}
 					}
 

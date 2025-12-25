@@ -385,7 +385,12 @@ SVGFileManager::ShowExportPNGPanel(BHandler* target, int32 size)
 {
 	fCurrentExportSize = size;
 	BString defaultName;
-	defaultName.SetToFormat("icon_%ldx%ld", size, size);
+
+	if (size == -1)
+		defaultName.SetTo("icon_original");
+	else
+		defaultName.SetToFormat("icon_%ldpx", size);
+
 	_ShowExportPanel(defaultName.String(), ".png", MSG_EXPORT_PNG, target);
 }
 
@@ -464,6 +469,37 @@ SVGFileManager::_ExportPNG(const char* filePath, const BString& svgSource, int32
 	if (!fullPath.EndsWith(".png"))
 		fullPath << ".png";
 
+	char* sourceCopy = strdup(svgSource.String());
+	NSVGimage* image = nsvgParse(sourceCopy, "px", 96.0f);
+
+	float svgW = 0, svgH = 0;
+	if (image) {
+		svgW = image->width;
+		svgH = image->height;
+		nsvgDelete(image);
+	}
+	free(sourceCopy);
+
+	if (svgW <= 0 || svgH <= 0)
+		return B_ERROR;
+
+	int32 targetW, targetH;
+
+	if (size == -1) {
+		targetW = (int32)svgW;
+		targetH = (int32)svgH;
+	} else {
+		if (svgW > svgH) {
+			targetW = size;
+			targetH = (int32)((svgH / svgW) * size);
+		} else {
+			targetH = size;
+			targetW = (int32)((svgW / svgH) * size);
+		}
+		if (targetW < 1) targetW = 1;
+		if (targetH < 1) targetH = 1;
+	}
+
 	std::vector<uint8_t> svgData(svgSource.String(), svgSource.String() + svgSource.Length());
 	haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
 
@@ -471,8 +507,8 @@ SVGFileManager::_ExportPNG(const char* filePath, const BString& svgSource, int32
 		return B_ERROR;
 
 	haiku::ConvertOptions opts;
-	opts.pngWidth = size;
-	opts.pngHeight = size;
+	opts.pngWidth = targetW;
+	opts.pngHeight = targetH;
 	opts.pngScale = 1.0f;
 
 	std::vector<uint8_t> pngData;
