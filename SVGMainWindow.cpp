@@ -17,6 +17,8 @@
 #include <GroupView.h>
 #include <Catalog.h>
 #include <TranslationUtils.h>
+#include <PopUpMenu.h>
+#include <MenuItem.h>
 
 #include <private/interface/AboutWindow.h>
 
@@ -199,6 +201,15 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			_HandleSearchMessages(message);
 			break;
 
+		case MSG_COPY_SVG_SOURCE:
+		case MSG_COPY_SVG_BASE64:
+		case MSG_COPY_HVIF_CPP:
+		case MSG_COPY_HVIF_RDEF:
+		case MSG_COPY_RASTER_IMAGE:
+		case MSG_COPY_RASTER_IMAGE_DO:
+			_HandleClipboardCopyMessages(message);
+			break;
+
 		case MSG_VECTORIZATION_PREVIEW:
 		case MSG_VECTORIZATION_COMPLETED:
 		case MSG_VECTORIZATION_ERROR:
@@ -326,6 +337,12 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar->AddAction(MSG_TOGGLE_SOURCE_VIEW, this, SVGApplication::GetIcon("format-text-code", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Source Code"));
 	fToolBar->AddAction(MSG_TOGGLE_STRUCTURE, this, SVGApplication::GetIcon("structure", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show Structure"));
 	fToolBar->AddAction(MSG_TOGGLE_STAT, this, SVGApplication::GetIcon("info", TOOLBAR_ICON_SIZE), B_TRANSLATE("Show statistics"));
+	fToolBar->AddSeparator();
+	fToolBar->AddAction(MSG_COPY_SVG_SOURCE, this, SVGApplication::GetIcon("copy-svg-text", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy SVG Source"));
+	fToolBar->AddAction(MSG_COPY_SVG_BASE64, this, SVGApplication::GetIcon("copy-svg-base64", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy SVG as Base64"));
+	fToolBar->AddAction(MSG_COPY_HVIF_CPP, this, SVGApplication::GetIcon("copy-hvif-cpp", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy HVIF as C++ code"));
+	fToolBar->AddAction(MSG_COPY_HVIF_RDEF, this, SVGApplication::GetIcon("copy-hvif-rdef", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy HVIF as RDef code"));
+	fToolBar->AddAction(MSG_COPY_RASTER_IMAGE, this, SVGApplication::GetIcon("copy-image", TOOLBAR_ICON_SIZE), B_TRANSLATE("Copy Raster Image..."));
 	fToolBar->AddGlue();
 
 	fEditToolBar = new SVGToolBar();
@@ -737,6 +754,122 @@ SVGMainWindow::_HandleSearchMessages(BMessage* message)
 }
 
 void
+SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
+{
+	switch (message->what) {
+		case MSG_COPY_SVG_SOURCE:
+		{
+			BString source = _GetCurrentSource();
+			if (source.Length() > 0) {
+				_CopyToClipboard(source.String());
+				_ShowSuccess(B_TRANSLATE("SVG source copied to clipboard"));
+			}
+			break;
+		}
+
+		case MSG_COPY_SVG_BASE64:
+		{
+			BString source = _GetCurrentSource();
+			if (source.Length() > 0) {
+				BString base64 = _EncodeBase64(source);
+				_CopyToClipboard(base64.String());
+				_ShowSuccess(B_TRANSLATE("Base64 SVG copied to clipboard"));
+			}
+			break;
+		}
+
+		case MSG_COPY_HVIF_CPP:
+		{
+			if (fCurrentHVIFData && fCurrentHVIFSize > 0) {
+				BString content = SVGCodeGenerator::GenerateCPP(fCurrentHVIFData, fCurrentHVIFSize);
+				_CopyToClipboard(content.String());
+				_ShowSuccess(B_TRANSLATE("C++ code copied to clipboard"));
+			}
+			break;
+		}
+
+		case MSG_COPY_HVIF_RDEF:
+		{
+			if (fCurrentHVIFData && fCurrentHVIFSize > 0) {
+				BString content = SVGCodeGenerator::GenerateRDef(fCurrentHVIFData, fCurrentHVIFSize);
+				_CopyToClipboard(content.String());
+				_ShowSuccess(B_TRANSLATE("RDef code copied to clipboard"));
+			}
+			break;
+		}
+
+		case MSG_COPY_RASTER_IMAGE:
+		{
+			BPopUpMenu* menu = new BPopUpMenu("size_menu");
+			const int32 sizes[] = { 16, 24, 32, 48, 64, 128, 256, 512 };
+
+			for (int i = 0; i < 8; i++) {
+				BMessage* msg = new BMessage(MSG_COPY_RASTER_IMAGE_DO);
+				msg->AddInt32("size", sizes[i]);
+
+				BString label;
+				label << sizes[i] << "x" << sizes[i];
+
+				menu->AddItem(new BMenuItem(label.String(), msg));
+			}
+			menu->SetTargetForItems(this);
+
+			BPoint cursor;
+			uint32 buttons;
+			get_mouse(&cursor, &buttons);
+			menu->Go(cursor, true, true, true);
+			break;
+		}
+
+		case MSG_COPY_RASTER_IMAGE_DO:
+		{
+			int32 size = message->GetInt32("size", 64);
+			BString source = _GetCurrentSource();
+
+			if (source.Length() > 0) {
+				std::vector<uint8_t> svgData(source.String(), source.String() + source.Length());
+				haiku::Icon icon = haiku::IconConverter::LoadFromBuffer(svgData, haiku::FORMAT_SVG);
+
+				if (haiku::IconConverter::GetLastError().empty()) {
+					BBitmap* bitmap = new BBitmap(BRect(0, 0, size - 1, size - 1), B_RGBA32);
+					bool rendered = false;
+					if (fCurrentHVIFData && fCurrentHVIFSize > 0) {
+						if (BIconUtils::GetVectorIcon(fCurrentHVIFData, fCurrentHVIFSize, bitmap) == B_OK) {
+							rendered = true;
+						}
+					}
+
+					if (!rendered) {
+						haiku::ConvertOptions opts;
+						opts.pngWidth = size;
+						opts.pngHeight = size;
+						std::vector<uint8_t> pngData;
+						if (haiku::IconConverter::SaveToBuffer(icon, pngData, haiku::FORMAT_PNG, opts)) {
+							BMemoryIO io(pngData.data(), pngData.size());
+							BBitmap* pngBmp = BTranslationUtils::GetBitmap(&io);
+							if (pngBmp) {
+								delete bitmap;
+								bitmap = pngBmp;
+								rendered = true;
+							}
+						}
+					}
+
+					if (rendered && bitmap) {
+						_CopyBitmapToClipboard(bitmap);
+						_ShowSuccess(B_TRANSLATE("Image copied to clipboard"));
+					} else {
+						_ShowError(B_TRANSLATE("Failed to render image"));
+					}
+					delete bitmap;
+				}
+			}
+			break;
+		}
+	}
+}
+
+void
 SVGMainWindow::_HandleDropMessages(BMessage* message)
 {
 	if (fVectorizationDialog != NULL)
@@ -1039,6 +1172,66 @@ SVGMainWindow::_HandleOpenInIconOMatic()
 	if (fIconView && fIconView->HasValidIcon()) {
 		fIconView->OpenInIconOMatic();
 	}
+}
+
+void
+SVGMainWindow::_CopyToClipboard(const char* text)
+{
+	if (be_clipboard->Lock()) {
+		be_clipboard->Clear();
+		BMessage* clip = be_clipboard->Data();
+		clip->AddData("text/plain", B_MIME_TYPE, text, strlen(text));
+		be_clipboard->Commit();
+		be_clipboard->Unlock();
+	}
+}
+
+void
+SVGMainWindow::_CopyBitmapToClipboard(BBitmap* bitmap)
+{
+	if (!bitmap)
+		return;
+
+	if (be_clipboard->Lock()) {
+		be_clipboard->Clear();
+		BMessage* clip = be_clipboard->Data();
+
+		BMessage bitmapArchive;
+		bitmap->Archive(&bitmapArchive);
+		clip->AddMessage("image/bitmap", &bitmapArchive);
+		clip->AddPoint("be:location", BPoint(0,0));
+
+		be_clipboard->Commit();
+		be_clipboard->Unlock();
+	}
+}
+
+static const char kBase64Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+BString
+SVGMainWindow::_EncodeBase64(const BString& input)
+{
+	BString output;
+	int32 length = input.Length();
+	const unsigned char* data = (const unsigned char*)input.String();
+	int val = 0, valb = -6;
+
+	for (int32 i = 0; i < length; i++) {
+		val = (val << 8) + data[i];
+		valb += 8;
+		while (valb >= 0) {
+			output += kBase64Alphabet[(val >> valb) & 0x3F];
+			valb -= 6;
+		}
+	}
+
+	if (valb > -6)
+		output += kBase64Alphabet[((val << 8) >> (valb + 8)) & 0x3F];
+
+	while (output.Length() % 4)
+		output += '=';
+
+	return output;
 }
 
 void
@@ -1448,6 +1641,7 @@ void
 SVGMainWindow::_UpdateToolBarStates()
 {
 	bool hasDocument = (fCurrentUIState & UI_STATE_DOCUMENT_LOADED) != 0;
+	bool hasHVIF = (fCurrentUIState & UI_STATE_HAS_HVIF_DATA) != 0;
 	bool isModified = (fCurrentUIState & UI_STATE_DOCUMENT_MODIFIED) != 0;
 	bool canSaveDirect = (fCurrentUIState & UI_STATE_CAN_SAVE_DIRECT) != 0;
 	bool sourceVisible = (fCurrentUIState & UI_STATE_SOURCE_VIEW_VISIBLE) != 0;
@@ -1466,6 +1660,11 @@ SVGMainWindow::_UpdateToolBarStates()
 		_SetToolBarItemEnabled(fToolBar, MSG_FIT_WINDOW, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_TRANSPARENCY, hasDocument);
 		_SetToolBarItemEnabled(fToolBar, MSG_TOGGLE_BOUNDINGBOX, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_COPY_SVG_SOURCE, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_COPY_SVG_BASE64, hasDocument);
+		_SetToolBarItemEnabled(fToolBar, MSG_COPY_HVIF_CPP, hasHVIF);
+		_SetToolBarItemEnabled(fToolBar, MSG_COPY_HVIF_RDEF, hasHVIF);
+		_SetToolBarItemEnabled(fToolBar, MSG_COPY_RASTER_IMAGE, hasDocument);
 	}
 
 	if (fEditToolBar) {

@@ -63,6 +63,12 @@ const uint32 MSG_DROP_HVIF = '_RRC';
 const uint32 MSG_TOGGLE_STAT = 'tgst';
 const uint32 MSG_DELETE_FILE = 'delf';
 const uint32 MSG_OPEN_IN_ICON_O_MATIC = 'oiom';
+const uint32 MSG_COPY_SVG_SOURCE = 'cpsv';
+const uint32 MSG_COPY_SVG_BASE64 = 'cpb6';
+const uint32 MSG_COPY_HVIF_CPP = 'cpcp';
+const uint32 MSG_COPY_HVIF_RDEF = 'cprd';
+const uint32 MSG_COPY_RASTER_IMAGE = 'cpri';
+const uint32 MSG_COPY_RASTER_IMAGE_DO = 'cpdo';
 
 // Export messages
 const uint32 MSG_EXPORT_HVIF = 'exhv';

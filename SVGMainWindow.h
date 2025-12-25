@@ -78,6 +78,12 @@ private:
 	void _HandleVectorizationMessages(BMessage* message);
 	void _HandleSelectionMessages(BMessage *message);
 	void _HandleSearchMessages(BMessage* message);
+	void _HandleClipboardCopyMessages(BMessage* message);
+
+	// Clipboard
+	void _CopyToClipboard(const char* text);
+	void _CopyBitmapToClipboard(BBitmap* bitmap);
+	BString _EncodeBase64(const BString& input);
 
 	// Tools handlers
 	void _HandleOpenInIconOMatic();
