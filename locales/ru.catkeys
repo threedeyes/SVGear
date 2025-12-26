@@ -118,12 +118,12 @@ Curve protection	SVGVectorizationDialog		Защита кривых
 Curve smoothing	SVGVectorizationDialog		Сглаживание кривых
 Curve threshold	SVGVectorizationDialog		Порог кривых
 Custom	SVGVectorizationDialog		Пользовательский
-Detect geometric shapes	SVGVectorizationDialog		Распознавать геом. фигуры
+Detect geometric shapes	SVGVectorizationDialog		Распознавать геометрические фигуры
 Detect gradients	SVGVectorizationDialog		Обнаруживать градиенты
 Detecting geometry	SVGVectorizationDialog		Распознавание геометрии
 Detecting gradients	SVGVectorizationDialog		Обнаружение градиентов
 Douglas-Peucker	SVGVectorizationDialog		Дуглас-Пекер
-Fast	SVGVectorizationDialog		Быстро
+Fast	SVGVectorizationDialog		Быстрый
 Filter small objects	SVGVectorizationDialog		Фильтровать мелкие объекты
 Filtering	SVGVectorizationDialog		Фильтрация
 Filtering objects	SVGVectorizationDialog		Фильтрация объектов
@@ -155,7 +155,7 @@ Output scale	SVGVectorizationDialog		Масштаб вывода
 Path omit threshold	SVGVectorizationDialog		Порог пропуска путей
 Preset	SVGVectorizationDialog		Пресет
 Processing	SVGVectorizationDialog		Обработка
-Quality	SVGVectorizationDialog		Качество
+Quality	SVGVectorizationDialog		Качественный
 Quantization cycles	SVGVectorizationDialog		Циклы квантования
 Quantizing colors	SVGVectorizationDialog		Квантование цветов
 Remove background	SVGVectorizationDialog		Удалить фон
