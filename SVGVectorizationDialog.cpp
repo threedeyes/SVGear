@@ -162,6 +162,8 @@ SVGVectorizationDialog::MessageReceived(BMessage* message)
 			if (fTarget) {
 				BMessage msg(MSG_VECTORIZATION_OK);
 				msg.AddData("options", B_RAW_TYPE, &fOptions, sizeof(TracingOptions));
+				BPath path(GetImagePath().String());
+				msg.AddString("filename", path.Leaf());
 				fTarget->Looper()->PostMessage(&msg, fTarget);
 			}
 			PostMessage(B_QUIT_REQUESTED);

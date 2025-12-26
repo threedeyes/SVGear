@@ -1070,10 +1070,12 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 		case MSG_VECTORIZATION_OK:
 		{
 			if (fVectorizationDialog) {
-				BPath path(fVectorizationDialog->GetImagePath().String());
-				BString title("SVGear - ");
-				title << path.Leaf() << " (vectorized)";
-				SetTitle(title.String());
+				BString filename;
+				if (message->FindString("filename", &filename) == B_OK) {
+					BString title("SVGear - ");
+					title << filename << " (vectorized)";
+					SetTitle(title.String());
+				}
 			}
 
 			fCurrentFilePath = "";
@@ -1086,10 +1088,8 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 			if (fSVGView)
 				fSVGView->ClearVectorizationBitmap();
 
-			if (fVectorizationDialog) {
-				fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
+			if (fVectorizationDialog)
 				fVectorizationDialog = NULL;
-			}
 
 			fSVGTextView->ClearUndoHistory();
 
@@ -1108,10 +1108,8 @@ SVGMainWindow::_HandleVectorizationMessages(BMessage* message)
 			if (fSVGView)
 				fSVGView->ClearVectorizationBitmap();
 
-			if (fVectorizationDialog) {
-				fVectorizationDialog->PostMessage(B_QUIT_REQUESTED);
+			if (fVectorizationDialog)
 				fVectorizationDialog = NULL;
-			}
 
 			_RestoreBackupState();
 			fSVGView->ResetView();

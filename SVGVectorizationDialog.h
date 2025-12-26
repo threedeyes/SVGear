@@ -18,6 +18,7 @@
 #include <String.h>
 #include <StringView.h>
 #include <StatusBar.h>
+#include <Path.h>
 
 #include "TracingOptions.h"
 #include "SVGConstants.h"
