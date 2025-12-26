@@ -14,7 +14,8 @@ resource app_version {
 
 resource file_types message {
 	"types" = "image/svg+xml",
-	"types" = "image/x-hvif"
+	"types" = "image/x-hvif",
+	"types" = "application/x-vnd.Haiku-icon"
 };
 
 resource vector_icon {
