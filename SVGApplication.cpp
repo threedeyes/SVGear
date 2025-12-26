@@ -64,9 +64,20 @@ SVGApplication::MessageReceived(BMessage *message)
 		}
 		case MSG_WINDOW_CLOSED:
 		{
+			SVGMainWindow* closingWindow = NULL;
+			void* ptr = NULL;
+			if (message->FindPointer("window", &ptr) == B_OK) {
+				closingWindow = static_cast<SVGMainWindow*>(ptr);
+			}
+
 			lastActivatedWindow = NULL;
 			for (int32 i = CountWindows() - 1; i >= 0 ; i--) {
-				SVGMainWindow* window = dynamic_cast<SVGMainWindow*>(WindowAt(i));
+				BWindow* win = WindowAt(i);
+
+				if (win == closingWindow)
+					continue;
+
+				SVGMainWindow* window = dynamic_cast<SVGMainWindow*>(win);
 				if (window != NULL) {
 					lastActivatedWindow = window;
 					window->Activate();

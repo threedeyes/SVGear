@@ -117,7 +117,10 @@ SVGMainWindow::~SVGMainWindow()
 	delete fVectorizationWorker;
 	delete[] fCurrentHVIFData;
 	_ClearBackupState();
-	be_app->PostMessage(MSG_WINDOW_CLOSED);
+
+	BMessage msg(MSG_WINDOW_CLOSED);
+	msg.AddPointer("window", this);
+	be_app->PostMessage(&msg);
 }
 
 bool
