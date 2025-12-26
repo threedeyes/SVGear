@@ -1,15 +1,15 @@
-1	German	application/x-vnd.svgear	3069722912
- Size: %.0fx%.0f | Scale: %.1f%% | Mode: %s | BBox: %s	SVGMainWindow		 Größe: %.0fx%.0f | Maßstab: %.1f%% | Modus: %s | BBox: %s
+1	German	application/x-vnd.svgear	1916787519
+%ld px	SVGMainWindow		%ld Pixel
 Apply (Alt+Enter)	SVGMainWindow		Anwenden (ALT+Return)
-Best fit	SVGMainWindow		Beste Anpassung
-C++ code copied to clipboard	SVGMainWindow		C++ code copied to clipboard
+Best fit	SVGMainWindow		An Fenstergröße anpassen
+C++ code copied to clipboard	SVGMainWindow		C++ Code in Zwischenablage kopiert
 Center	SVGMainWindow		Zentrieren
 Copy	SVGMainWindow		Kopieren
-Copy HVIF as C++ code	SVGMainWindow		Copy HVIF as C++ code
-Copy HVIF as RDef code	SVGMainWindow		Copy HVIF as RDef code
-Copy Raster Image...	SVGMainWindow		Copy Raster Image...
-Copy SVG as Base64	SVGMainWindow		Copy SVG as Base64
-Copy SVG Source	SVGMainWindow		Copy SVG Source
+Copy HVIF as C++ code	SVGMainWindow		HVIF als C++ Code kopieren
+Copy HVIF as RDef code	SVGMainWindow		HVIF als RDef kopieren
+Copy raster image…	SVGMainWindow		Raster-Bild kopieren …
+Copy SVG as Base64	SVGMainWindow		SVG als Base64 kopieren
+Copy SVG source	SVGMainWindow		SVG-Quellcode kopieren
 Could not find directory reference	SVGMainWindow		Ordner-Referenz nicht gefunden
 Could not find file name	SVGMainWindow		Dateiname nicht gefunden
 Cut	SVGMainWindow		Ausschneiden
@@ -17,42 +17,43 @@ Document	SVGMainWindow		Dokument
 Error	SVGMainWindow		Fehler
 Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Fehler beim Parsen des SVG-Quellcodes. Bitte die Syntax prüfen.
 Failed to export file	SVGMainWindow		Export der Datei fehlgeschlagen
-Failed to render image	SVGMainWindow		Failed to render image
+Failed to render image	SVGMainWindow		Bilderzeugung fehlgeschlagen
 Failed to save file	SVGMainWindow		Speichern der Datei fehlgeschlagen
 File exported successfully	SVGMainWindow		Datei erfolgreich exportiert
 File saved successfully	SVGMainWindow		Datei erfolgreich gespeichert
-Fill Only	SVGMainWindow		Nur füllen
-Find Next	SVGMainWindow		Find Next
-Find Previous	SVGMainWindow		Find Previous
+Fill only	SVGMainWindow		Nur Füllung
+Find next	SVGMainWindow		Nächstes finden
+Find previous	SVGMainWindow		Voriges finden
 Gray	SVGMainWindow		Grau
-HTML img tag with Base64 SVG copied	SVGMainWindow		HTML img tag with Base64 SVG copied
-Image copied to clipboard	SVGMainWindow		Image copied to clipboard
+HTML img tag with Base64 SVG copied	SVGMainWindow		HTML img-Tag mit Base64 SVG kopiert
+Image copied to clipboard	SVGMainWindow		Bild in Zwischenablage kopiert
 Invalid file path	SVGMainWindow		Ungültiger Dateipfad
 New	SVGMainWindow		Neu
 No data available for export	SVGMainWindow		Keine Daten zum Export vorhanden
 No HVIF data available	SVGMainWindow		Keine HVIF Daten vorhanden
 No HVIF data generated	SVGMainWindow		Keine HVIF Daten erzeugt
 No SVG loaded	SVGMainWindow		Kein SVG geladen
-None	SVGMainWindow		Kein
+None	SVGMainWindow		Keine
 Normal	SVGMainWindow		Normal
 OK	SVGMainWindow		OK
 Open	SVGMainWindow		Öffnen
-Original size	SVGMainWindow		Original size
+Original size	SVGMainWindow		Originalgröße
 Outline	SVGMainWindow		Kontur
 Paste	SVGMainWindow		Einfügen
-RDef code copied to clipboard	SVGMainWindow		RDef code copied to clipboard
+RDef code copied to clipboard	SVGMainWindow		RDef-Code in Zwischenablage kopiert
 Ready	SVGMainWindow		Bereit
 Redo	SVGMainWindow		Wiederholen
 Save	SVGMainWindow		Speichern
-Show Bounding Box	SVGMainWindow		Begrenzungs-Box anzeigen
-Show Source Code	SVGMainWindow		Quellcode anzeigen
+Show bounding box	SVGMainWindow		Begrenzungs-Box anzeigen
+Show source code	SVGMainWindow		Quellcode anzeigen
 Show statistics	SVGMainWindow		Statistik anzeigen
-Show Structure	SVGMainWindow		Struktur anzeigen
-Show Transparency Grid	SVGMainWindow		Transparenz-Muster anzeigen
+Show structure	SVGMainWindow		Struktur anzeigen
+Show transparency grid	SVGMainWindow		Transparenz-Muster anzeigen
 Simple	SVGMainWindow		Einfach
+Size: %s × %s | Scale: %s | Mode: %s | BBox: %s	SVGMainWindow		Größe: %s × %s | Zoom: %s | Modus: %s | B-Box: %s
 Source code is empty.	SVGMainWindow		Der Quellcode ist leer.
-Stroke Only	SVGMainWindow		Nur Kontur
-SVG source copied to clipboard	SVGMainWindow		SVG source copied to clipboard
+Stroke only	SVGMainWindow		Nur Umrandung
+SVG source copied to clipboard	SVGMainWindow		SVG-Code in Zwischenablage kopiert
 SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear bietet eine intuitive Schnittstelle zur Anzeige und Bearbeitung von SVG (Scalable Vector Graphics) Dateien.\nDie Anwendung kann Formate konvertieren, und erlaubt so die Transformation von SVG-Dateien zu beispielsweise HVIF (Haiku Vector Icon Format).
 Text wrap	SVGMainWindow		Text umbrechen
 Undo	SVGMainWindow		Rückgängig
@@ -61,15 +62,15 @@ Zoom in	SVGMainWindow		Vergrößern
 Zoom original	SVGMainWindow		Originalgröße
 Zoom out	SVGMainWindow		Verkleinern
 About SVGear…	SVGMenuManager		Über SVGear …
-Bounding Box	SVGMenuManager		Begrenzungs-Box
+Bounding box	SVGMenuManager		Begrenzungs-Box
 C++ array…	SVGMenuManager		C++ Array …
 Center	SVGMenuManager		Zentrieren
-Display Mode	SVGMenuManager		Anzeige-Modus
-Document Style	SVGMenuManager		Dokument-Stil
+Display mode	SVGMenuManager		Anzeige-Modus
+Document style	SVGMenuManager		Dokument-Stil
 Export	SVGMenuManager		Export
 File	SVGMenuManager		Datei
-Fill Only	SVGMenuManager		Nur füllen
-Fit to Window	SVGMenuManager		An Fenstergröße anpassen
+Fill only	SVGMenuManager		Nur Füllung
+Fit to window	SVGMenuManager		An Fenstergröße anpassen
 Help	SVGMenuManager		Hilfe
 HVIF Icon…	SVGMenuManager		HVIF-Icon …
 Icon-O-Matic…	SVGMenuManager		Icon-O-Matic …
@@ -77,26 +78,26 @@ New	SVGMenuManager		Neu
 None	SVGMenuManager		Kein
 Normal	SVGMenuManager		Normal
 Open…	SVGMenuManager		Öffnen …
-Original size	SVGMenuManager		Original size
+Original size	SVGMenuManager		Originalgröße
 Outline	SVGMenuManager		Kontur
-PNG Image	SVGMenuManager		PNG-Bild
+PNG image	SVGMenuManager		PNG-Bild
 Quit	SVGMenuManager		Beenden
-RDef resource…	SVGMenuManager		RDef-Resource…
-Reset View	SVGMenuManager		Ansicht zurücksetzen
+RDef resource…	SVGMenuManager		RDef-Resource …
+Reset view	SVGMenuManager		Ansicht zurücksetzen
 Save	SVGMenuManager		Speichern
 Save as…	SVGMenuManager		Speichern unter …
-Show Sources Panel	SVGMenuManager		Quellcode-Panel anzeigen
-Show Statistics Panel	SVGMenuManager		Statistik-Panel anzeigen
-Show Structure Panel	SVGMenuManager		Struktur-Panel anzeigen
-Show Transparency Grid	SVGMenuManager		Tranzparenzmuster anzeigen
-Simple Frame	SVGMenuManager		Einfacher Rahmen
-Stroke Only	SVGMenuManager		Nur Kontur
+Show sources panel	SVGMenuManager		Quellcode-Panel anzeigen
+Show statistics panel	SVGMenuManager		Statistik-Panel anzeigen
+Show structure panel	SVGMenuManager		Struktur-Panel anzeigen
+Show transparency grid	SVGMenuManager		Tranzparenz-Muster anzeigen
+Simple frame	SVGMenuManager		Einfacher Rahmen
+Stroke only	SVGMenuManager		Nur Umrandung
 Tools	SVGMenuManager		Werkzeuge
-Transparent Gray	SVGMenuManager		Transparentes Grau
+Transparent gray	SVGMenuManager		Transparent-Grau
 View	SVGMenuManager		Ansicht
-Zoom In	SVGMenuManager		Vergrößern
-Zoom Original	SVGMenuManager		Originalgröße
-Zoom Out	SVGMenuManager		Verkleinern
+Zoom in	SVGMenuManager		Vergrößern
+Zoom original	SVGMenuManager		Originalgröße
+Zoom out	SVGMenuManager		Verkleinern
 Advanced simplification	SVGVectorizationDialog		Erweiterte Vereinfachung
 Applying blur	SVGVectorizationDialog		Unschärfe anwenden
 Area tolerance	SVGVectorizationDialog		Bereich-Toleranz
@@ -136,7 +137,7 @@ Maximum circle radius	SVGVectorizationDialog		Max. Kreisradius
 Merging regions	SVGVectorizationDialog		Regionen zusammenfassen
 Min background ratio	SVGVectorizationDialog		Min. Hintergrund-Verhältnis
 Min gradient size	SVGVectorizationDialog		Min. Verlaufsgröße
-Min R² threshold	SVGVectorizationDialog		Min. R² Grenzwert
+Min R² threshold	SVGVectorizationDialog		Min. R²-Grenzwert
 Min RGB delta	SVGVectorizationDialog		Min. RGB-Unterschied
 Min samples	SVGVectorizationDialog		Min. Samples
 Min segment length	SVGVectorizationDialog		Min. Segmentlänge
@@ -175,7 +176,7 @@ Tracing paths	SVGVectorizationDialog		Finde Pfade
 Unifying edges	SVGVectorizationDialog		Vereinige Kanten
 Use ViewBox	SVGVectorizationDialog		ViewBox benutzen
 Vectorization error	SVGVectorizationDialog		Vektorisierungsfehler
-Vectorization Settings	SVGVectorizationDialog		Vektorisierungs-Einstellungen
+Vectorization settings	SVGVectorizationDialog		Vektorisierungs-Einstellungen
 Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
 Bounds	SVGStatView		Begrenzungen
 Closed paths:	SVGStatView		Geschlossene Pfade:
@@ -184,7 +185,7 @@ File	SVGStatView		Datei
 Filled shapes:	SVGStatView		Gefüllte Formen:
 Gradients:	SVGStatView		Verläufe:
 Height:	SVGStatView		Höhe:
-HVIF Size:	SVGStatView		HVIF-Größe:
+HVIF size:	SVGStatView		HVIF-Größe:
 Image	SVGStatView		Bild
 Max X:	SVGStatView		Max. X:
 Max Y:	SVGStatView		Max. Y:
@@ -194,14 +195,14 @@ Paths:	SVGStatView		Pfade:
 Points:	SVGStatView		Punkte:
 Shapes:	SVGStatView		Formen:
 Stroked shapes:	SVGStatView		Kontur-Formen:
-SVG Size:	SVGStatView		SVG-Größe:
+SVG size:	SVGStatView		SVG-Größe:
 Width:	SVGStatView		Breite:
 Color	SVGStructureView		Farbe
-Linear Gradient	SVGStructureView		Linearer Verlauf
+Linear gradient	SVGStructureView		Linearer Verlauf
 None	SVGStructureView		Kein
 Paints	SVGStructureView		Farben
 Paths	SVGStructureView		Pfade
-Radial Gradient	SVGStructureView		Radialer Verlauf
+Radial gradient	SVGStructureView		Radialer Verlauf
 Shape %ld Fill	SVGStructureView		Form %ld Füllung
 Shape %ld Stroke	SVGStructureView		Form %ld Kontur
 Shapes	SVGStructureView		Formen
