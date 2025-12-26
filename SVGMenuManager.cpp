@@ -85,7 +85,7 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 		BMessage* msg = new BMessage(MSG_EXPORT_PNG);
 		msg->AddInt32("size", sizes[i]);
 		BString label;
-		label << sizes[i] << "px";
+		label.SetToFormat(B_TRANSLATE_COMMENT("%ld px","Image size, 'pixels'"), sizes[i]);
 		pngSubMenu->AddItem(new BMenuItem(label.String(), msg));
 	}
 

@@ -45,7 +45,7 @@ GetVectorizationStageName(int stage)
 		case STAGE_UNIFY_EDGES: return B_TRANSLATE("Unifying edges");
 		case STAGE_FIX_WINDING: return B_TRANSLATE("Fixing winding");
 		case STAGE_DETECT_GRADIENTS: return B_TRANSLATE("Detecting gradients");
-		case STAGE_COMPLETE: return B_TRANSLATE("Complete");
+		case STAGE_COMPLETE: return B_TRANSLATE("Finished");
 		default: return B_TRANSLATE("Processing");
 	}
 }
@@ -268,7 +268,7 @@ SVGVectorizationDialog::_BuildInterface()
 		B_TRANSLATE("Custom"),
 		NULL
 	};
-	fPresetMenu = _CreateMenuField("preset", B_TRANSLATE("Preset"), presets, 0);
+	fPresetMenu = _CreateMenuField("preset", B_TRANSLATE("Preset:"), presets, 0);
 
 	fProgressBar = new BStatusBar("progress_bar", NULL, NULL);
 	fProgressBar->SetMaxValue(100.0f);
@@ -362,7 +362,7 @@ SVGVectorizationDialog::_BuildPreprocessingTab()
 		B_TRANSLATE("Auto"),
 		NULL
 	};
-	fBackgroundMethodMenu = _CreateMenuField("bg_method", B_TRANSLATE("Background method"),
+	fBackgroundMethodMenu = _CreateMenuField("bg_method", B_TRANSLATE("Background method:"),
 											bgMethods, fOptions.fBackgroundMethod);
 
 	BView* bgToleranceGroup = _CreateSliderWithLabels("bg_tolerance", B_TRANSLATE("Background tolerance"),
@@ -470,7 +470,7 @@ SVGVectorizationDialog::_BuildSimplificationTab()
 	.End();
 
 	BBox* miscBox = new BBox("misc_box");
-	miscBox->SetLabel("Common");
+	miscBox->SetLabel(B_TRANSLATE("General"));
 	BLayoutBuilder::Group<>(miscBox, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddStrut(B_USE_DEFAULT_SPACING)

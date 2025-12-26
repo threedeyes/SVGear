@@ -1,4 +1,5 @@
-1	English	application/x-vnd.svgear	1916787519
+1	English	application/x-vnd.svgear	3843311228
+Finished	SVGVectorizationDialog		Finished
 Outline	SVGMainWindow		Outline
 Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
 Min samples	SVGVectorizationDialog		Min samples
@@ -18,9 +19,9 @@ Points:	SVGStatView		Points:
 Blur radius	SVGVectorizationDialog		Blur radius
 Colors	SVGVectorizationDialog		Colors
 Removing background	SVGVectorizationDialog		Removing background
+Geometry	SVGVectorizationDialog		Geometry
 Original size	SVGMainWindow		Original size
 Curve protection	SVGVectorizationDialog		Curve protection
-Geometry	SVGVectorizationDialog		Geometry
 New	SVGMenuManager		New
 Gradients:	SVGStatView		Gradients:
 File path not specified	SVGFileManager		File path not specified
@@ -47,7 +48,6 @@ Min RGB delta	SVGVectorizationDialog		Min RGB delta
 Error loading SVG file: %s	SVGFileManager		Error loading SVG file: %s
 Width:	SVGStatView		Width:
 Filtering objects	SVGVectorizationDialog		Filtering objects
-Background method	SVGVectorizationDialog		Background method
 About SVGear…	SVGMenuManager		About SVGear…
 Max X:	SVGStatView		Max X:
 Round coordinates	SVGVectorizationDialog		Round coordinates
@@ -56,6 +56,7 @@ No HVIF data generated	SVGMainWindow		No HVIF data generated
 Shapes:	SVGStatView		Shapes:
 Blur settings	SVGVectorizationDialog		Blur settings
 Show transparency grid	SVGMenuManager		Show transparency grid
+Preset:	SVGVectorizationDialog		Preset:
 Copy SVG as Base64	SVGMainWindow		Copy SVG as Base64
 Stroke only	SVGMenuManager		Stroke only
 Tools	SVGMenuManager		Tools
@@ -83,6 +84,7 @@ Error	SVGMainWindow		Error
 Size: %s × %s | Scale: %s | Mode: %s | BBox: %s	SVGMainWindow		Size: %s × %s | Scale: %s | Mode: %s | BBox: %s
 Fixing winding	SVGVectorizationDialog		Fixing winding
 Applying blur	SVGVectorizationDialog		Applying blur
+General	SVGVectorizationDialog		General
 None	SVGMenuManager		None
 OK	SVGVectorizationDialog		OK
 Collinear tolerance	SVGVectorizationDialog		Collinear tolerance
@@ -99,6 +101,7 @@ Paints	SVGStructureView		Paints
 Min segment length	SVGVectorizationDialog		Min segment length
 New	SVGMainWindow		New
 Show statistics panel	SVGMenuManager		Show statistics panel
+Background method:	SVGVectorizationDialog		Background method:
 Line detection tolerance	SVGVectorizationDialog		Line detection tolerance
 Basic	SVGVectorizationDialog		Basic
 Min R² threshold	SVGVectorizationDialog		Min R² threshold
@@ -127,6 +130,7 @@ Save	SVGMenuManager		Save
 Unable to load file: %s\nUnknown or unsupported format	SVGFileManager		Unable to load file: %s\nUnknown or unsupported format
 Maximum circle radius	SVGVectorizationDialog		Maximum circle radius
 RDef resource…	SVGMenuManager		RDef resource…
+%ld px	SVGMenuManager	Image size, 'pixels'	%ld px
 Save as…	SVGMenuManager		Save as…
 Paths:	SVGStatView		Paths:
 SVG source copied to clipboard	SVGMainWindow		SVG source copied to clipboard
@@ -152,10 +156,10 @@ Sample stride	SVGVectorizationDialog		Sample stride
 Background tolerance	SVGVectorizationDialog		Background tolerance
 Ready	SVGMainWindow		Ready
 SVG size:	SVGStatView		SVG size:
-Preset	SVGVectorizationDialog		Preset
 Simple frame	SVGMenuManager		Simple frame
 Min X:	SVGStatView		Min X:
 Starting vectorization	SVGVectorizationDialog		Starting vectorization
+%ld px	SVGMainWindow	Image size, 'pixels'	%ld px
 Failed to render image	SVGMainWindow		Failed to render image
 Min background ratio	SVGVectorizationDialog		Min background ratio
 File saved successfully	SVGMainWindow		File saved successfully
@@ -176,7 +180,6 @@ Image	SVGStatView		Image
 Curve threshold	SVGVectorizationDialog		Curve threshold
 Custom	SVGVectorizationDialog		Custom
 Minimum object perimeter	SVGVectorizationDialog		Minimum object perimeter
-Complete	SVGVectorizationDialog		Complete
 Error loading %s file: %s	SVGFileManager		Error loading %s file: %s
 Show sources panel	SVGMenuManager		Show sources panel
 Find previous	SVGMainWindow		Find previous
@@ -215,7 +218,6 @@ Detect geometric shapes	SVGVectorizationDialog		Detect geometric shapes
 Center	SVGMainWindow		Center
 Shapes	SVGStructureView		Shapes
 Help	SVGMenuManager		Help
-%ld px	SVGMainWindow		%ld px
 Simple	SVGMainWindow		Simple
 Normal	SVGMenuManager		Normal
 Could not find file name	SVGMainWindow		Could not find file name
