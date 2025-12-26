@@ -821,9 +821,8 @@ SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
 			for (int i = 0; i < 8; i++) {
 				BMessage* msg = new BMessage(MSG_COPY_RASTER_IMAGE_DO);
 				msg->AddInt32("size", sizes[i]);
-
 				BString label;
-				label.SetToFormat(B_TRANSLATE("%ld px"), sizes[i]);
+				label.SetToFormat(B_TRANSLATE_COMMENT("%ld px","Image size, 'pixels'"), sizes[i]);
 
 				menu->AddItem(new BMenuItem(label.String(), msg));
 			}
