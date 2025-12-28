@@ -1,5 +1,43 @@
-1	German	application/x-vnd.svgear	1916787519
-%ld px	SVGMainWindow		%ld Pixel
+1	German	application/x-vnd.svgear	3843311228
+%ld px	SVGMenuManager	Image size, 'pixels'	%ld Pixel
+About SVGear…	SVGMenuManager		Über SVGear …
+Bounding box	SVGMenuManager		Begrenzungs-Box
+C++ array…	SVGMenuManager		C++ Array …
+Center	SVGMenuManager		Zentrieren
+Display mode	SVGMenuManager		Anzeige-Modus
+Document style	SVGMenuManager		Dokument-Stil
+Export	SVGMenuManager		Export
+File	SVGMenuManager		Datei
+Fill only	SVGMenuManager		Nur Füllung
+Fit to window	SVGMenuManager		An Fenstergröße anpassen
+Help	SVGMenuManager		Hilfe
+HVIF Icon…	SVGMenuManager		HVIF-Icon …
+Icon-O-Matic…	SVGMenuManager		Icon-O-Matic …
+New	SVGMenuManager		Neu
+None	SVGMenuManager		Kein
+Normal	SVGMenuManager		Normal
+Open…	SVGMenuManager		Öffnen …
+Original size	SVGMenuManager		Originalgröße
+Outline	SVGMenuManager		Kontur
+PNG image	SVGMenuManager		PNG-Bild
+Quit	SVGMenuManager		Beenden
+RDef resource…	SVGMenuManager		RDef-Resource …
+Reset view	SVGMenuManager		Ansicht zurücksetzen
+Save	SVGMenuManager		Speichern
+Save as…	SVGMenuManager		Speichern unter …
+Show sources panel	SVGMenuManager		Quellcode-Panel anzeigen
+Show statistics panel	SVGMenuManager		Statistik-Panel anzeigen
+Show structure panel	SVGMenuManager		Struktur-Panel anzeigen
+Show transparency grid	SVGMenuManager		Tranzparenz-Muster anzeigen
+Simple frame	SVGMenuManager		Einfacher Rahmen
+Stroke only	SVGMenuManager		Nur Umrandung
+Tools	SVGMenuManager		Werkzeuge
+Transparent gray	SVGMenuManager		Transparent-Grau
+View	SVGMenuManager		Ansicht
+Zoom in	SVGMenuManager		Vergrößern
+Zoom original	SVGMenuManager		Originalgröße
+Zoom out	SVGMenuManager		Verkleinern
+%ld px	SVGMainWindow	Image size, 'pixels'	%ld Pixel
 Apply (Alt+Enter)	SVGMainWindow		Anwenden (ALT+Return)
 Best fit	SVGMainWindow		An Fenstergröße anpassen
 C++ code copied to clipboard	SVGMainWindow		C++ Code in Zwischenablage kopiert
@@ -61,48 +99,11 @@ Unknown	SVGMainWindow		Unbekannt
 Zoom in	SVGMainWindow		Vergrößern
 Zoom original	SVGMainWindow		Originalgröße
 Zoom out	SVGMainWindow		Verkleinern
-About SVGear…	SVGMenuManager		Über SVGear …
-Bounding box	SVGMenuManager		Begrenzungs-Box
-C++ array…	SVGMenuManager		C++ Array …
-Center	SVGMenuManager		Zentrieren
-Display mode	SVGMenuManager		Anzeige-Modus
-Document style	SVGMenuManager		Dokument-Stil
-Export	SVGMenuManager		Export
-File	SVGMenuManager		Datei
-Fill only	SVGMenuManager		Nur Füllung
-Fit to window	SVGMenuManager		An Fenstergröße anpassen
-Help	SVGMenuManager		Hilfe
-HVIF Icon…	SVGMenuManager		HVIF-Icon …
-Icon-O-Matic…	SVGMenuManager		Icon-O-Matic …
-New	SVGMenuManager		Neu
-None	SVGMenuManager		Kein
-Normal	SVGMenuManager		Normal
-Open…	SVGMenuManager		Öffnen …
-Original size	SVGMenuManager		Originalgröße
-Outline	SVGMenuManager		Kontur
-PNG image	SVGMenuManager		PNG-Bild
-Quit	SVGMenuManager		Beenden
-RDef resource…	SVGMenuManager		RDef-Resource …
-Reset view	SVGMenuManager		Ansicht zurücksetzen
-Save	SVGMenuManager		Speichern
-Save as…	SVGMenuManager		Speichern unter …
-Show sources panel	SVGMenuManager		Quellcode-Panel anzeigen
-Show statistics panel	SVGMenuManager		Statistik-Panel anzeigen
-Show structure panel	SVGMenuManager		Struktur-Panel anzeigen
-Show transparency grid	SVGMenuManager		Tranzparenz-Muster anzeigen
-Simple frame	SVGMenuManager		Einfacher Rahmen
-Stroke only	SVGMenuManager		Nur Umrandung
-Tools	SVGMenuManager		Werkzeuge
-Transparent gray	SVGMenuManager		Transparent-Grau
-View	SVGMenuManager		Ansicht
-Zoom in	SVGMenuManager		Vergrößern
-Zoom original	SVGMenuManager		Originalgröße
-Zoom out	SVGMenuManager		Verkleinern
 Advanced simplification	SVGVectorizationDialog		Erweiterte Vereinfachung
 Applying blur	SVGVectorizationDialog		Unschärfe anwenden
 Area tolerance	SVGVectorizationDialog		Bereich-Toleranz
 Auto	SVGVectorizationDialog		Auto
-Background method	SVGVectorizationDialog		Hintergrund-Methode
+Background method:	SVGVectorizationDialog		Hintergrund-Methode:
 Background tolerance	SVGVectorizationDialog		Hintergrund-Toleranz
 Basic	SVGVectorizationDialog		Einfach
 Blur delta	SVGVectorizationDialog		Unschärfe-Unterschied
@@ -112,7 +113,6 @@ Cancel	SVGVectorizationDialog		Abbrechen
 Circle detection tolerance	SVGVectorizationDialog		Kreiserkennungs-Toleranz
 Collinear tolerance	SVGVectorizationDialog		Kollineare Toleranz
 Colors	SVGVectorizationDialog		Farben
-Complete	SVGVectorizationDialog		Vollständig
 Creating palette	SVGVectorizationDialog		Erzeuge Palette
 Curve protection	SVGVectorizationDialog		Kurvenschutz
 Curve smoothing	SVGVectorizationDialog		Kurvenglättung
@@ -127,7 +127,9 @@ Fast	SVGVectorizationDialog		Schnell
 Filter small objects	SVGVectorizationDialog		Kleine Objekte herausfiltern
 Filtering	SVGVectorizationDialog		Filter
 Filtering objects	SVGVectorizationDialog		Objekte werden gefiltert
+Finished	SVGVectorizationDialog		Fertig
 Fixing winding	SVGVectorizationDialog		Windungen ausbessern
+General	SVGVectorizationDialog		Allgemein
 Geometry	SVGVectorizationDialog		Geometrie
 Gradients	SVGVectorizationDialog		Verläufe
 Line detection tolerance	SVGVectorizationDialog		Linienerkennungs-Toleranz
@@ -153,7 +155,7 @@ Optimize SVG output	SVGVectorizationDialog		SVG-Ausgabe optimieren
 Output	SVGVectorizationDialog		Ausgabe
 Output scale	SVGVectorizationDialog		Ausgabe-Maßstab
 Path omit threshold	SVGVectorizationDialog		Min. Pfad-Grenzwert
-Preset	SVGVectorizationDialog		Voreinstellung
+Preset:	SVGVectorizationDialog		Voreinstellung:
 Processing	SVGVectorizationDialog		Berechnung
 Quality	SVGVectorizationDialog		Qualität
 Quantization cycles	SVGVectorizationDialog		Quantisierungsläufe

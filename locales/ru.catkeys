@@ -1,66 +1,5 @@
-1	Russian	application/x-vnd.svgear	1916787519
-%ld px	SVGMainWindow		%ld px
-Apply (Alt+Enter)	SVGMainWindow		Применить (Alt+Enter)
-Best fit	SVGMainWindow		Вписать в окно
-C++ code copied to clipboard	SVGMainWindow		Код C++ скопирован в буфер обмена
-Center	SVGMainWindow		По центру
-Copy	SVGMainWindow		Копировать
-Copy HVIF as C++ code	SVGMainWindow		Копировать HVIF как C++ массив
-Copy HVIF as RDef code	SVGMainWindow		Копировать HVIF как код RDef
-Copy raster image…	SVGMainWindow		Копировать растровое изображение...
-Copy SVG as Base64	SVGMainWindow		Копировать SVG как Base64
-Copy SVG source	SVGMainWindow		Копировать код SVG
-Could not find directory reference	SVGMainWindow		Не удалось найти ссылку на каталог
-Could not find file name	SVGMainWindow		Не удалось найти имя файла
-Cut	SVGMainWindow		Вырезать
-Document	SVGMainWindow		Документ
-Error	SVGMainWindow		Ошибка
-Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Ошибка разбора SVG из исходного кода. Проверьте синтаксис.
-Failed to export file	SVGMainWindow		Не удалось экспортировать файл
-Failed to render image	SVGMainWindow		Не удалось отрисовать изображение
-Failed to save file	SVGMainWindow		Не удалось сохранить файл
-File exported successfully	SVGMainWindow		Файл успешно экспортирован
-File saved successfully	SVGMainWindow		Файл успешно сохранен
-Fill only	SVGMainWindow		Только заливка
-Find next	SVGMainWindow		Найти следующее
-Find previous	SVGMainWindow		Найти предыдущее
-Gray	SVGMainWindow		Серый
-HTML img tag with Base64 SVG copied	SVGMainWindow		HTML тег img с Base64 SVG скопирован
-Image copied to clipboard	SVGMainWindow		Изображение скопировано в буфер обмена
-Invalid file path	SVGMainWindow		Неверный путь к файлу
-New	SVGMainWindow		Новый
-No data available for export	SVGMainWindow		Нет данных для экспорта
-No HVIF data available	SVGMainWindow		Нет данных HVIF
-No HVIF data generated	SVGMainWindow		Данные HVIF не сгенерированы
-No SVG loaded	SVGMainWindow		SVG не загружен
-None	SVGMainWindow		Нет
-Normal	SVGMainWindow		Нормальный
-OK	SVGMainWindow		OK
-Open	SVGMainWindow		Открыть
-Original size	SVGMainWindow		Оригинальный размер
-Outline	SVGMainWindow		Контур
-Paste	SVGMainWindow		Вставить
-RDef code copied to clipboard	SVGMainWindow		Код RDef скопирован в буфер обмена
-Ready	SVGMainWindow		Готово
-Redo	SVGMainWindow		Повторить
-Save	SVGMainWindow		Сохранить
-Show bounding box	SVGMainWindow		Показать габаритную рамку
-Show source code	SVGMainWindow		Показать исходный код
-Show statistics	SVGMainWindow		Показать панель статистики
-Show structure	SVGMainWindow		Показать структуру
-Show transparency grid	SVGMainWindow		Показать сетку прозрачности
-Simple	SVGMainWindow		Простой
-Size: %s × %s | Scale: %s | Mode: %s | BBox: %s	SVGMainWindow		Размер: %s × %s | Масштаб: %s | Режим: %s | Рамка: %s
-Source code is empty.	SVGMainWindow		Исходный код пуст.
-Stroke only	SVGMainWindow		Только обводка
-SVG source copied to clipboard	SVGMainWindow		Исходный код SVG скопирован в буфер обмена
-SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear предоставляет интуитивно понятный интерфейс для просмотра и редактирования файлов SVG. \nПриложение поддерживает конвертацию форматов, позволяя преобразовывать SVG в другие векторные форматы, такие как HVIF (Haiku Vector Icon Format).
-Text wrap	SVGMainWindow		Перенос строк
-Undo	SVGMainWindow		Отменить
-Unknown	SVGMainWindow		Неизвестно
-Zoom in	SVGMainWindow		Увеличить
-Zoom original	SVGMainWindow		Оригинальный масштаб
-Zoom out	SVGMainWindow		Уменьшить
+1	Russian	application/x-vnd.svgear	3843311228
+%ld px	SVGMenuManager	Image size, 'pixels'	%ld px
 About SVGear…	SVGMenuManager		О программе SVGear…
 Bounding box	SVGMenuManager		Габаритная рамка
 C++ array…	SVGMenuManager		Массив C++…
@@ -98,11 +37,73 @@ View	SVGMenuManager		Вид
 Zoom in	SVGMenuManager		Увеличить
 Zoom original	SVGMenuManager		Оригинальный масштаб
 Zoom out	SVGMenuManager		Уменьшить
+%ld px	SVGMainWindow	Image size, 'pixels'	%ld px
+Apply (Alt+Enter)	SVGMainWindow		Применить (Alt+Enter)
+Best fit	SVGMainWindow		Вписать в окно
+C++ code copied to clipboard	SVGMainWindow		Код C++ скопирован в буфер обмена
+Center	SVGMainWindow		По центру
+Copy	SVGMainWindow		Копировать
+Copy HVIF as C++ code	SVGMainWindow		Копировать HVIF как C++ массив
+Copy HVIF as RDef code	SVGMainWindow		Копировать HVIF как код RDef
+Copy raster image…	SVGMainWindow		Копировать растровое изображение...
+Copy SVG as Base64	SVGMainWindow		Копировать SVG как Base64
+Copy SVG source	SVGMainWindow		Копировать код SVG
+Could not find directory reference	SVGMainWindow		Не удалось найти ссылку на каталог
+Could not find file name	SVGMainWindow		Не удалось найти имя файла
+Cut	SVGMainWindow		Вырезать
+Document	SVGMainWindow		Документ
+Error	SVGMainWindow		Ошибка
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Ошибка разбора SVG из исходного кода. Проверьте синтаксис.
+Failed to export file	SVGMainWindow		Не удалось экспортировать файл
+Failed to render image	SVGMainWindow		Не удалось отрисовать изображение
+Failed to save file	SVGMainWindow		Не удалось сохранить файл
+File exported successfully	SVGMainWindow		Файл успешно экспортирован
+File saved successfully	SVGMainWindow		Файл успешно сохранен
+Fill only	SVGMainWindow		Только заливка
+Find next	SVGMainWindow		Найти следующее
+Find previous	SVGMainWindow		Найти предыдущее
+Gray	SVGMainWindow		Серая
+HTML img tag with Base64 SVG copied	SVGMainWindow		HTML тег img с Base64 SVG скопирован
+Image copied to clipboard	SVGMainWindow		Изображение скопировано в буфер обмена
+Invalid file path	SVGMainWindow		Неверный путь к файлу
+New	SVGMainWindow		Новый
+No data available for export	SVGMainWindow		Нет данных для экспорта
+No HVIF data available	SVGMainWindow		Нет данных HVIF
+No HVIF data generated	SVGMainWindow		Данные HVIF не сгенерированы
+No SVG loaded	SVGMainWindow		SVG не загружен
+None	SVGMainWindow		Нет
+Normal	SVGMainWindow		Нормальный
+OK	SVGMainWindow		OK
+Open	SVGMainWindow		Открыть
+Original size	SVGMainWindow		Оригинальный размер
+Outline	SVGMainWindow		Контур
+Paste	SVGMainWindow		Вставить
+RDef code copied to clipboard	SVGMainWindow		Код RDef скопирован в буфер обмена
+Ready	SVGMainWindow		Готово
+Redo	SVGMainWindow		Повторить
+Save	SVGMainWindow		Сохранить
+Show bounding box	SVGMainWindow		Показать габаритную рамку
+Show source code	SVGMainWindow		Показать исходный код
+Show statistics	SVGMainWindow		Показать панель статистики
+Show structure	SVGMainWindow		Показать структуру
+Show transparency grid	SVGMainWindow		Показать сетку прозрачности
+Simple	SVGMainWindow		Простая
+Size: %s × %s | Scale: %s | Mode: %s | BBox: %s	SVGMainWindow		Размер: %s × %s | Масштаб: %s | Режим: %s | Рамка: %s
+Source code is empty.	SVGMainWindow		Исходный код пуст.
+Stroke only	SVGMainWindow		Только обводка
+SVG source copied to clipboard	SVGMainWindow		Исходный код SVG скопирован в буфер обмена
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear предоставляет интуитивно понятный интерфейс для просмотра и редактирования файлов SVG. \nПриложение поддерживает конвертацию форматов, позволяя преобразовывать SVG в другие векторные форматы, такие как HVIF (Haiku Vector Icon Format).
+Text wrap	SVGMainWindow		Перенос строк
+Undo	SVGMainWindow		Отменить
+Unknown	SVGMainWindow		Неизвестно
+Zoom in	SVGMainWindow		Увеличить
+Zoom original	SVGMainWindow		Оригинальный масштаб
+Zoom out	SVGMainWindow		Уменьшить
 Advanced simplification	SVGVectorizationDialog		Продвинутое упрощение
 Applying blur	SVGVectorizationDialog		Применение размытия
 Area tolerance	SVGVectorizationDialog		Допуск площади
 Auto	SVGVectorizationDialog		Авто
-Background method	SVGVectorizationDialog		Метод фона
+Background method:	SVGVectorizationDialog		Метод удаления фона:
 Background tolerance	SVGVectorizationDialog		Допуск фона
 Basic	SVGVectorizationDialog		Основные
 Blur delta	SVGVectorizationDialog		Дельта размытия
@@ -112,7 +113,6 @@ Cancel	SVGVectorizationDialog		Отмена
 Circle detection tolerance	SVGVectorizationDialog		Допуск обнаружения окружностей
 Collinear tolerance	SVGVectorizationDialog		Допуск коллинеарности
 Colors	SVGVectorizationDialog		Цвета
-Complete	SVGVectorizationDialog		Готово
 Creating palette	SVGVectorizationDialog		Создание палитры
 Curve protection	SVGVectorizationDialog		Защита кривых
 Curve smoothing	SVGVectorizationDialog		Сглаживание кривых
@@ -127,7 +127,9 @@ Fast	SVGVectorizationDialog		Быстрый
 Filter small objects	SVGVectorizationDialog		Фильтровать мелкие объекты
 Filtering	SVGVectorizationDialog		Фильтрация
 Filtering objects	SVGVectorizationDialog		Фильтрация объектов
+Finished	SVGVectorizationDialog		Готово
 Fixing winding	SVGVectorizationDialog		Исправление обхода
+General	SVGVectorizationDialog		Общие
 Geometry	SVGVectorizationDialog		Геометрия
 Gradients	SVGVectorizationDialog		Градиенты
 Line detection tolerance	SVGVectorizationDialog		Допуск обнаружения линий
@@ -153,7 +155,7 @@ Optimize SVG output	SVGVectorizationDialog		Оптимизировать выв�
 Output	SVGVectorizationDialog		Вывод
 Output scale	SVGVectorizationDialog		Масштаб вывода
 Path omit threshold	SVGVectorizationDialog		Порог пропуска путей
-Preset	SVGVectorizationDialog		Пресет
+Preset:	SVGVectorizationDialog		Профиль:
 Processing	SVGVectorizationDialog		Обработка
 Quality	SVGVectorizationDialog		Качественный
 Quantization cycles	SVGVectorizationDialog		Циклы квантования
@@ -165,7 +167,7 @@ Round coordinates	SVGVectorizationDialog		Округлять координат�
 Sample stride	SVGVectorizationDialog		Шаг выборки
 Scanning paths	SVGVectorizationDialog		Сканирование путей
 Show description	SVGVectorizationDialog		Показывать описание
-Simple	SVGVectorizationDialog		Простой
+Simple	SVGVectorizationDialog		Упрощённый
 Simplification	SVGVectorizationDialog		Упрощение
 Simplification tolerance	SVGVectorizationDialog		Допуск упрощения
 Simplifying (DP)	SVGVectorizationDialog		Упрощение (DP)

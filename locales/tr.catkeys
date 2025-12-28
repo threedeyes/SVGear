@@ -1,5 +1,43 @@
-1	Turkish	application/x-vnd.svgear	1916787519
-%ld px	SVGMainWindow		%ld pls
+1	Turkish	application/x-vnd.svgear	3843311228
+%ld px	SVGMenuManager	Image size, 'pixels'	%ld pks
+About SVGear…	SVGMenuManager		SVGear hakkında…
+Bounding box	SVGMenuManager		Sınırlayıcı kutu
+C++ array…	SVGMenuManager		C++ dizilişi…
+Center	SVGMenuManager		Ortala
+Display mode	SVGMenuManager		Görüntü kipi
+Document style	SVGMenuManager		Belge biçemi
+Export	SVGMenuManager		Dışa aktar
+File	SVGMenuManager		Dosya
+Fill only	SVGMenuManager		Yalnızca dolgu
+Fit to window	SVGMenuManager		Pencereye sığdır
+Help	SVGMenuManager		Yardım
+HVIF Icon…	SVGMenuManager		HVIF simgesi…
+Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
+New	SVGMenuManager		Yeni
+None	SVGMenuManager		Yok
+Normal	SVGMenuManager		Normal
+Open…	SVGMenuManager		Aç…
+Original size	SVGMenuManager		Özgün boyut
+Outline	SVGMenuManager		Dış hat
+PNG image	SVGMenuManager		PNG görseli
+Quit	SVGMenuManager		Çık
+RDef resource…	SVGMenuManager		RDef özkaynağı…
+Reset view	SVGMenuManager		Görüntüyü sıfırla
+Save	SVGMenuManager		Kaydet
+Save as…	SVGMenuManager		Farklı kaydet…
+Show sources panel	SVGMenuManager		Kaynaklar panelini göster
+Show statistics panel	SVGMenuManager		İstatistikler panelini göster
+Show structure panel	SVGMenuManager		Yapı panelini göster
+Show transparency grid	SVGMenuManager		Saydamlık ızgarasını göster
+Simple frame	SVGMenuManager		Basit çerçeve
+Stroke only	SVGMenuManager		Yalnızca kontur
+Tools	SVGMenuManager		Araçlar
+Transparent gray	SVGMenuManager		Saydam gri
+View	SVGMenuManager		Görüntü
+Zoom in	SVGMenuManager		Yakınlaştır
+Zoom original	SVGMenuManager		Özgüne yakınlaştır
+Zoom out	SVGMenuManager		Uzaklaştır
+%ld px	SVGMainWindow	Image size, 'pixels'	%ld pks
 Apply (Alt+Enter)	SVGMainWindow		Uygula (Komut+Giriş)
 Best fit	SVGMainWindow		En iyi boyut
 C++ code copied to clipboard	SVGMainWindow		C++ kodu panoya kopyalandı
@@ -61,48 +99,11 @@ Unknown	SVGMainWindow		Bilinmeyen
 Zoom in	SVGMainWindow		Yakınlaştır
 Zoom original	SVGMainWindow		Özgüne yakınlaştır
 Zoom out	SVGMainWindow		Uzaklaştır
-About SVGear…	SVGMenuManager		SVGear hakkında…
-Bounding box	SVGMenuManager		Sınırlayıcı kutu
-C++ array…	SVGMenuManager		C++ dizilişi…
-Center	SVGMenuManager		Ortala
-Display mode	SVGMenuManager		Görüntü kipi
-Document style	SVGMenuManager		Belge biçemi
-Export	SVGMenuManager		Dışa aktar
-File	SVGMenuManager		Dosya
-Fill only	SVGMenuManager		Yalnızca dolgu
-Fit to window	SVGMenuManager		Pencereye sığdır
-Help	SVGMenuManager		Yardım
-HVIF Icon…	SVGMenuManager		HVIF simgesi…
-Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
-New	SVGMenuManager		Yeni
-None	SVGMenuManager		Yok
-Normal	SVGMenuManager		Normal
-Open…	SVGMenuManager		Aç…
-Original size	SVGMenuManager		Özgün boyut
-Outline	SVGMenuManager		Dış hat
-PNG image	SVGMenuManager		PNG görseli
-Quit	SVGMenuManager		Çık
-RDef resource…	SVGMenuManager		RDef özkaynağı…
-Reset view	SVGMenuManager		Görüntüyü sıfırla
-Save	SVGMenuManager		Kaydet
-Save as…	SVGMenuManager		Farklı kaydet…
-Show sources panel	SVGMenuManager		Kaynaklar panelini göster
-Show statistics panel	SVGMenuManager		İstatistikler panelini göster
-Show structure panel	SVGMenuManager		Yapı panelini göster
-Show transparency grid	SVGMenuManager		Saydamlık ızgarasını göster
-Simple frame	SVGMenuManager		Basit çerçeve
-Stroke only	SVGMenuManager		Yalnızca kontur
-Tools	SVGMenuManager		Araçlar
-Transparent gray	SVGMenuManager		Saydam gri
-View	SVGMenuManager		Görüntü
-Zoom in	SVGMenuManager		Yakınlaştır
-Zoom original	SVGMenuManager		Özgüne yakınlaştır
-Zoom out	SVGMenuManager		Uzaklaştır
 Advanced simplification	SVGVectorizationDialog		Gelişmiş basitleştirme
 Applying blur	SVGVectorizationDialog		Bulanıklık uygulama
 Area tolerance	SVGVectorizationDialog		Alan toleransı
 Auto	SVGVectorizationDialog		Otomatik
-Background method	SVGVectorizationDialog		Arka plan yöntemi
+Background method:	SVGVectorizationDialog		Arka plan yöntemi:
 Background tolerance	SVGVectorizationDialog		Arka plan toleransı
 Basic	SVGVectorizationDialog		Basit
 Blur delta	SVGVectorizationDialog		Bulanıklık farkı
@@ -112,7 +113,6 @@ Cancel	SVGVectorizationDialog		Vazgeç
 Circle detection tolerance	SVGVectorizationDialog		Çember algılama toleransı
 Collinear tolerance	SVGVectorizationDialog		Eş doğrusal tolerans
 Colors	SVGVectorizationDialog		Renkler
-Complete	SVGVectorizationDialog		Tam
 Creating palette	SVGVectorizationDialog		Palet oluşturuluyor
 Curve protection	SVGVectorizationDialog		Eğri koruması
 Curve smoothing	SVGVectorizationDialog		Eğri pürüzsüzleştirme
@@ -127,7 +127,9 @@ Fast	SVGVectorizationDialog		Hızlı
 Filter small objects	SVGVectorizationDialog		Küçük nesneleri süz
 Filtering	SVGVectorizationDialog		Süzme
 Filtering objects	SVGVectorizationDialog		Nesneler süzülüyor
+Finished	SVGVectorizationDialog		Bitti
 Fixing winding	SVGVectorizationDialog		Kurma onarılıyor
+General	SVGVectorizationDialog		Genel
 Geometry	SVGVectorizationDialog		Geometri
 Gradients	SVGVectorizationDialog		Gradyanlar
 Line detection tolerance	SVGVectorizationDialog		Çizgi algılama toleransı
@@ -153,7 +155,7 @@ Optimize SVG output	SVGVectorizationDialog		SVG çıktısını eniyile
 Output	SVGVectorizationDialog		Çıktı
 Output scale	SVGVectorizationDialog		Çıktı ölçeği
 Path omit threshold	SVGVectorizationDialog		Yol yok sayma eşiği
-Preset	SVGVectorizationDialog		Önayar
+Preset:	SVGVectorizationDialog		Önayar:
 Processing	SVGVectorizationDialog		İşleniyor
 Quality	SVGVectorizationDialog		Kalite
 Quantization cycles	SVGVectorizationDialog		Nicemleme döngüleri
