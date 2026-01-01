@@ -1,14 +1,16 @@
-1	English	application/x-vnd.svgear	3843311228
+1	English	application/x-vnd.svgear	635258296
 Finished	SVGVectorizationDialog		Finished
 Outline	SVGMainWindow		Outline
 Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
+Loading...	HVIFStoreDialog		Loading...
 Min samples	SVGVectorizationDialog		Min samples
-Simple	SVGVectorizationDialog		Simple
 Minimum circle radius	SVGVectorizationDialog		Minimum circle radius
+Simple	SVGVectorizationDialog		Simple
 Text wrap	SVGMainWindow		Text wrap
 OK	SVGFileManager		OK
 Zoom out	SVGMainWindow		Zoom out
 View	SVGMenuManager		View
+MIME:	HVIFStoreDialog		MIME:
 Outline	SVGMenuManager		Outline
 Fill only	SVGMenuManager		Fill only
 Filter small objects	SVGVectorizationDialog		Filter small objects
@@ -32,6 +34,7 @@ Output scale	SVGVectorizationDialog		Output scale
 No SVG loaded	SVGMainWindow		No SVG loaded
 Error	SVGFileManager		Error
 Quantization cycles	SVGVectorizationDialog		Quantization cycles
+Network error occurred	HVIFStoreDialog		Network error occurred
 Copy SVG source	SVGMainWindow		Copy SVG source
 Error reading SVG file	SVGFileManager		Error reading SVG file
 Zoom original	SVGMainWindow		Zoom original
@@ -42,6 +45,7 @@ Invalid file path	SVGMainWindow		Invalid file path
 Linear gradient	SVGStructureView		Linear gradient
 Bounding box	SVGMenuManager		Bounding box
 Zoom in	SVGMainWindow		Zoom in
+Search:	HVIFStoreDialog		Search:
 Open…	SVGMenuManager		Open…
 Show structure	SVGMainWindow		Show structure
 Min RGB delta	SVGVectorizationDialog		Min RGB delta
@@ -51,12 +55,17 @@ Filtering objects	SVGVectorizationDialog		Filtering objects
 About SVGear…	SVGMenuManager		About SVGear…
 Max X:	SVGStatView		Max X:
 Round coordinates	SVGVectorizationDialog		Round coordinates
+Load more	HVIFStoreDialog		Load more
 Undo	SVGMainWindow		Undo
+Cancel	HVIFStoreDialog		Cancel
+Failed to create network thread	HVIFStoreDialog		Failed to create network thread
 No HVIF data generated	SVGMainWindow		No HVIF data generated
 Shapes:	SVGStatView		Shapes:
 Blur settings	SVGVectorizationDialog		Blur settings
 Show transparency grid	SVGMenuManager		Show transparency grid
 Preset:	SVGVectorizationDialog		Preset:
+Tags:	HVIFStoreDialog		Tags:
+Icon store	SVGMainWindow		Icon store
 Copy SVG as Base64	SVGMainWindow		Copy SVG as Base64
 Stroke only	SVGMenuManager		Stroke only
 Tools	SVGMenuManager		Tools
@@ -65,6 +74,7 @@ Error saving file: %s	SVGFileManager		Error saving file: %s
 File	SVGStatView		File
 Simplification tolerance	SVGVectorizationDialog		Simplification tolerance
 Fit to window	SVGMenuManager		Fit to window
+Failed to create request	HVIFStoreDialog		Failed to create request
 Filled shapes:	SVGStatView		Filled shapes:
 Advanced simplification	SVGVectorizationDialog		Advanced simplification
 Radial gradient	SVGStructureView		Radial gradient
@@ -85,6 +95,7 @@ Size: %s × %s | Scale: %s | Mode: %s | BBox: %s	SVGMainWindow		Size: %s × %s |
 Fixing winding	SVGVectorizationDialog		Fixing winding
 Applying blur	SVGVectorizationDialog		Applying blur
 General	SVGVectorizationDialog		General
+Failed to create download thread	HVIFStoreDialog		Failed to create download thread
 None	SVGMenuManager		None
 OK	SVGVectorizationDialog		OK
 Collinear tolerance	SVGVectorizationDialog		Collinear tolerance
@@ -92,15 +103,20 @@ Copy	SVGMainWindow		Copy
 File exported successfully	SVGMainWindow		File exported successfully
 Original size	SVGMenuManager		Original size
 Shape %ld Fill	SVGStructureView		Shape %ld Fill
+File sizes:	HVIFStoreDialog		File sizes:
+Icon store…	SVGMenuManager		Icon store…
+OK	HVIFStoreDialog		OK
 Use ViewBox	SVGVectorizationDialog		Use ViewBox
 Normal	SVGMainWindow		Normal
 Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Error parsing SVG from source code. Please check the syntax.
 Gradients	SVGVectorizationDialog		Gradients
 Fill only	SVGMainWindow		Fill only
 Paints	SVGStructureView		Paints
+No icon data available for this icon.	HVIFStoreDialog		No icon data available for this icon.
 Min segment length	SVGVectorizationDialog		Min segment length
 New	SVGMainWindow		New
 Show statistics panel	SVGMenuManager		Show statistics panel
+Select an icon	HVIFStoreDialog		Select an icon
 Background method:	SVGVectorizationDialog		Background method:
 Line detection tolerance	SVGVectorizationDialog		Line detection tolerance
 Basic	SVGVectorizationDialog		Basic
@@ -122,12 +138,15 @@ Show description	SVGVectorizationDialog		Show description
 Quit	SVGMenuManager		Quit
 C++ array…	SVGMenuManager		C++ array…
 Copy HVIF as RDef code	SVGMainWindow		Copy HVIF as RDef code
+Failed to decode icon	HVIFStoreDialog		Failed to decode icon
 Creating palette	SVGVectorizationDialog		Creating palette
 Number of colors	SVGVectorizationDialog		Number of colors
 Unifying edges	SVGVectorizationDialog		Unifying edges
+JSON parse failed	HVIFStoreDialog		JSON parse failed
 Zoom original	SVGMenuManager		Zoom original
 Save	SVGMenuManager		Save
 Unable to load file: %s\nUnknown or unsupported format	SVGFileManager		Unable to load file: %s\nUnknown or unsupported format
+Select Icon from HVIF Store	HVIFStoreDialog		Select Icon from HVIF Store
 Maximum circle radius	SVGVectorizationDialog		Maximum circle radius
 RDef resource…	SVGMenuManager		RDef resource…
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld px
@@ -135,6 +154,7 @@ Save as…	SVGMenuManager		Save as…
 Paths:	SVGStatView		Paths:
 SVG source copied to clipboard	SVGMainWindow		SVG source copied to clipboard
 Export	SVGMenuManager		Export
+Untitled	HVIFStoreDialog		Untitled
 Document	SVGMainWindow		Document
 Zoom in	SVGMenuManager		Zoom in
 Douglas-Peucker	SVGVectorizationDialog		Douglas-Peucker
@@ -172,6 +192,7 @@ Apply (Alt+Enter)	SVGMainWindow		Apply (Alt+Enter)
 Optimal	SVGVectorizationDialog		Optimal
 Cut	SVGMainWindow		Cut
 Reset view	SVGMenuManager		Reset view
+Error	HVIFStoreDialog		Error
 Stroked shapes:	SVGStatView		Stroked shapes:
 Remove background	SVGVectorizationDialog		Remove background
 Copy HVIF as C++ code	SVGMainWindow		Copy HVIF as C++ code
@@ -195,11 +216,14 @@ Blur delta	SVGVectorizationDialog		Blur delta
 Transparent gray	SVGMenuManager		Transparent gray
 No HVIF data available	SVGMainWindow		No HVIF data available
 Display mode	SVGMenuManager		Display mode
+Open	HVIFStoreDialog		Open
 None	SVGMainWindow		None
 Auto	SVGVectorizationDialog		Auto
 Vectorization settings	SVGVectorizationDialog		Vectorization settings
+Author:	HVIFStoreDialog		Author:
 Source code is empty.	SVGMainWindow		Source code is empty.
 Minimum object width	SVGVectorizationDialog		Minimum object width
+Failed to download icon data	HVIFStoreDialog		Failed to download icon data
 Simplifying (VW)	SVGVectorizationDialog		Simplifying (VW)
 Fast	SVGVectorizationDialog		Fast
 HVIF size:	SVGStatView		HVIF size:
@@ -210,7 +234,9 @@ Show structure panel	SVGMenuManager		Show structure panel
 Max subdivisions	SVGVectorizationDialog		Max subdivisions
 Curve smoothing	SVGVectorizationDialog		Curve smoothing
 Cancel	SVGVectorizationDialog		Cancel
+License:	HVIFStoreDialog		License:
 Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
+No icons loaded	HVIFStoreDialog		No icons loaded
 Detect gradients	SVGVectorizationDialog		Detect gradients
 Drop a file to view or vectorize	SVGView		Drop a file to view or vectorize
 Max Y:	SVGStatView		Max Y:
