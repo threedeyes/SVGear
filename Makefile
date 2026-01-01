@@ -17,12 +17,19 @@ SRCS = \
 	SVGCodeGenerator.cpp \
 	Dialogs/Vectorization/SVGVectorizationDialog.cpp \
 	Dialogs/Vectorization/SVGVectorizationWorker.cpp \
+	Dialogs/HVIF-Store/HvifStoreClient.cpp \
+	Dialogs/HVIF-Store/IconGridView.cpp \
+	Dialogs/HVIF-Store/IconInfoView.cpp \
+	Dialogs/HVIF-Store/IconSelectionDialog.cpp \
+	Dialogs/HVIF-Store/TagsFlowView.cpp \
 	External/BSVGView/BSVGView.cpp \
 	main.cpp
 RDEFS = Resources.rdef
-LIBS = be tracker translation shared localestub hviftools imagetracer agg $(STDCPPLIBS)
+LIBS = be tracker translation network bnetapi netservices shared localestub hviftools imagetracer agg $(STDCPPLIBS)
 SYSTEM_INCLUDE_PATHS = \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/interface \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/netservices \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/shared \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/common \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/import \
@@ -35,6 +42,7 @@ SYSTEM_INCLUDE_PATHS = \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/agg2
 LOCAL_INCLUDE_PATHS = \
 	./Dialogs/Vectorization \
+	./Dialogs/HVIF-Store \
 	./External/BSVGView \
 	./External/nanosvg_ext/src
 OPTIMIZE := FULL
