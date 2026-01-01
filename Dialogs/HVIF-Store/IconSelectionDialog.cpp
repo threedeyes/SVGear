@@ -26,7 +26,8 @@
 IconSelectionDialog::IconSelectionDialog(BMessenger target)
 	:
 	BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("Select Icon from HVIF Store"),
-		B_TITLED_WINDOW, B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS),
+			B_TITLED_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
+			B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS),
 	fTarget(target),
 	fPage(1),
 	fLoading(false),
