@@ -732,7 +732,7 @@ SVGMainWindow::_HandleEditMessages(BMessage* message)
 					break;
 
 				fSVGTextView->MakeFocus(true);
-				int from_current, to_current;
+				int32 from_current, to_current;
 				fSVGTextView->GetSelection(&from_current, &to_current);
 
 				if (from_current != from || to_current != to)
@@ -2008,8 +2008,8 @@ SVGMainWindow::_SaveSettings()
 	if (fSplitView) {
 		gSettings->SetBool(kSourceViewCollapsed, !fShowSourceView);
 		if (fShowSourceView) {
-			gSettings->SetFloat(kMainViewWeight, fSplitView->ItemWeight(0));
-			gSettings->SetFloat(kSourceViewWeight, fSplitView->ItemWeight(1));
+			gSettings->SetFloat(kMainViewWeight, fSplitView->ItemWeight((int32)0));
+			gSettings->SetFloat(kSourceViewWeight, fSplitView->ItemWeight((int32)1));
 		}
 	}
 

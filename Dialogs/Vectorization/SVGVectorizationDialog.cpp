@@ -140,7 +140,7 @@ SVGVectorizationDialog::MessageReceived(BMessage* message)
 
 		case MSG_VECTORIZATION_PROGRESS:
 		{
-			int stage, percent;
+			int32 stage, percent;
 			if (message->FindInt32("stage", &stage) == B_OK &&
 				message->FindInt32("percent", &percent) == B_OK) {
 				_UpdateVectorizationProgress(stage, percent);

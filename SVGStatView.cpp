@@ -268,7 +268,7 @@ SVGStatView::SetIntValue(const char *param, int value)
 	if (item != NULL) {
 		if (item->LockLooper()) {
 			BString data, valueTxt;
-			fNumberFormat.Format(data, value);
+			fNumberFormat.Format(data, (int32)value);
 			valueTxt.SetToFormat(" %s", data.String());
 			BString text = item->Text();
 			text = text.Truncate(text.FindFirst(':') + 1);

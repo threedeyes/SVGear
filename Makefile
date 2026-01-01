@@ -30,16 +30,16 @@ SYSTEM_INCLUDE_PATHS = \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/interface \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/netservices \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/private/shared \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/common \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/import \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/hviftools/export \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/core \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/output \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/processing \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/quantization \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/utils \
-	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/agg2
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/hviftools \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/hviftools/common \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/hviftools/import \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/hviftools/export \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/imagetracer/core \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/imagetracer/output \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/imagetracer/processing \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/imagetracer/quantization \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/imagetracer/utils \
+	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/$(shell getarch -s)/agg2
 LOCAL_INCLUDE_PATHS = \
 	./Dialogs/Vectorization \
 	./Dialogs/HVIF-Store \
@@ -51,7 +51,7 @@ DEFINES =
 WARNINGS =
 SYMBOLS :=
 DEBUGGER :=
-COMPILER_FLAGS = -mmmx -msse -msse2
+COMPILER_FLAGS = -mmmx -msse
 LINKER_FLAGS =
 APP_VERSION :=
 
