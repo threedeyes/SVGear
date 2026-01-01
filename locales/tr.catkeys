@@ -1,4 +1,4 @@
-1	Turkish	application/x-vnd.svgear	3843311228
+1	Turkish	application/x-vnd.svgear	635258296
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld pks
 About SVGear…	SVGMenuManager		SVGear hakkında…
 Bounding box	SVGMenuManager		Sınırlayıcı kutu
@@ -12,6 +12,7 @@ Fill only	SVGMenuManager		Yalnızca dolgu
 Fit to window	SVGMenuManager		Pencereye sığdır
 Help	SVGMenuManager		Yardım
 HVIF Icon…	SVGMenuManager		HVIF simgesi…
+Icon store…	SVGMenuManager		Simge mağazası…
 Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
 New	SVGMenuManager		Yeni
 None	SVGMenuManager		Yok
@@ -64,6 +65,7 @@ Find next	SVGMainWindow		Sonrakini bul
 Find previous	SVGMainWindow		Öncekini bul
 Gray	SVGMainWindow		Gri
 HTML img tag with Base64 SVG copied	SVGMainWindow		Base64 SVG ile HTML img künyesi kopyalandı
+Icon store	SVGMainWindow		Simge mağazası
 Image copied to clipboard	SVGMainWindow		Görsel panoya kopyalandı
 Invalid file path	SVGMainWindow		Geçersiz dosya yolu
 New	SVGMainWindow		Yeni
@@ -180,6 +182,30 @@ Use ViewBox	SVGVectorizationDialog		ViewBox kullan
 Vectorization error	SVGVectorizationDialog		Vektörleştirme hatası
 Vectorization settings	SVGVectorizationDialog		Vektörleştirme ayarları
 Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
+Author:	HVIFStoreDialog		Yazar:
+Cancel	HVIFStoreDialog		Vazgeç
+Error	HVIFStoreDialog		Hata
+Failed to create download thread	HVIFStoreDialog		İndirme iş parçacığı oluşturulamadı
+Failed to create network thread	HVIFStoreDialog		Ağ iş parçacığı oluşturulamadı
+Failed to create request	HVIFStoreDialog		İstek oluşturulamadı
+Failed to decode icon	HVIFStoreDialog		Simge kodu çözülemedi
+Failed to download icon data	HVIFStoreDialog		Simge verisi indirilemedi
+File sizes:	HVIFStoreDialog		Dosya boyutları:
+JSON parse failed	HVIFStoreDialog		JSON ayrıştırma hatası
+License:	HVIFStoreDialog		Lisans:
+Load more	HVIFStoreDialog		Daha fazla yükle
+Loading...	HVIFStoreDialog		Yükleniyor...
+MIME:	HVIFStoreDialog		MIME:
+Network error occurred	HVIFStoreDialog		Ağ hatası oluştu
+No icon data available for this icon.	HVIFStoreDialog		Bu simge için veri yok.
+No icons loaded	HVIFStoreDialog		Simge yüklenmedi
+OK	HVIFStoreDialog		Tamam
+Open	HVIFStoreDialog		Aç
+Search:	HVIFStoreDialog		Ara:
+Select an icon	HVIFStoreDialog		Bir simge seçin
+Select Icon from HVIF Store	HVIFStoreDialog		HVIF Store Simge Seç
+Tags:	HVIFStoreDialog		Etiketler:
+Untitled	HVIFStoreDialog		Adsız
 Bounds	SVGStatView		Sınırlar
 Closed paths:	SVGStatView		Kapalı yollar:
 Content	SVGStatView		İçerik

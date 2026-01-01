@@ -1,4 +1,4 @@
-1	German	application/x-vnd.svgear	3843311228
+1	German	application/x-vnd.svgear	635258296
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld Pixel
 About SVGear…	SVGMenuManager		Über SVGear …
 Bounding box	SVGMenuManager		Begrenzungs-Box
@@ -12,6 +12,7 @@ Fill only	SVGMenuManager		Nur Füllung
 Fit to window	SVGMenuManager		An Fenstergröße anpassen
 Help	SVGMenuManager		Hilfe
 HVIF Icon…	SVGMenuManager		HVIF-Icon …
+Icon store…	SVGMenuManager		Icon-Store…
 Icon-O-Matic…	SVGMenuManager		Icon-O-Matic …
 New	SVGMenuManager		Neu
 None	SVGMenuManager		Kein
@@ -64,6 +65,7 @@ Find next	SVGMainWindow		Nächstes finden
 Find previous	SVGMainWindow		Voriges finden
 Gray	SVGMainWindow		Grau
 HTML img tag with Base64 SVG copied	SVGMainWindow		HTML img-Tag mit Base64 SVG kopiert
+Icon store	SVGMainWindow		Icon-Store
 Image copied to clipboard	SVGMainWindow		Bild in Zwischenablage kopiert
 Invalid file path	SVGMainWindow		Ungültiger Dateipfad
 New	SVGMainWindow		Neu
@@ -180,6 +182,30 @@ Use ViewBox	SVGVectorizationDialog		ViewBox benutzen
 Vectorization error	SVGVectorizationDialog		Vektorisierungsfehler
 Vectorization settings	SVGVectorizationDialog		Vektorisierungs-Einstellungen
 Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
+Author:	HVIFStoreDialog		Autor:
+Cancel	HVIFStoreDialog		Abbrechen
+Error	HVIFStoreDialog		Fehler
+Failed to create download thread	HVIFStoreDialog		Download-Thread konnte nicht erstellt werden
+Failed to create network thread	HVIFStoreDialog		Netzwerk-Thread konnte nicht erstellt werden
+Failed to create request	HVIFStoreDialog		Anfrage konnte nicht erstellt werden
+Failed to decode icon	HVIFStoreDialog		Icon konnte nicht dekodiert werden
+Failed to download icon data	HVIFStoreDialog		Icon-Daten konnten nicht heruntergeladen werden
+File sizes:	HVIFStoreDialog		Dateigrößen:
+JSON parse failed	HVIFStoreDialog		JSON-Parsing fehlgeschlagen
+License:	HVIFStoreDialog		Lizenz:
+Load more	HVIFStoreDialog		Mehr laden
+Loading...	HVIFStoreDialog		Laden…
+MIME:	HVIFStoreDialog		MIME:
+Network error occurred	HVIFStoreDialog		Ein Netzwerkfehler ist aufgetreten
+No icon data available for this icon.	HVIFStoreDialog		Keine Daten für dieses Icon verfügbar.
+No icons loaded	HVIFStoreDialog		Keine Icons geladen
+OK	HVIFStoreDialog		OK
+Open	HVIFStoreDialog		Öffnen
+Search:	HVIFStoreDialog		Suchen:
+Select an icon	HVIFStoreDialog		Wähle ein Icon
+Select Icon from HVIF Store	HVIFStoreDialog		Icon aus HVIF-Store wählen
+Tags:	HVIFStoreDialog		Tags:
+Untitled	HVIFStoreDialog		Unbenannt
 Bounds	SVGStatView		Begrenzungen
 Closed paths:	SVGStatView		Geschlossene Pfade:
 Content	SVGStatView		Inhalt
