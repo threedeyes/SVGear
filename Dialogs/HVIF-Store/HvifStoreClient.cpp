@@ -102,8 +102,11 @@ HvifStoreClient::MessageReceived(BMessage* message)
 				url << "/api.php?page=" << p << "&limit=" << l;
 				if (!q.IsEmpty()) url << "&search=" << BUrl::UrlEncode(q);
 				if (!t.IsEmpty()) url << "&tags=" << BUrl::UrlEncode(t);
-
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 				_PerformRequest(BUrl(url.String(), true), kMsgIconsLoaded);
+#else
+				_PerformRequest(BUrl(url.String()), kMsgIconsLoaded);
+#endif
 			}
 			break;
 		}
@@ -111,7 +114,11 @@ HvifStoreClient::MessageReceived(BMessage* message)
 		case kMsgFetchCategories: {
 			BString url = fBaseUrl;
 			url << "/api.php?action=get_meta_categories";
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 			_PerformRequest(BUrl(url.String(), true), kMsgCategoriesLoaded);
+#else
+			_PerformRequest(BUrl(url.String()), kMsgCategoriesLoaded);
+#endif
 			break;
 		}
 
@@ -128,7 +135,11 @@ HvifStoreClient::MessageReceived(BMessage* message)
 				data.AddInt32("id", id);
 				data.AddInt32("generation", generation);
 				data.AddInt32("size", size);
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 				_PerformRequest(BUrl(url.String(), true), kMsgIconPreviewReady, &data);
+#else
+				_PerformRequest(BUrl(url.String()), kMsgIconPreviewReady, &data);
+#endif
 			}
 			break;
 		}
@@ -344,7 +355,11 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 		BString url = ctx->baseUrl;
 		url << "/uploads/" << hvifPath;
 		BMallocIO buffer;
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 		if (_DownloadToBuffer(BUrl(url.String(), true), buffer) == B_OK) {
+#else
+		if (_DownloadToBuffer(BUrl(url.String()), buffer) == B_OK) {
+#endif
 			reply.AddData("hvif_data", B_RAW_TYPE, buffer.Buffer(), 
 				buffer.BufferLength());
 			hasAnyData = true;
@@ -355,7 +370,11 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 		BString url = ctx->baseUrl;
 		url << "/uploads/" << svgPath;
 		BMallocIO buffer;
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 		if (_DownloadToBuffer(BUrl(url.String(), true), buffer) == B_OK) {
+#else
+		if (_DownloadToBuffer(BUrl(url.String()), buffer) == B_OK) {
+#endif
 			reply.AddData("svg_data", B_RAW_TYPE, buffer.Buffer(), 
 				buffer.BufferLength());
 			hasAnyData = true;
@@ -366,7 +385,11 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 		BString url = ctx->baseUrl;
 		url << "/uploads/" << iomPath;
 		BMallocIO buffer;
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 		if (_DownloadToBuffer(BUrl(url.String(), true), buffer) == B_OK) {
+#else
+		if (_DownloadToBuffer(BUrl(url.String()), buffer) == B_OK) {
+#endif
 			reply.AddData("iom_data", B_RAW_TYPE, buffer.Buffer(), 
 				buffer.BufferLength());
 			hasAnyData = true;

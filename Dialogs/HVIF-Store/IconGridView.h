@@ -82,7 +82,11 @@ private:
 			void            _DrawLoadingIndicator(BRect bounds);
 			void            _DrawLoadMoreItem(BRect frame);
 
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 			BObjectList<IconItem, true> fItems;
+#else
+			BObjectList<IconItem> fItems;
+#endif
 			int32           fSelection;
 			int32           fHoveredItem;
 			bool            fLoadMoreHovered;

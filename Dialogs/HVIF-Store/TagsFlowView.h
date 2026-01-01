@@ -32,7 +32,11 @@ private:
 			void            _DoLayout();
 			float           _CalculateHeight(float width) const;
 
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 			BObjectList<BCheckBox, true> fCheckBoxes;
+#else
+			BObjectList<BCheckBox> fCheckBoxes;
+#endif
 			float           fCachedHeight;
 			
 	static const float      kHSpacing;
