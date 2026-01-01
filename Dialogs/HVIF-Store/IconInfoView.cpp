@@ -130,7 +130,7 @@ IconInfoView::Draw(BRect updateRect)
 		return;
 	}
 
-	float y = fPadding * 1.5f;
+	float y = floorf(fPadding * 1.5f);
 	float maxWidth = bounds.Width() - fPadding * 2;
 	float contentX = fPadding + 2;
 
@@ -138,13 +138,17 @@ IconInfoView::Draw(BRect updateRect)
 		SetDrawingMode(B_OP_ALPHA);
 		SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
 
-		float previewX = (bounds.Width() - fPreviewSize) / 2;
-		BRect destRect(previewX, y, previewX + fPreviewSize - 1, y + fPreviewSize - 1);
+		BRect bmpBounds = fCurrentItem->bitmap->Bounds();
+		float bmpWidth = bmpBounds.Width() + 1.0f;
+		float bmpHeight = bmpBounds.Height() + 1.0f;
+
+		float previewX = floorf((bounds.Width() - bmpWidth) / 2.0f);
+		BRect destRect(previewX, y, previewX + bmpWidth - 1, y + bmpHeight - 1);
 
 		DrawBitmap(fCurrentItem->bitmap, destRect);
 
 		SetDrawingMode(B_OP_COPY);
-		y += fPreviewSize + fPadding / 2;
+		y += bmpHeight + fPadding / 2;
 	}
 
 	BFont boldFont(be_bold_font);

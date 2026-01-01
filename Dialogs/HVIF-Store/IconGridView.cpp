@@ -67,10 +67,10 @@ IconGridView::_CalculateSizes()
 	if (scale < 1.0f)
 		scale = 1.0f;
 
-	fIconSize = kBaseIconSize * scale;
-	fCellWidth = kBaseCellWidth * scale;
-	fCellHeight = kBaseCellHeight * scale;
-	fPadding = kBasePadding * scale;
+	fIconSize = floorf(kBaseIconSize * scale);
+	fCellWidth = floorf(kBaseCellWidth * scale);
+	fCellHeight = floorf(kBaseCellHeight * scale);
+	fPadding = floorf(kBasePadding * scale);
 }
 
 
@@ -289,8 +289,8 @@ IconGridView::Draw(BRect updateRect)
 			FillRoundRect(selRect, 4, 4);
 		}
 
-		float iconLeft = frame.left + (fCellWidth - fIconSize) / 2;
-		float iconTop = frame.top + fPadding;
+		float iconLeft = floorf(frame.left + (fCellWidth - fIconSize) / 2.0f);
+		float iconTop = floorf(frame.top + fPadding);
 		BRect iconRect(iconLeft, iconTop, 
 			iconLeft + fIconSize - 1, iconTop + fIconSize - 1);
 
@@ -316,11 +316,11 @@ IconGridView::Draw(BRect updateRect)
 		BString name = item->title;
 		float maxWidth = fCellWidth - fPadding * 2;
 
-		float textY = frame.top + fPadding + fIconSize + 4 + fh.ascent;
+		float textY = floorf(frame.top + fPadding + fIconSize + 4 + fh.ascent);
 
 		TruncateString(&name, B_TRUNCATE_MIDDLE, maxWidth);
 		float textWidth = StringWidth(name);
-		float textX = frame.left + (fCellWidth - textWidth) / 2;
+		float textX = floorf(frame.left + (fCellWidth - textWidth) / 2.0f);
 		DrawString(name, BPoint(textX, textY));
 	}
 
