@@ -65,6 +65,7 @@ SVGMenuManager::_CreateFileMenu(BHandler* target)
 		NULL, NULL, be_app, 10, true, NULL, APP_SIGNATURE), new BMessage(MSG_OPEN_FILE));
 	fMenuItemOpen->SetShortcut('O', 0);
 	fileMenu->AddItem(fMenuItemOpen);
+	fileMenu->AddItem(new BMenuItem(B_TRANSLATE("Icon store" B_UTF8_ELLIPSIS), new BMessage(MSG_OPEN_HVIF_STORE), 'I'));
 	fileMenu->AddSeparatorItem();
 
 	fSaveItem = new BMenuItem(B_TRANSLATE("Save"), new BMessage(MSG_SAVE_FILE), 'S');

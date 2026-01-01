@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, Gerasim Troeglazov, 3dEyes@gmail.com. All rights reserved.
+ * Copyright 2025-2026, Gerasim Troeglazov, 3dEyes@gmail.com. All rights reserved.
  * Distributed under the terms of the MIT License.
  */
 
@@ -34,6 +34,8 @@
 #include "SVGCodeGenerator.h"
 #include "SVGVectorizationWorker.h"
 #include "SVGVectorizationDialog.h"
+#include "IconSelectionDialog.h"
+#include "HvifStoreDefs.h"
 
 #include "IconConverter.h"
 
@@ -147,6 +149,51 @@ SVGMainWindow::MessageReceived(BMessage* message)
 		case B_SAVE_REQUESTED:
 			_HandleFileMessages(message);
 			break;
+
+		case MSG_OPEN_HVIF_STORE: {
+			IconSelectionDialog* storeDialog = new IconSelectionDialog(BMessenger(this));
+			storeDialog->Show();
+			break;
+		}
+
+		case kMsgIconDataReady: {
+			const void* data = NULL;
+			ssize_t size = 0;
+
+			_LoadNewFile();
+
+			if (message->FindData("svg_data", B_RAW_TYPE, &data, &size) == B_OK && size > 0)
+				fCurrentSource.SetTo((const char*)data, size);
+
+			if (message->FindData("hvif_data", B_RAW_TYPE, &data, &size) == B_OK && size > 0) {
+				delete[] fCurrentHVIFData;
+				fCurrentHVIFSize = size;
+				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
+				memcpy(fCurrentHVIFData, data, fCurrentHVIFSize);
+			}
+
+			BString titleStr = message->GetString("title", "Downloaded Icon");
+			BString titleWin("SVGear - ");
+			titleWin << titleStr;
+			SetTitle(titleWin.String());
+
+			fOriginalSourceText = fCurrentSource;
+			fDocumentModified = true;
+
+			if (fSVGView) {
+				fSVGView->LoadFromMemory(fCurrentSource.String());
+				fSVGView->ResetView();
+			}
+
+			if (fIconView && fCurrentHVIFData)
+				fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
+
+			_UpdateAllTabs();
+			_UpdateStatus();
+			_UpdateUIState();
+			_UpdateStatView();
+			break;
+		}
 
 		case MSG_EXPORT_HVIF:
 		case MSG_EXPORT_RDEF:
@@ -327,6 +374,7 @@ SVGMainWindow::_BuildToolBars()
 	fToolBar = new SVGToolBar();
 	fToolBar->AddAction(MSG_NEW_FILE, this, SVGApplication::GetIcon("document-new", TOOLBAR_ICON_SIZE), B_TRANSLATE("New"));
 	fToolBar->AddAction(MSG_OPEN_FILE, this, SVGApplication::GetIcon("document-open", TOOLBAR_ICON_SIZE), B_TRANSLATE("Open"));
+	fToolBar->AddAction(MSG_OPEN_HVIF_STORE, this, SVGApplication::GetIcon("icon-store", TOOLBAR_ICON_SIZE), B_TRANSLATE("Icon store"));
 	fToolBar->AddAction(MSG_SAVE_FILE, this, SVGApplication::GetIcon("document-save", TOOLBAR_ICON_SIZE), B_TRANSLATE("Save"));
 	fToolBar->AddSeparator();
 	fToolBar->AddAction(MSG_ZOOM_IN, this, SVGApplication::GetIcon("zoom-in", TOOLBAR_ICON_SIZE), B_TRANSLATE("Zoom in"));
@@ -1333,8 +1381,10 @@ SVGMainWindow::_LoadTemplateFile(const char* resourceName, const char* title)
 	fCurrentSource.SetTo(data);
 	fOriginalSourceText = fCurrentSource;
 
-	if (fSVGView)
+	if (fSVGView) {
 		fSVGView->LoadFromMemory(fCurrentSource.String());
+		fSVGView->ResetView();
+	}
 
 	_GenerateHVIFFromSVG();
 	_UpdateStatus();
@@ -2181,8 +2231,10 @@ SVGMainWindow::_RestoreBackupState()
 	fDocumentModified = fBackupDocumentModified;
 	SetTitle(fBackupWindowTitle.String());
 
-	if (fSVGView)
+	if (fSVGView) {
 		fSVGView->LoadFromMemory(fCurrentSource.String());
+		fSVGView->ResetView();
+	}
 
 	_GenerateHVIFFromSVG();
 

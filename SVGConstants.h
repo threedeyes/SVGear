@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, Gerasim Troeglazov, 3dEyes@gmail.com. All rights reserved.
+ * Copyright 2025-2026, Gerasim Troeglazov, 3dEyes@gmail.com. All rights reserved.
  * Distributed under the terms of the MIT License.
  */
 
@@ -29,6 +29,7 @@
 // Message constants
 const uint32 MSG_NEW_FILE = 'newf';
 const uint32 MSG_OPEN_FILE = 'open';
+const uint32 MSG_OPEN_HVIF_STORE = 'ohvs';
 const uint32 MSG_SAVE_FILE = 'save';
 const uint32 MSG_SAVE_AS_FILE = 'svas';
 const uint32 MSG_SAVE_PANEL_SAVE = 'svps';
