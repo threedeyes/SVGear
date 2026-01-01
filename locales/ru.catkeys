@@ -1,4 +1,4 @@
-1	Russian	application/x-vnd.svgear	3843311228
+1	Russian	application/x-vnd.svgear	635258296
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld px
 About SVGear…	SVGMenuManager		О программе SVGear…
 Bounding box	SVGMenuManager		Габаритная рамка
@@ -12,6 +12,7 @@ Fill only	SVGMenuManager		Только заливка
 Fit to window	SVGMenuManager		Вписать в окно
 Help	SVGMenuManager		Справка
 HVIF Icon…	SVGMenuManager		Значок HVIF…
+Icon store…	SVGMenuManager		Онлайн-каталог иконок…
 Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
 New	SVGMenuManager		Новый
 None	SVGMenuManager		Нет
@@ -64,6 +65,7 @@ Find next	SVGMainWindow		Найти следующее
 Find previous	SVGMainWindow		Найти предыдущее
 Gray	SVGMainWindow		Серая
 HTML img tag with Base64 SVG copied	SVGMainWindow		HTML тег img с Base64 SVG скопирован
+Icon store	SVGMainWindow		Онлайн-каталог иконок
 Image copied to clipboard	SVGMainWindow		Изображение скопировано в буфер обмена
 Invalid file path	SVGMainWindow		Неверный путь к файлу
 New	SVGMainWindow		Новый
@@ -180,6 +182,30 @@ Use ViewBox	SVGVectorizationDialog		Использовать ViewBox
 Vectorization error	SVGVectorizationDialog		Ошибка векторизации
 Vectorization settings	SVGVectorizationDialog		Настройки векторизации
 Visvalingam-Whyatt	SVGVectorizationDialog		Висвалингам-Вайатт
+Author:	HVIFStoreDialog		Автор:
+Cancel	HVIFStoreDialog		Отмена
+Error	HVIFStoreDialog		Ошибка
+Failed to create download thread	HVIFStoreDialog		Ошибка создания потока загрузки
+Failed to create network thread	HVIFStoreDialog		Ошибка создания сетевого потока
+Failed to create request	HVIFStoreDialog		Ошибка создания запроса
+Failed to decode icon	HVIFStoreDialog		Ошибка декодирования иконки
+Failed to download icon data	HVIFStoreDialog		Ошибка загрузки данных иконки
+File sizes:	HVIFStoreDialog		Размеры файлов:
+JSON parse failed	HVIFStoreDialog		Ошибка парсера JSON
+License:	HVIFStoreDialog		Лицензия:
+Load more	HVIFStoreDialog		Загрузить ещё
+Loading...	HVIFStoreDialog		Загрузка...
+MIME:	HVIFStoreDialog		MIME:
+Network error occurred	HVIFStoreDialog		Произошла сетевая ошибка
+No icon data available for this icon.	HVIFStoreDialog		Отсутствуют данные изображения для этой иконки.
+No icons loaded	HVIFStoreDialog		Иконки не загружены
+OK	HVIFStoreDialog		OK
+Open	HVIFStoreDialog		Открыть
+Search:	HVIFStoreDialog		Поиск:
+Select an icon	HVIFStoreDialog		Выберете иконку
+Select Icon from HVIF Store	HVIFStoreDialog		Выбор иконки с сайта HVIF Store
+Tags:	HVIFStoreDialog		Тэги:
+Untitled	HVIFStoreDialog		Без названия
 Bounds	SVGStatView		Границы
 Closed paths:	SVGStatView		Замкнутых путей:
 Content	SVGStatView		Содержимое
