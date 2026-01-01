@@ -15,8 +15,8 @@ SRCS = \
 	SVGListItem.cpp \
 	SVGStructureView.cpp \
 	SVGCodeGenerator.cpp \
-	SVGVectorizationDialog.cpp \
-	SVGVectorizationWorker.cpp \
+	Dialogs/Vectorization/SVGVectorizationDialog.cpp \
+	Dialogs/Vectorization/SVGVectorizationWorker.cpp \
 	External/BSVGView/BSVGView.cpp \
 	main.cpp
 RDEFS = Resources.rdef
@@ -34,6 +34,7 @@ SYSTEM_INCLUDE_PATHS = \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/imagetracer/utils \
 	$(shell finddir B_SYSTEM_HEADERS_DIRECTORY)/agg2
 LOCAL_INCLUDE_PATHS = \
+	./Dialogs/Vectorization \
 	./External/BSVGView \
 	./External/nanosvg_ext/src
 OPTIMIZE := FULL
