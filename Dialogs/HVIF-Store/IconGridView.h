@@ -35,7 +35,7 @@ struct IconItem {
 	uint8*      hvifData;
 
 	IconItem() 
-		: id(0), hvifSize(0), svgSize(0), iomSize(0), 
+		: id(0), hvifSize(0), svgSize(0), iomSize(0),
 		  bitmap(NULL), generation(0), hvifData(NULL) {}
 	~IconItem() { 
 		delete bitmap;
@@ -60,6 +60,7 @@ public:
 	virtual void            KeyDown(const char* bytes, int32 numBytes);
 	virtual void            GetPreferredSize(float* width, float* height);
 	virtual void            MessageReceived(BMessage* message);
+	virtual void            Pulse();
 
 			void            AddItem(IconItem* item);
 			void            Clear();
@@ -90,6 +91,9 @@ private:
 			void            _UpdateInfoView();
 			void            _DrawLoadingIndicator(BRect bounds);
 			void            _DrawLoadMoreItem(BRect frame);
+			float           _AnimationAngle() const;
+			BRect           _LoadingIndicatorRect() const;
+			BRect           _LoadMoreIconRect() const;
 
 			void            _StartDrag(BPoint point, IconItem* item);
 			status_t        _CreateTempFile(BPath& tempPath, const char* title);
@@ -129,6 +133,7 @@ private:
 	static const float      kBaseCellHeight;
 	static const float      kBasePadding;
 	static const float      kBaseFontSize;
+	static const float      kAnimationSpeed;
 };
 
 #endif

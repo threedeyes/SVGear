@@ -15,6 +15,7 @@
 #include <FindDirectory.h>
 #include <MessageRunner.h>
 #include <IconUtils.h>
+#include <OS.h>
 
 #include <cmath>
 #include <cstring>
@@ -32,6 +33,7 @@ const float IconGridView::kBaseCellWidth = 110.0f;
 const float IconGridView::kBaseCellHeight = 105.0f;
 const float IconGridView::kBasePadding = 8.0f;
 const float IconGridView::kBaseFontSize = 12.0f;
+const float IconGridView::kAnimationSpeed = 0.000005f;
 
 
 IconGridView::IconGridView()
@@ -98,10 +100,66 @@ IconGridView::AttachedToWindow()
 	SetLowUIColor(B_LIST_BACKGROUND_COLOR);
 
 	if (Window() != NULL)
-		Window()->SetPulseRate(100000);
+		Window()->SetPulseRate(50000);
 
 	_CalculateSizes();
 	_RecalculateLayout();
+}
+
+
+void
+IconGridView::Pulse()
+{
+	if (!fLoading)
+		return;
+
+	if (fItems.IsEmpty()) {
+		Invalidate(_LoadingIndicatorRect());
+	} else if (fHasMore || fLoading) {
+		Invalidate(_LoadMoreIconRect());
+	}
+}
+
+
+float
+IconGridView::_AnimationAngle() const
+{
+	return fmod(system_time() * kAnimationSpeed, 2 * M_PI);
+}
+
+
+BRect
+IconGridView::_LoadingIndicatorRect() const
+{
+	BRect bounds = Bounds();
+	float centerX = bounds.Width() / 2;
+	float centerY = bounds.Height() / 2;
+	float radius = 30;
+
+	font_height fh;
+	GetFontHeight(&fh);
+	float textHeight = fh.ascent + fh.descent;
+
+	return BRect(
+		centerX - radius - 10,
+		centerY - radius - 10,
+		centerX + radius + 10,
+		centerY + radius + textHeight + 20
+	);
+}
+
+
+BRect
+IconGridView::_LoadMoreIconRect() const
+{
+	BRect frame = _LoadMoreFrame();
+	if (!frame.IsValid())
+		return BRect();
+
+	float iconLeft = frame.left + (fCellWidth - fIconSize) / 2;
+	float iconTop = frame.top + fPadding;
+
+	return BRect(iconLeft - 2, iconTop - 2, iconLeft + fIconSize + 2, iconTop + fIconSize + 2);
 }
 
 
@@ -164,10 +222,7 @@ IconGridView::SetHasMore(bool hasMore)
 void
 IconGridView::_DrawLoadingIndicator(BRect bounds)
 {
-	static float angle = 0;
-	angle += 0.3f;
-	if (angle > 2 * M_PI)
-		angle -= 2 * M_PI;
+	float angle = _AnimationAngle();
 
 	float centerX = bounds.Width() / 2;
 	float centerY = bounds.Height() / 2;
@@ -212,14 +267,11 @@ IconGridView::_DrawLoadMoreItem(BRect frame)
 	BRect iconRect(iconLeft, iconTop, 
 		iconLeft + fIconSize - 1, iconTop + fIconSize - 1);
 
-	if (fLoading) {
-		SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
-		FillRoundRect(iconRect, 4, 4);
+	SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
+	FillRoundRect(iconRect, 4, 4);
 
-		static float angle = 0;
-		angle += 0.2f;
-		if (angle > 2 * M_PI)
-			angle -= 2 * M_PI;
+	if (fLoading) {
+		float angle = _AnimationAngle();
 
 		float centerX = iconRect.left + iconRect.Width() / 2;
 		float centerY = iconRect.top + iconRect.Height() / 2;
@@ -238,9 +290,6 @@ IconGridView::_DrawLoadMoreItem(BRect frame)
 			FillEllipse(BPoint(x, y), 3, 3);
 		}
 	} else {
-		SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
-		FillRoundRect(iconRect, 4, 4);
-
 		SetHighColor(tint_color(ViewColor(), B_DARKEN_3_TINT));
 		float dotY = iconRect.top + iconRect.Height() / 2;
 		float dotSpacing = fIconSize / 5;
