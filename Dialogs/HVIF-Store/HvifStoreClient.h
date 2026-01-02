@@ -38,17 +38,22 @@ public:
 			void            CancelAllRequests();
 
 private:
-			void            _PerformRequest(BUrl url, uint32 what,
+			void            _QueueRequest(BUrl url, uint32 what,
 								BMessage* extraData = NULL);
+			void            _ProcessQueue();
+			void            _ClearPendingQueue();
+
 			static int32    _ThreadEntry(void* data);
 			static int32    _IconDownloadThreadEntry(void* data);
 			static status_t _DownloadToBuffer(const BUrl& url, BMallocIO& buffer);
-			void            _CleanupFinishedRequests();
 
 			BMessenger      fTarget;
 			BString         fBaseUrl;
 			int32           fCurrentGeneration;
+
 			BList           fActiveRequests;
+			BList           fPendingRequests;
+
 			BLocker         fRequestLock;
 };
 

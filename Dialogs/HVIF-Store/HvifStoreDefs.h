@@ -9,12 +9,16 @@
 #include <SupportDefs.h>
 
 #define SERVER_URL "https://hvif-store.art"
+#define APP_USER_AGENT "HvifStoreClient/1.0 (Haiku)"
 
-static const int32 kDefaultPageLimit = 40;
+static const int32 kDefaultPageLimit = 30;
 static const bigtime_t kSearchDebounceDelay = 400000;
 static const float kBaseFontSize = 12.0f;
 static const float kBaseWindowWidth = 860.0f;
 static const float kBaseWindowHeight = 540.0f;
+
+static const int32 kMaxConcurrentRequests = 15;
+static const int32 kMaxRetries = 2;
 
 enum {
 	kMsgSearch           = 'srch',
@@ -34,6 +38,10 @@ enum {
 	kMsgIconDataReady    = 'idrd',
 	kMsgNetworkError     = 'nerr',
 	
+	kMsgRequestFinished  = 'rqfn',
+	kMsgRequeueRequest   = 'rqrq',
+	kMsgAbortQueue       = 'abrq',
+
 	kMsgLoadingStarted   = 'ldst',
 	kMsgLoadingFinished  = 'ldfn',
 	kMsgDialogClosed     = 'dlcl'
