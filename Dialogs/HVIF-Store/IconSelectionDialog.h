@@ -27,6 +27,7 @@ public:
 
 	virtual void            MessageReceived(BMessage* message);
 	virtual bool            QuitRequested();
+	virtual void            Show();
 
 private:
 			void            _InitGUI();
@@ -46,6 +47,7 @@ private:
 			BTextControl*   fSearchEntry;
 			TagsFlowView*   fTagsView;
 			BButton*        fOpenBtn;
+			BButton*        fResetButton;
 			
 			BMessenger      fTarget;
 			int32           fPage;
@@ -53,6 +55,7 @@ private:
 			BString         fCurrentTags;
 			BString         fLastSearchQuery;
 			BMessageRunner* fSearchRunner;
+			int32           fPreserveSelectionId;
 };
 
 #endif

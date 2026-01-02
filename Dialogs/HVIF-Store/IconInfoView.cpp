@@ -9,6 +9,7 @@
 
 #include "IconInfoView.h"
 #include "IconGridView.h"
+#include "HvifStoreDefs.h"
 
 #undef  B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT          "HVIFStoreDialog"
@@ -66,6 +67,23 @@ IconInfoView::AttachedToWindow()
 }
 
 
+void
+IconInfoView::SetTarget(BMessenger target)
+{
+	fTarget = target;
+}
+
+
+void
+IconInfoView::SetFilterTags(const char* tags)
+{
+	if (fCurrentFilterTags != tags) {
+		fCurrentFilterTags = tags;
+		Invalidate();
+	}
+}
+
+
 BSize
 IconInfoView::MinSize()
 {
@@ -100,6 +118,18 @@ IconInfoView::Clear()
 {
 	fCurrentItem = NULL;
 	Invalidate();
+}
+
+
+void
+IconInfoView::MouseDown(BPoint where)
+{
+	BString clickedTag = _GetTagAt(where);
+	if (!clickedTag.IsEmpty()) {
+		BMessage msg(kMsgMetaTagClicked);
+		msg.AddString("tag", clickedTag);
+		fTarget.SendMessage(&msg);
+	}
 }
 
 
@@ -186,8 +216,7 @@ IconInfoView::Draw(BRect updateRect)
 		DrawString(B_TRANSLATE("Tags:"), BPoint(contentX, y + fh.ascent));
 		y += lineHeight + 2;
 
-		SetHighColor(ui_color(B_PANEL_TEXT_COLOR));
-		y = _DrawWrappedText(fCurrentItem->tags, contentX + 4, y, maxWidth - 4);
+		y = _DrawTags(fCurrentItem->tags, contentX, y, maxWidth);
 	}
 
 	y += 6;
@@ -255,44 +284,176 @@ IconInfoView::_DrawField(const char* label, const char* value, float y, float ma
 
 
 float
-IconInfoView::_DrawWrappedText(const char* text, float x, float y, float maxWidth)
+IconInfoView::_DrawTags(const char* tags, float x, float y, float maxWidth)
 {
 	font_height fh;
 	GetFontHeight(&fh);
-	float lineHeight = fh.ascent + fh.descent + 2;
+	float fontH = fh.ascent + fh.descent;
 
-	BString remaining(text);
+	float tagVPadding = 3.0f;
+	float tagHPadding = 6.0f;
+	float spacingX = 4.0f;
+	float spacingY = 4.0f;
 
-	while (!remaining.IsEmpty()) {
-		BString line = remaining;
+	float tagHeight = fontH + tagVPadding * 2;
+	float startX = x;
+	float currentX = x;
+	float currentY = y;
 
-		if (StringWidth(line) > maxWidth) {
-			int32 len = line.Length();
-			while (len > 0 && StringWidth(line.String(), len) > maxWidth) {
-				len--;
-			}
+	BString string(tags);
+	int32 pos = 0;
 
-			int32 breakPos = len;
-			for (int32 i = len - 1; i > 0; i--) {
-				char c = line[i];
-				if (c == ',' || c == ' ') {
-					breakPos = i + 1;
-					break;
-				}
-			}
-
-			line.Truncate(breakPos);
-			remaining.Remove(0, breakPos);
-			remaining.Trim();
+	while (true) {
+		int32 nextPos = string.FindFirst(',', pos);
+		BString tag;
+		if (nextPos >= 0) {
+			string.CopyInto(tag, pos, nextPos - pos);
+			pos = nextPos + 1;
 		} else {
-			remaining = "";
+			string.CopyInto(tag, pos, string.Length() - pos);
 		}
 
-		DrawString(line, BPoint(x, y + fh.ascent));
-		y += lineHeight;
+		tag.Trim();
+		if (tag.IsEmpty()) {
+			if (nextPos < 0) break;
+			continue;
+		}
+
+		bool isMeta = false;
+		if (tag.StartsWith("[") && tag.EndsWith("]")) {
+			isMeta = true;
+			tag.Remove(0, 1);
+			tag.Truncate(tag.Length() - 1);
+		}
+
+		float tagWidth = StringWidth(tag) + tagHPadding * 2;
+
+		if (currentX + tagWidth > startX + maxWidth && currentX > startX) {
+			currentX = startX;
+			currentY += tagHeight + spacingY;
+		}
+
+		BRect rect(currentX, currentY, currentX + tagWidth, currentY + tagHeight);
+
+		if (isMeta) {
+			BString bracketTag = "[";
+			bracketTag << tag << "]";
+			bool isActive = fCurrentFilterTags.FindFirst(bracketTag) >= 0;
+
+			if (isActive) {
+				SetHighColor(ui_color(B_CONTROL_HIGHLIGHT_COLOR));
+				FillRoundRect(rect, 4.0f, 4.0f);
+				SetHighColor(ui_color(B_MENU_SELECTED_ITEM_TEXT_COLOR));
+			} else {
+				SetHighColor(ui_color(B_MENU_SELECTION_BACKGROUND_COLOR));
+				FillRoundRect(rect, 4.0f, 4.0f);
+				SetHighColor(ui_color(B_MENU_SELECTED_ITEM_TEXT_COLOR));
+			}
+		} else {
+			SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
+			float radius = tagHeight / 2.0f;
+			FillRoundRect(rect, radius, radius);
+			SetHighColor(ui_color(B_PANEL_TEXT_COLOR));
+		}
+
+		float textY = currentY + tagVPadding + fh.ascent;
+		DrawString(tag, BPoint(currentX + tagHPadding, textY));
+
+		currentX += tagWidth + spacingX;
+
+		if (nextPos < 0) break;
 	}
 
-	return y;
+	return currentY + tagHeight + spacingY;
+}
+
+
+BString
+IconInfoView::_GetTagAt(BPoint point)
+{
+	if (fCurrentItem == NULL || fCurrentItem->tags.IsEmpty())
+		return "";
+
+	font_height fh;
+	GetFontHeight(&fh);
+	float fontH = fh.ascent + fh.descent;
+	float lineHeight = fh.ascent + fh.descent + fh.leading;
+
+	float y = floorf(fPadding * 1.5f);
+	if (fCurrentItem->bitmap != NULL) {
+		BRect bmpBounds = fCurrentItem->bitmap->Bounds();
+		y += bmpBounds.Height() + 1.0f + fPadding / 2;
+	}
+	y += lineHeight + fPadding; // Title
+	if (!fCurrentItem->author.IsEmpty())
+		y += lineHeight + 2;
+
+	if (!fCurrentItem->license.IsEmpty())
+		y += lineHeight + 2;
+
+	if (!fCurrentItem->mimeType.IsEmpty())
+		y += lineHeight + 2;
+
+	y += 4;
+	y += lineHeight + 2;
+
+	float startX = fPadding + 2;
+	float maxWidth = Bounds().Width() - fPadding * 2;
+
+	float tagVPadding = 3.0f;
+	float tagHPadding = 6.0f;
+	float spacingX = 4.0f;
+	float spacingY = 4.0f;
+	float tagHeight = fontH + tagVPadding * 2;
+
+	float currentX = startX;
+	float currentY = y;
+
+	BString string(fCurrentItem->tags);
+	int32 pos = 0;
+
+	while (true) {
+		int32 nextPos = string.FindFirst(',', pos);
+		BString tag;
+		if (nextPos >= 0) {
+			string.CopyInto(tag, pos, nextPos - pos);
+			pos = nextPos + 1;
+		} else {
+			string.CopyInto(tag, pos, string.Length() - pos);
+		}
+
+		tag.Trim();
+		if (tag.IsEmpty()) {
+			if (nextPos < 0) break;
+			continue;
+		}
+
+		bool isMeta = false;
+		if (tag.StartsWith("[") && tag.EndsWith("]")) {
+			isMeta = true;
+			tag.Remove(0, 1);
+			tag.Truncate(tag.Length() - 1);
+		}
+
+		float tagWidth = StringWidth(tag) + tagHPadding * 2;
+
+		if (currentX + tagWidth > startX + maxWidth && currentX > startX) {
+			currentX = startX;
+			currentY += tagHeight + spacingY;
+		}
+
+		BRect rect(currentX, currentY, currentX + tagWidth, currentY + tagHeight);
+		if (rect.Contains(point)) {
+			if (isMeta) return tag;
+			return "";
+		}
+
+		currentX += tagWidth + spacingX;
+
+		if (nextPos < 0) break;
+	}
+
+	return "";
 }
 
 

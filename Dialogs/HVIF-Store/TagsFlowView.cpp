@@ -4,8 +4,12 @@
  */
 
 #include <cstdio>
+#include <Catalog.h>
 
 #include "TagsFlowView.h"
+
+#undef  B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT          "HVIFStoreDialog"
 
 const float TagsFlowView::kHSpacing = 8.0f;
 const float TagsFlowView::kVSpacing = 4.0f;
@@ -127,36 +131,36 @@ TagsFlowView::GetSelectedTags(BString& outTags) const
 }
 
 
+void
+TagsFlowView::ToggleTag(const char* name)
+{
+	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
+		BCheckBox* cb = fCheckBoxes.ItemAt(i);
+		if (strcmp(cb->Label(), name) == 0) {
+			cb->SetValue(cb->Value() == B_CONTROL_ON ? B_CONTROL_OFF : B_CONTROL_ON);
+			cb->Invoke();
+			return;
+		}
+	}
+}
+
+
+void
+TagsFlowView::DeselectAll()
+{
+	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
+		BCheckBox* cb = fCheckBoxes.ItemAt(i);
+		if (cb->Value() == B_CONTROL_ON) {
+			cb->SetValue(B_CONTROL_OFF);
+		}
+	}
+}
+
+
 float
 TagsFlowView::_CalculateHeight(float width) const
 {
-	if (fCheckBoxes.IsEmpty())
-		return kMinHeight;
-
-	float x = kPadding;
-	float y = kPadding;
-	float rowHeight = 0;
-	float maxWidth = width - kPadding * 2;
-
-	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
-		BCheckBox* cb = fCheckBoxes.ItemAt(i);
-
-		float cbWidth, cbHeight;
-		cb->GetPreferredSize(&cbWidth, &cbHeight);
-
-		if (x + cbWidth > maxWidth && x > kPadding) {
-			x = kPadding;
-			y += rowHeight + kVSpacing;
-			rowHeight = 0;
-		}
-
-		if (cbHeight > rowHeight)
-			rowHeight = cbHeight;
-
-		x += cbWidth + kHSpacing;
-	}
-
-	return y + rowHeight + kPadding;
+	return fCachedHeight;
 }
 
 

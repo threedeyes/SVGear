@@ -9,6 +9,7 @@
 #include <View.h>
 #include <String.h>
 #include <Bitmap.h>
+#include <Messenger.h>
 
 struct IconItem;
 
@@ -19,6 +20,7 @@ public:
 
 	virtual void            AttachedToWindow();
 	virtual void            Draw(BRect updateRect);
+	virtual void            MouseDown(BPoint where);
 	virtual BSize           MinSize();
 	virtual BSize           MaxSize();
 	virtual BSize           PreferredSize();
@@ -26,15 +28,21 @@ public:
 			void            SetIcon(IconItem* item);
 			void            Clear();
 
+			void            SetTarget(BMessenger target);
+			void            SetFilterTags(const char* tags);
+
 private:
 			void            _CalculateSizes();
 			float           _DrawField(const char* label, const char* value,
 								float y, float maxWidth);
-			float           _DrawWrappedText(const char* text, float x, float y,
+			float           _DrawTags(const char* tags, float x, float y,
 								float maxWidth);
 			BString         _FormatSize(int32 bytes) const;
+			BString         _GetTagAt(BPoint point);
 
 			IconItem*       fCurrentItem;
+			BMessenger      fTarget;
+			BString         fCurrentFilterTags;
 			
 			float           fPreviewSize;
 			float           fPadding;

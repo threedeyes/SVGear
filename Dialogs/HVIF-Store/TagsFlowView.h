@@ -28,6 +28,9 @@ public:
 			int32           CountTags() const;
 			void            GetSelectedTags(BString& outTags) const;
 
+			void            ToggleTag(const char* name);
+			void            DeselectAll();
+
 private:
 			void            _DoLayout();
 			float           _CalculateHeight(float width) const;

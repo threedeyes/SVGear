@@ -29,6 +29,9 @@ enum {
 	kMsgOpenIcon         = 'open',
 	kMsgCancel           = 'cncl',
 
+	kMsgMetaTagClicked   = 'mtcl',
+	kMsgClearTags        = 'cltg',
+
 	kMsgFetchCategories  = 'ftct',
 	kMsgDownloadIcon     = 'dnic',
 
@@ -37,7 +40,7 @@ enum {
 	kMsgIconPreviewReady = 'iprd',
 	kMsgIconDataReady    = 'idrd',
 	kMsgNetworkError     = 'nerr',
-	
+
 	kMsgRequestFinished  = 'rqfn',
 	kMsgRequeueRequest   = 'rqrq',
 	kMsgAbortQueue       = 'abrq',

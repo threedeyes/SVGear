@@ -540,6 +540,30 @@ IconGridView::SetIcon(int32 id, BBitmap* bmp, int32 generation)
 }
 
 
+bool
+IconGridView::SelectIcon(int32 id)
+{
+	for (int32 i = 0; i < fItems.CountItems(); i++) {
+		IconItem* item = fItems.ItemAt(i);
+		if (item->id == id) {
+			int32 oldSelection = fSelection;
+			fSelection = i;
+
+			if (oldSelection >= 0)
+				Invalidate(_ItemFrame(oldSelection));
+
+			Invalidate(_ItemFrame(fSelection));
+
+			_ScrollToSelection();
+			_UpdateInfoView();
+
+			return true;
+		}
+	}
+	return false;
+}
+
+
 IconItem*
 IconGridView::SelectedItem() const
 {

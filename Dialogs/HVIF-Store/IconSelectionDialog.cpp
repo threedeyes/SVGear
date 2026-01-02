@@ -31,7 +31,8 @@ IconSelectionDialog::IconSelectionDialog(BMessenger target)
 	fTarget(target),
 	fPage(1),
 	fLoading(false),
-	fSearchRunner(NULL)
+	fSearchRunner(NULL),
+	fPreserveSelectionId(-1)
 {
 	float width, height;
 	_CalculateWindowSize(&width, &height);
@@ -74,6 +75,18 @@ IconSelectionDialog::QuitRequested()
 	return true;
 }
 
+void
+IconSelectionDialog::Show()
+{
+	InvalidateLayout();
+	Layout(true);
+
+	BWindow::Show();
+
+	float w, h;
+	fSearchEntry->GetPreferredSize(&w, &h);
+	fResetButton->SetExplicitSize(BSize(h, h));
+}
 
 void
 IconSelectionDialog::_CalculateWindowSize(float* width, float* height)
@@ -95,6 +108,8 @@ IconSelectionDialog::_InitGUI()
 	fSearchEntry = new BTextControl("search", B_TRANSLATE("Search:"), "", new BMessage(kMsgSearch));
 	fSearchEntry->SetModificationMessage(new BMessage(kMsgSearch));
 
+	fResetButton = new BButton("reset", "×", new BMessage(kMsgClearTags));
+
 	fTagsView = new TagsFlowView();
 
 	fGrid = new IconGridView();
@@ -103,6 +118,7 @@ IconSelectionDialog::_InitGUI()
 	fGridScroll->SetExplicitMinSize(BSize(300, 200));
 
 	fInfoView = new IconInfoView();
+	fInfoView->SetTarget(BMessenger(this));
 	fGrid->SetInfoView(fInfoView);
 
 	BButton* cancelBtn = new BButton("cancel", B_TRANSLATE("Cancel"), new BMessage(kMsgCancel));
@@ -113,7 +129,10 @@ IconSelectionDialog::_InitGUI()
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_SMALL_SPACING)
 		.SetInsets(B_USE_WINDOW_INSETS)
-		.Add(fSearchEntry)
+		.AddGroup(B_HORIZONTAL, B_USE_SMALL_SPACING)
+			.Add(fSearchEntry)
+			.Add(fResetButton)
+		.End()
 		.Add(fTagsView)
 		.AddGroup(B_HORIZONTAL, B_USE_SMALL_SPACING)
 			.Add(fGridScroll, 3.0f)
@@ -174,6 +193,24 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 
 		case kMsgTagToggled: {
 			fTagsView->GetSelectedTags(fCurrentTags);
+			fInfoView->SetFilterTags(fCurrentTags);
+			_Search(true);
+			break;
+		}
+
+		case kMsgMetaTagClicked: {
+			BString tag;
+			if (message->FindString("tag", &tag) == B_OK) {
+				fTagsView->ToggleTag(tag);
+			}
+			break;
+		}
+
+		case kMsgClearTags: {
+			fTagsView->DeselectAll();
+			fSearchEntry->SetText("");
+			fTagsView->GetSelectedTags(fCurrentTags);
+			fInfoView->SetFilterTags(fCurrentTags);
 			_Search(true);
 			break;
 		}
@@ -206,6 +243,7 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 
 		case kMsgSelectIcon:
 			fOpenBtn->SetEnabled(fGrid->SelectedItem() != NULL);
+			fPreserveSelectionId = -1;
 			break;
 
 		case kMsgOpenIcon:
@@ -254,6 +292,13 @@ IconSelectionDialog::_Search(bool clear)
 	_SetLoading(true);
 
 	if (clear) {
+		IconItem* selected = fGrid->SelectedItem();
+		if (selected != NULL) {
+			fPreserveSelectionId = selected->id;
+		} else {
+			fPreserveSelectionId = -1;
+		}
+
 		fPage = 1;
 		fClient->CancelAllRequests();
 		fGrid->Clear();
@@ -330,6 +375,13 @@ IconSelectionDialog::_ParseIcons(BMessage* data)
 	}
 
 	fGrid->SetHasMore(addedCount == kDefaultPageLimit);
+
+	if (fPreserveSelectionId >= 0) {
+		if (fGrid->SelectIcon(fPreserveSelectionId)) {
+			fOpenBtn->SetEnabled(true);
+			fPreserveSelectionId = -1;
+		}
+	}
 }
 
 

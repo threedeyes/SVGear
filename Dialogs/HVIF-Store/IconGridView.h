@@ -58,6 +58,8 @@ public:
 			void            AddItem(IconItem* item);
 			void            Clear();
 			void            SetIcon(int32 id, BBitmap* bmp, int32 generation);
+
+			bool            SelectIcon(int32 id);
 			IconItem*       SelectedItem() const;
 			int32           CountItems() const;
 			int32           CurrentGeneration() const { return fGeneration; }
