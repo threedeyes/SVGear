@@ -10,6 +10,9 @@
 #include <String.h>
 #include <Bitmap.h>
 #include <Messenger.h>
+#include <Cursor.h>
+
+#include "HvifStoreDefs.h"
 
 struct IconItem;
 
@@ -21,6 +24,8 @@ public:
 	virtual void            AttachedToWindow();
 	virtual void            Draw(BRect updateRect);
 	virtual void            MouseDown(BPoint where);
+	virtual void            MouseMoved(BPoint where, uint32 transit,
+								const BMessage* dragMessage);
 	virtual BSize           MinSize();
 	virtual BSize           MaxSize();
 	virtual BSize           PreferredSize();
@@ -37,8 +42,12 @@ private:
 								float y, float maxWidth);
 			float           _DrawTags(const char* tags, float x, float y,
 								float maxWidth);
+			float           _DrawFormats(float x, float y, float maxWidth);
 			BString         _FormatSize(int32 bytes) const;
-			BString         _GetTagAt(BPoint point);
+			BString         _GetTagAt(BPoint point) const;
+			IconFormat      _GetFormatAt(BPoint point) const;
+			bool            _IsOverClickable(BPoint point) const;
+			void            _UpdateCursor(BPoint where);
 
 			IconItem*       fCurrentItem;
 			BMessenger      fTarget;
@@ -48,6 +57,9 @@ private:
 			float           fPadding;
 			float           fPanelWidth;
 			
+			BRect           fFormatRects[kFormatCount];
+			bool            fCursorOverLink;
+
 	static const float      kBasePreviewSize;
 	static const float      kBasePadding;
 	static const float      kBasePanelWidth;

@@ -368,6 +368,12 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 	reply.AddString("mime_type", ctx->extraData.GetString("mime_type", ""));
 	reply.AddString("tags", ctx->extraData.GetString("tags", ""));
 
+	BString savePath;
+	if (ctx->extraData.FindString("save_path", &savePath) == B_OK) {
+		reply.AddString("save_path", savePath);
+		reply.AddInt32("save_format", ctx->extraData.GetInt32("save_format", -1));
+	}
+
 	BString hvifPath = ctx->extraData.GetString("hvif_path", "");
 	BString svgPath = ctx->extraData.GetString("svg_path", "");
 	BString iomPath = ctx->extraData.GetString("iom_path", "");

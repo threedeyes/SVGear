@@ -9,6 +9,9 @@
 #include <Font.h>
 #include <SeparatorView.h>
 #include <Catalog.h>
+#include <File.h>
+#include <NodeInfo.h>
+#include <Entry.h>
 
 #include <cstdlib>
 #include <cstdio>
@@ -32,7 +35,9 @@ IconSelectionDialog::IconSelectionDialog(BMessenger target)
 	fPage(1),
 	fLoading(false),
 	fSearchRunner(NULL),
-	fPreserveSelectionId(-1)
+	fPreserveSelectionId(-1),
+	fSavePanel(NULL),
+	fPendingSaveFormat(kFormatNone)
 {
 	float width, height;
 	_CalculateWindowSize(&width, &height);
@@ -59,6 +64,7 @@ IconSelectionDialog::IconSelectionDialog(BMessenger target)
 IconSelectionDialog::~IconSelectionDialog()
 {
 	delete fSearchRunner;
+	delete fSavePanel;
 
 	if (fClient->Lock())
 		fClient->Quit();
@@ -167,6 +173,144 @@ IconSelectionDialog::_ScheduleSearch()
 }
 
 
+const char*
+IconSelectionDialog::_GetFormatExtension(IconFormat format) const
+{
+	switch (format) {
+		case kFormatHVIF: return "hvif";
+		case kFormatSVG:  return "svg";
+		case kFormatIOM:  return "iom";
+		default:          return "";
+	}
+}
+
+
+const char*
+IconSelectionDialog::_GetFormatMimeType(IconFormat format) const
+{
+	switch (format) {
+		case kFormatHVIF: return "application/x-vnd.Haiku-icon";
+		case kFormatSVG:  return "image/svg+xml";
+		case kFormatIOM:  return "application/x-vnd.Haiku-icon-o-matic";
+		default:          return "application/octet-stream";
+	}
+}
+
+
+void
+IconSelectionDialog::_SaveFormat(IconFormat format)
+{
+	IconItem* item = fGrid->SelectedItem();
+	if (item == NULL)
+		return;
+
+	BString path;
+	switch (format) {
+		case kFormatHVIF: path = item->hvifUrl; break;
+		case kFormatSVG:  path = item->svgUrl; break;
+		case kFormatIOM:  path = item->iomUrl; break;
+		default: return;
+	}
+
+	if (path.IsEmpty()) {
+		BAlert* alert = new BAlert(B_TRANSLATE("Error"),
+			B_TRANSLATE("This format is not available for this icon."),
+			B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+		alert->Go();
+		return;
+	}
+
+	fPendingSaveFormat = format;
+
+	BString defaultName = item->title;
+	defaultName.ReplaceAll("/", "_");
+	defaultName.ReplaceAll(":", "_");
+	defaultName << "." << _GetFormatExtension(format);
+
+	if (fSavePanel == NULL) {
+		BMessage* message = new BMessage(kMsgSaveFormatRef);
+		fSavePanel = new BFilePanel(B_SAVE_PANEL, new BMessenger(this),
+			NULL, 0, false, message);
+	}
+
+	fSavePanel->SetSaveText(defaultName.String());
+
+	BString panelTitle = B_TRANSLATE("Save icon as ");
+	panelTitle << _GetFormatExtension(format);
+	fSavePanel->Window()->SetTitle(panelTitle.String());
+
+	SetFeel(B_NORMAL_WINDOW_FEEL);
+
+	fSavePanel->Show();
+}
+
+
+void
+IconSelectionDialog::_DoSaveFormat(BMessage* message)
+{
+	if (fPendingSaveFormat == kFormatNone)
+		return;
+
+	entry_ref dirRef;
+	BString name;
+
+	if (message->FindRef("directory", &dirRef) != B_OK ||
+		message->FindString("name", &name) != B_OK) {
+		fPendingSaveFormat = kFormatNone;
+		return;
+	}
+
+	IconItem* item = fGrid->SelectedItem();
+	if (item == NULL) {
+		fPendingSaveFormat = kFormatNone;
+		return;
+	}
+
+	BString urlPath;
+	switch (fPendingSaveFormat) {
+		case kFormatHVIF: urlPath = item->hvifUrl; break;
+		case kFormatSVG:  urlPath = item->svgUrl; break;
+		case kFormatIOM:  urlPath = item->iomUrl; break;
+		default:
+			fPendingSaveFormat = kFormatNone;
+			return;
+	}
+
+	BPath dirPath(&dirRef);
+	BPath filePath(dirPath);
+	filePath.Append(name.String());
+
+	BMessage downloadMsg(kMsgDownloadIcon);
+	downloadMsg.AddInt32("id", item->id);
+	downloadMsg.AddString("title", item->title);
+	downloadMsg.AddString("save_path", filePath.Path());
+	downloadMsg.AddInt32("save_format", fPendingSaveFormat);
+
+	switch (fPendingSaveFormat) {
+		case kFormatHVIF:
+			downloadMsg.AddString("hvif_path", urlPath);
+			downloadMsg.AddString("svg_path", "");
+			downloadMsg.AddString("iom_path", "");
+			break;
+		case kFormatSVG:
+			downloadMsg.AddString("hvif_path", "");
+			downloadMsg.AddString("svg_path", urlPath);
+			downloadMsg.AddString("iom_path", "");
+			break;
+		case kFormatIOM:
+			downloadMsg.AddString("hvif_path", "");
+			downloadMsg.AddString("svg_path", "");
+			downloadMsg.AddString("iom_path", urlPath);
+			break;
+		default:
+			break;
+	}
+
+	fClient->PostMessage(&downloadMsg);
+	fPendingSaveFormat = kFormatNone;
+}
+
+
 void
 IconSelectionDialog::MessageReceived(BMessage* message)
 {
@@ -254,7 +398,68 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			PostMessage(B_QUIT_REQUESTED);
 			break;
 
+		case kMsgSaveFormat: {
+			int32 format;
+			if (message->FindInt32("format", &format) == B_OK) {
+				_SaveFormat((IconFormat)format);
+			}
+			break;
+		}
+
+		case kMsgSaveFormatRef:
+			SetFeel(B_MODAL_APP_WINDOW_FEEL);
+			_DoSaveFormat(message);
+			break;
+
+		case B_CANCEL: {
+			void* source = NULL;
+			if (message->FindPointer("source", &source) == B_OK
+				&& source == fSavePanel) {
+				SetFeel(B_MODAL_APP_WINDOW_FEEL);
+				fPendingSaveFormat = kFormatNone;
+			}
+			break;
+		}
+
 		case kMsgIconDataReady: {
+			BString savePath;
+			int32 saveFormat;
+
+			if (message->FindString("save_path", &savePath) == B_OK &&
+				message->FindInt32("save_format", &saveFormat) == B_OK) {
+
+				const void* data = NULL;
+				ssize_t size = 0;
+				const char* dataField = NULL;
+
+				switch ((IconFormat)saveFormat) {
+					case kFormatHVIF: dataField = "hvif_data"; break;
+					case kFormatSVG:  dataField = "svg_data"; break;
+					case kFormatIOM:  dataField = "iom_data"; break;
+					default: break;
+				}
+
+				if (dataField != NULL &&
+					message->FindData(dataField, B_RAW_TYPE, &data, &size) == B_OK) {
+
+					BFile file(savePath.String(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+
+					if (file.InitCheck() == B_OK) {
+						file.Write(data, size);
+
+						BNodeInfo nodeInfo(&file);
+						nodeInfo.SetType(_GetFormatMimeType((IconFormat)saveFormat));
+					} else {
+						BAlert* alert = new BAlert(B_TRANSLATE("Error"),
+							B_TRANSLATE("Failed to save file."),
+							B_TRANSLATE("OK"), NULL, NULL,
+							B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+						alert->Go();
+					}
+				}
+				break;
+			}
+
 			_SetLoading(false);
 			fOpenBtn->SetEnabled(true);
 

@@ -26,13 +26,17 @@ IconInfoView::IconInfoView()
 	fCurrentItem(NULL),
 	fPreviewSize(kBasePreviewSize),
 	fPadding(kBasePadding),
-	fPanelWidth(kBasePanelWidth)
+	fPanelWidth(kBasePanelWidth),
+	fCursorOverLink(false)
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 	_CalculateSizes();
 	SetExplicitMinSize(BSize(fPanelWidth, 250));
 	SetExplicitMaxSize(BSize(fPanelWidth, B_SIZE_UNLIMITED));
 	SetExplicitPreferredSize(BSize(fPanelWidth, B_SIZE_UNSET));
+
+	for (int32 i = 0; i < kFormatCount; i++)
+		fFormatRects[i] = BRect();
 }
 
 
@@ -64,6 +68,8 @@ IconInfoView::AttachedToWindow()
 	SetExplicitMinSize(BSize(fPanelWidth, 250));
 	SetExplicitMaxSize(BSize(fPanelWidth, B_SIZE_UNLIMITED));
 	SetExplicitPreferredSize(BSize(fPanelWidth, B_SIZE_UNSET));
+
+	SetEventMask(B_POINTER_EVENTS, 0);
 }
 
 
@@ -109,6 +115,10 @@ void
 IconInfoView::SetIcon(IconItem* item)
 {
 	fCurrentItem = item;
+
+	for (int32 i = 0; i < kFormatCount; i++)
+		fFormatRects[i] = BRect();
+
 	Invalidate();
 }
 
@@ -117,19 +127,139 @@ void
 IconInfoView::Clear()
 {
 	fCurrentItem = NULL;
+
+	for (int32 i = 0; i < kFormatCount; i++)
+		fFormatRects[i] = BRect();
+
 	Invalidate();
+}
+
+
+bool
+IconInfoView::_IsOverClickable(BPoint point) const
+{
+	if (!_GetTagAt(point).IsEmpty())
+		return true;
+
+	if (_GetFormatAt(point) != kFormatNone)
+		return true;
+
+	return false;
+}
+
+
+void
+IconInfoView::_UpdateCursor(BPoint where)
+{
+	bool overClickable = _IsOverClickable(where);
+
+	if (overClickable != fCursorOverLink) {
+		fCursorOverLink = overClickable;
+
+		if (fCursorOverLink) {
+			BCursor linkCursor(B_CURSOR_ID_FOLLOW_LINK);
+			SetViewCursor(&linkCursor);
+		} else {
+			SetViewCursor(B_CURSOR_SYSTEM_DEFAULT);
+		}
+	}
+}
+
+
+void
+IconInfoView::MouseMoved(BPoint where, uint32 transit, const BMessage* dragMessage)
+{
+	if (transit == B_EXITED_VIEW) {
+		if (fCursorOverLink) {
+			fCursorOverLink = false;
+			SetViewCursor(B_CURSOR_SYSTEM_DEFAULT);
+		}
+	} else {
+		_UpdateCursor(where);
+	}
+
+	BView::MouseMoved(where, transit, dragMessage);
 }
 
 
 void
 IconInfoView::MouseDown(BPoint where)
 {
+	IconFormat format = _GetFormatAt(where);
+	if (format != kFormatNone) {
+		BMessage msg(kMsgSaveFormat);
+		msg.AddInt32("format", format);
+		fTarget.SendMessage(&msg);
+		return;
+	}
+
 	BString clickedTag = _GetTagAt(where);
 	if (!clickedTag.IsEmpty()) {
 		BMessage msg(kMsgMetaTagClicked);
 		msg.AddString("tag", clickedTag);
 		fTarget.SendMessage(&msg);
 	}
+}
+
+
+IconFormat
+IconInfoView::_GetFormatAt(BPoint point) const
+{
+	for (int32 i = 0; i < kFormatCount; i++) {
+		if (fFormatRects[i].IsValid() && fFormatRects[i].Contains(point))
+			return (IconFormat)i;
+	}
+	return kFormatNone;
+}
+
+
+float
+IconInfoView::_DrawFormats(float x, float y, float maxWidth)
+{
+	font_height fh;
+	GetFontHeight(&fh);
+	float lineHeight = fh.ascent + fh.descent + fh.leading;
+
+	rgb_color linkColor = ui_color(B_LINK_TEXT_COLOR);
+	rgb_color textColor = ui_color(B_PANEL_TEXT_COLOR);
+
+	struct FormatInfo {
+		const char* name;
+		int32 size;
+		IconFormat format;
+	};
+
+	FormatInfo formats[kFormatCount] = {
+		{ "HVIF", fCurrentItem ? fCurrentItem->hvifSize : 0, kFormatHVIF },
+		{ "SVG", fCurrentItem ? fCurrentItem->svgSize : 0, kFormatSVG },
+		{ "IOM", fCurrentItem ? fCurrentItem->iomSize : 0, kFormatIOM }
+	};
+
+	for (int32 i = 0; i < kFormatCount; i++) {
+		fFormatRects[i] = BRect();
+
+		if (formats[i].size <= 0)
+			continue;
+
+		float textX = x + 8;
+		float textY = y + fh.ascent;
+
+		float nameWidth = StringWidth(formats[i].name);
+		fFormatRects[i] = BRect(textX, y, textX + nameWidth, y + lineHeight);
+
+		SetHighColor(linkColor);
+		DrawString(formats[i].name, BPoint(textX, textY));
+
+		float colonX = textX + nameWidth;
+		SetHighColor(textColor);
+		BString sizeStr = ": ";
+		sizeStr << _FormatSize(formats[i].size);
+		DrawString(sizeStr, BPoint(colonX, textY));
+
+		y += lineHeight;
+	}
+
+	return y;
 }
 
 
@@ -147,6 +277,9 @@ IconInfoView::Draw(BRect updateRect)
 	font_height fh;
 	GetFontHeight(&fh);
 	float lineHeight = fh.ascent + fh.descent + fh.leading;
+
+	for (int32 i = 0; i < kFormatCount; i++)
+		fFormatRects[i] = BRect();
 
 	if (fCurrentItem == NULL) {
 		SetHighColor(tint_color(ViewColor(), B_DARKEN_2_TINT));
@@ -225,31 +358,15 @@ IconInfoView::Draw(BRect updateRect)
 	StrokeLine(BPoint(fPadding, y), BPoint(bounds.Width() - fPadding, y));
 	y += 8;
 
-	SetHighColor(tint_color(ui_color(B_PANEL_TEXT_COLOR), B_DARKEN_1_TINT));
-	DrawString(B_TRANSLATE("File sizes:"), BPoint(contentX, y + fh.ascent));
-	y += lineHeight + 4;
+	bool hasAnyFormat = (fCurrentItem->hvifSize > 0 ||
+		fCurrentItem->svgSize > 0 || fCurrentItem->iomSize > 0);
 
-	SetHighColor(ui_color(B_PANEL_TEXT_COLOR));
+	if (hasAnyFormat) {
+		SetHighColor(tint_color(ui_color(B_PANEL_TEXT_COLOR), B_DARKEN_1_TINT));
+		DrawString(B_TRANSLATE("Save as:"), BPoint(contentX, y + fh.ascent));
+		y += lineHeight + 4;
 
-	if (fCurrentItem->hvifSize > 0) {
-		BString sizeStr = "HVIF: ";
-		sizeStr << _FormatSize(fCurrentItem->hvifSize);
-		DrawString(sizeStr, BPoint(contentX + 8, y + fh.ascent));
-		y += lineHeight;
-	}
-
-	if (fCurrentItem->svgSize > 0) {
-		BString sizeStr = "SVG: ";
-		sizeStr << _FormatSize(fCurrentItem->svgSize);
-		DrawString(sizeStr, BPoint(contentX + 8, y + fh.ascent));
-		y += lineHeight;
-	}
-
-	if (fCurrentItem->iomSize > 0) {
-		BString sizeStr = "IOM: ";
-		sizeStr << _FormatSize(fCurrentItem->iomSize);
-		DrawString(sizeStr, BPoint(contentX + 8, y + fh.ascent));
-		y += lineHeight;
+		y = _DrawFormats(contentX, y, maxWidth);
 	}
 }
 
@@ -369,7 +486,7 @@ IconInfoView::_DrawTags(const char* tags, float x, float y, float maxWidth)
 
 
 BString
-IconInfoView::_GetTagAt(BPoint point)
+IconInfoView::_GetTagAt(BPoint point) const
 {
 	if (fCurrentItem == NULL || fCurrentItem->tags.IsEmpty())
 		return "";
@@ -384,7 +501,7 @@ IconInfoView::_GetTagAt(BPoint point)
 		BRect bmpBounds = fCurrentItem->bitmap->Bounds();
 		y += bmpBounds.Height() + 1.0f + fPadding / 2;
 	}
-	y += lineHeight + fPadding; // Title
+	y += lineHeight + fPadding;
 	if (!fCurrentItem->author.IsEmpty())
 		y += lineHeight + 2;
 

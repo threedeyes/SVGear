@@ -11,6 +11,8 @@
 #include <Button.h>
 #include <Messenger.h>
 #include <MessageRunner.h>
+#include <FilePanel.h>
+#include <Path.h>
 
 #include "HvifStoreDefs.h"
 
@@ -39,6 +41,10 @@ private:
 			void            _AddIconFromMessage(BMessage* item);
 			void            _OpenSelectedIcon();
 			void            _SetLoading(bool loading);
+			void            _SaveFormat(IconFormat format);
+			void            _DoSaveFormat(BMessage* message);
+			const char*     _GetFormatExtension(IconFormat format) const;
+			const char*     _GetFormatMimeType(IconFormat format) const;
 
 			HvifStoreClient* fClient;
 			IconGridView*   fGrid;
@@ -56,6 +62,9 @@ private:
 			BString         fLastSearchQuery;
 			BMessageRunner* fSearchRunner;
 			int32           fPreserveSelectionId;
+
+			BFilePanel*     fSavePanel;
+			IconFormat      fPendingSaveFormat;
 };
 
 #endif

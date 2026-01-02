@@ -20,6 +20,14 @@ static const float kBaseWindowHeight = 540.0f;
 static const int32 kMaxConcurrentRequests = 15;
 static const int32 kMaxRetries = 2;
 
+enum IconFormat {
+	kFormatNone = -1,
+	kFormatHVIF = 0,
+	kFormatSVG,
+	kFormatIOM,
+	kFormatCount
+};
+
 enum {
 	kMsgSearch           = 'srch',
 	kMsgSearchDelayed    = 'sdly',
@@ -47,7 +55,11 @@ enum {
 
 	kMsgLoadingStarted   = 'ldst',
 	kMsgLoadingFinished  = 'ldfn',
-	kMsgDialogClosed     = 'dlcl'
+	kMsgDialogClosed     = 'dlcl',
+
+	kMsgSaveFormat       = 'svfm',
+	kMsgSaveFormatRef    = 'svrf',
+	kMsgFormatDataReady  = 'fdrd'
 };
 
 #endif
