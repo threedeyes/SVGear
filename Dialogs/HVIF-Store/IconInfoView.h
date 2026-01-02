@@ -11,10 +11,21 @@
 #include <Bitmap.h>
 #include <Messenger.h>
 #include <Cursor.h>
+#include <Path.h>
+#include <ObjectList.h>
 
 #include "HvifStoreDefs.h"
 
 struct IconItem;
+
+struct TagRect {
+	BRect	rect;
+	BString	name;
+	bool	isMeta;
+
+	TagRect() : isMeta(false) {}
+	TagRect(BRect r, const char* n, bool meta) : rect(r), name(n), isMeta(meta) {}
+};
 
 class IconInfoView : public BView {
 public:
@@ -26,6 +37,8 @@ public:
 	virtual void            MouseDown(BPoint where);
 	virtual void            MouseMoved(BPoint where, uint32 transit,
 								const BMessage* dragMessage);
+	virtual void            MouseUp(BPoint where);
+	virtual void            MessageReceived(BMessage* message);
 	virtual BSize           MinSize();
 	virtual BSize           MaxSize();
 	virtual BSize           PreferredSize();
@@ -47,7 +60,14 @@ private:
 			BString         _GetTagAt(BPoint point) const;
 			IconFormat      _GetFormatAt(BPoint point) const;
 			bool            _IsOverClickable(BPoint point) const;
+			bool            _IsOverPreview(BPoint point) const;
+			BRect           _GetPreviewRect() const;
 			void            _UpdateCursor(BPoint where);
+
+			void            _StartDrag(BPoint point);
+			status_t        _CreateTempFile(BPath& tempPath);
+			void            _SetupTempFile(const BPath& tempPath);
+			void            _DeleteFileDelayed(const BPath& filePath);
 
 			IconItem*       fCurrentItem;
 			BMessenger      fTarget;
@@ -59,6 +79,16 @@ private:
 			
 			BRect           fFormatRects[kFormatCount];
 			bool            fCursorOverLink;
+
+			uint32          fDragButton;
+			BPoint          fClickPoint;
+			bool            fDragStarted;
+
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+			BObjectList<TagRect, true> fTagRects;
+#else
+			BObjectList<TagRect> fTagRects;
+#endif
 
 	static const float      kBasePreviewSize;
 	static const float      kBasePadding;

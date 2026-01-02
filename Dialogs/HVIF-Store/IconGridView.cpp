@@ -8,8 +8,17 @@
 #include <ControlLook.h>
 #include <Font.h>
 #include <Catalog.h>
+#include <File.h>
+#include <Directory.h>
+#include <Entry.h>
+#include <NodeInfo.h>
+#include <FindDirectory.h>
+#include <MessageRunner.h>
+#include <IconUtils.h>
 
 #include <cmath>
+#include <cstring>
+#include <cstdio>
 
 #include "IconGridView.h"
 #include "IconInfoView.h"
@@ -42,7 +51,11 @@ IconGridView::IconGridView()
 	fIconSize(kBaseIconSize),
 	fCellWidth(kBaseCellWidth),
 	fCellHeight(kBaseCellHeight),
-	fPadding(kBasePadding)
+	fPadding(kBasePadding),
+	fDragButton(0),
+	fClickPoint(0, 0),
+	fDragStarted(false),
+	fDragItemIndex(-1)
 {
 	SetViewUIColor(B_LIST_BACKGROUND_COLOR);
 	SetLowUIColor(B_LIST_BACKGROUND_COLOR);
@@ -50,6 +63,8 @@ IconGridView::IconGridView()
 
 	SetExplicitMinSize(BSize(200, 150));
 	SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, B_SIZE_UNLIMITED));
+
+	_CleanupOldTempFiles();
 }
 
 
@@ -87,6 +102,26 @@ IconGridView::AttachedToWindow()
 
 	_CalculateSizes();
 	_RecalculateLayout();
+}
+
+
+void
+IconGridView::MessageReceived(BMessage* message)
+{
+	switch (message->what) {
+		case kMsgDeleteTempFile: {
+			BString filePath;
+			if (message->FindString("path", &filePath) == B_OK) {
+				BEntry entry(filePath.String());
+				if (entry.Exists())
+					entry.Remove();
+			}
+			break;
+		}
+		default:
+			BView::MessageReceived(message);
+			break;
+	}
 }
 
 
@@ -358,6 +393,26 @@ IconGridView::MouseDown(BPoint where)
 
 	int32 newSelection = _ItemAtPoint(where);
 
+	BMessage* currentMessage = Window()->CurrentMessage();
+	uint32 buttons = 0;
+	int32 clicks = 1;
+
+	if (currentMessage != NULL) {
+		currentMessage->FindInt32("buttons", (int32*)&buttons);
+		currentMessage->FindInt32("clicks", &clicks);
+	}
+
+	if (newSelection >= 0) {
+		IconItem* item = fItems.ItemAt(newSelection);
+		if (item != NULL && item->hvifData != NULL && item->hvifSize > 0) {
+			fDragButton = buttons;
+			fClickPoint = where;
+			fDragStarted = false;
+			fDragItemIndex = newSelection;
+			SetMouseEventMask(B_POINTER_EVENTS, B_LOCK_WINDOW_FOCUS);
+		}
+	}
+
 	if (newSelection != fSelection) {
 		int32 oldSelection = fSelection;
 		fSelection = newSelection;
@@ -374,9 +429,6 @@ IconGridView::MouseDown(BPoint where)
 	if (window != NULL)
 		window->PostMessage(kMsgSelectIcon);
 
-	int32 clicks = 1;
-	if (window != NULL && window->CurrentMessage() != NULL)
-		window->CurrentMessage()->FindInt32("clicks", &clicks);
 	if (clicks == 2 && fSelection >= 0 && window != NULL)
 		window->PostMessage(kMsgOpenIcon);
 }
@@ -385,6 +437,17 @@ IconGridView::MouseDown(BPoint where)
 void
 IconGridView::MouseMoved(BPoint where, uint32 transit, const BMessage* dragMessage)
 {
+	if (fDragButton != 0 && !fDragStarted && fDragItemIndex >= 0) {
+		if (abs((int32)(where.x - fClickPoint.x)) > kDragThreshold ||
+			abs((int32)(where.y - fClickPoint.y)) > kDragThreshold) {
+
+			fDragStarted = true;
+			IconItem* item = fItems.ItemAt(fDragItemIndex);
+			if (item != NULL && item->hvifData != NULL)
+				_StartDrag(fClickPoint, item);
+		}
+	}
+
 	int32 newHovered = -1;
 	bool newLoadMoreHovered = false;
 
@@ -413,6 +476,16 @@ IconGridView::MouseMoved(BPoint where, uint32 transit, const BMessage* dragMessa
 	}
 
 	BView::MouseMoved(where, transit, dragMessage);
+}
+
+
+void
+IconGridView::MouseUp(BPoint where)
+{
+	fDragButton = 0;
+	fDragStarted = false;
+	fDragItemIndex = -1;
+	BView::MouseUp(where);
 }
 
 
@@ -505,6 +578,9 @@ IconGridView::Clear()
 	fLoadMoreHovered = false;
 	fTotalHeight = 0;
 	fHasMore = false;
+	fDragButton = 0;
+	fDragStarted = false;
+	fDragItemIndex = -1;
 
 	if (fInfoView != NULL)
 		fInfoView->Clear();
@@ -516,7 +592,8 @@ IconGridView::Clear()
 
 
 void
-IconGridView::SetIcon(int32 id, BBitmap* bmp, int32 generation)
+IconGridView::SetIcon(int32 id, BBitmap* bmp, int32 generation,
+	const uint8* hvifData, size_t hvifDataSize)
 {
 	if (generation != fGeneration) {
 		delete bmp;
@@ -528,6 +605,16 @@ IconGridView::SetIcon(int32 id, BBitmap* bmp, int32 generation)
 		if (item->id == id) {
 			delete item->bitmap;
 			item->bitmap = bmp;
+
+			delete[] item->hvifData;
+			if (hvifData != NULL && hvifDataSize > 0) {
+				item->hvifData = new uint8[hvifDataSize];
+				memcpy(item->hvifData, hvifData, hvifDataSize);
+				item->hvifSize = (int32)hvifDataSize;
+			} else {
+				item->hvifData = NULL;
+			}
+
 			Invalidate(_ItemFrame(i));
 
 			if (i == fSelection && fInfoView != NULL)
@@ -724,4 +811,135 @@ IconGridView::_UpdateInfoView()
 		fInfoView->SetIcon(item);
 	else
 		fInfoView->Clear();
+}
+
+
+void
+IconGridView::_StartDrag(BPoint point, IconItem* item)
+{
+	if (item == NULL || item->bitmap == NULL ||
+		item->hvifData == NULL || item->hvifSize <= 0)
+		return;
+
+	BPath tempPath;
+	status_t status = _CreateTempFile(tempPath, item->title.String());
+	if (status != B_OK)
+		return;
+
+	BFile tempFile(tempPath.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+	if (tempFile.InitCheck() != B_OK)
+		return;
+
+	ssize_t written = tempFile.Write(item->hvifData, item->hvifSize);
+	if (written != (ssize_t)item->hvifSize) {
+		tempFile.Unset();
+		return;
+	}
+
+	_SetupTempFile(tempPath, item->hvifData, item->hvifSize);
+	tempFile.Unset();
+
+	BMessage msg(B_SIMPLE_DATA);
+	msg.AddData("icon", B_VECTOR_ICON_TYPE, item->hvifData, item->hvifSize);
+	msg.AddPoint("click_pt", point);
+
+	entry_ref ref;
+	BEntry entry(tempPath.Path());
+	if (entry.GetRef(&ref) == B_OK) {
+		msg.AddRef("refs", &ref);
+	}
+
+	BPoint tmpLoc;
+	uint32 button;
+	GetMouse(&tmpLoc, &button);
+	msg.AddInt32("buttons", (int32)button);
+	msg.AddInt32("be:actions", B_COPY_TARGET);
+
+	BBitmap* dragBitmap = new BBitmap(
+		BRect(0, 0, fIconSize - 1, fIconSize - 1), B_RGBA32);
+	if (BIconUtils::GetVectorIcon(item->hvifData, item->hvifSize, dragBitmap) != B_OK) {
+		delete dragBitmap;
+		dragBitmap = new BBitmap(item->bitmap);
+	}
+
+	BPoint dragOffset(fIconSize / 2, fIconSize / 2);
+	DragMessage(&msg, dragBitmap, B_OP_ALPHA, dragOffset, this);
+
+	fDragButton = 0;
+	_DeleteFileDelayed(tempPath);
+}
+
+
+status_t
+IconGridView::_CreateTempFile(BPath& tempPath, const char* title)
+{
+	BPath tempDir;
+	status_t status = find_directory(B_SYSTEM_TEMP_DIRECTORY, &tempDir);
+	if (status != B_OK)
+		return status;
+
+	BString safeName(title);
+	safeName.ReplaceAll("/", "_");
+	safeName.ReplaceAll(":", "_");
+	safeName.ReplaceAll(" ", "_");
+
+	char tempName[B_FILE_NAME_LENGTH];
+	snprintf(tempName, sizeof(tempName), "hvif_%s_%lld.hvif", safeName.String(), system_time());
+
+	status = tempPath.SetTo(tempDir.Path(), tempName);
+	return status;
+}
+
+
+void
+IconGridView::_SetupTempFile(const BPath& tempPath, const uint8* data, size_t size)
+{
+	BFile file(tempPath.Path(), B_READ_WRITE);
+	if (file.InitCheck() != B_OK)
+		return;
+
+	BNodeInfo nodeInfo(&file);
+	if (nodeInfo.InitCheck() == B_OK) {
+		nodeInfo.SetType(MIME_HVIF_SIGNATURE);
+		nodeInfo.SetIcon(data, size);
+	}
+}
+
+
+void
+IconGridView::_DeleteFileDelayed(const BPath& filePath)
+{
+	BMessage* deleteMsg = new BMessage(kMsgDeleteTempFile);
+	deleteMsg->AddString("path", filePath.Path());
+
+	BMessageRunner* runner = new BMessageRunner(this, deleteMsg, kTempFileDeleteDelay, 1);
+	(void)runner;
+}
+
+
+void
+IconGridView::_CleanupOldTempFiles()
+{
+	BPath tempDir;
+	if (find_directory(B_SYSTEM_TEMP_DIRECTORY, &tempDir) != B_OK)
+		return;
+
+	BDirectory dir(tempDir.Path());
+	if (dir.InitCheck() != B_OK)
+		return;
+
+	BEntry entry;
+	while (dir.GetNextEntry(&entry) == B_OK) {
+		char name[B_FILE_NAME_LENGTH];
+		if (entry.GetName(name) == B_OK) {
+			if (strncmp(name, "hvif_", 5) == 0) {
+				time_t modTime;
+				entry.GetModificationTime(&modTime);
+				time_t now = time(NULL);
+				if (now - modTime > 3600) {
+					entry.Remove();
+				}
+			}
+		}
+	}
 }

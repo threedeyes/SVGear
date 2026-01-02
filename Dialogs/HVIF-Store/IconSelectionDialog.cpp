@@ -376,15 +376,19 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		}
 
 		case kMsgIconPreviewReady: {
-			BBitmap* bmp = NULL;
-			int32 id = 0;
-			int32 generation = 0;
-			if (message->FindPointer("bitmap", (void**)&bmp) == B_OK &&
-				message->FindInt32("id", &id) == B_OK &&
-				message->FindInt32("generation", &generation) == B_OK) {
-				fGrid->SetIcon(id, bmp, generation);
-			}
-			break;
+		    BBitmap* bmp = NULL;
+		    int32 id = 0;
+		    int32 generation = 0;
+		    const void* hvifData = NULL;
+		    ssize_t hvifSize = 0;
+
+		    if (message->FindPointer("bitmap", (void**)&bmp) == B_OK &&
+		        message->FindInt32("id", &id) == B_OK &&
+		        message->FindInt32("generation", &generation) == B_OK) {
+		        message->FindData("hvif_data", B_RAW_TYPE, &hvifData, &hvifSize);
+		        fGrid->SetIcon(id, bmp, generation, (const uint8*)hvifData, (size_t)hvifSize);
+		    }
+		    break;
 		}
 
 		case kMsgSelectIcon:

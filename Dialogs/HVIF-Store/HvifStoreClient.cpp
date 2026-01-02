@@ -566,20 +566,21 @@ HvifStoreClient::_ThreadEntry(void* data)
 			reply.AddMessage("extra", &ctx->extraData);
 
 			if (ctx->successWhat == kMsgIconPreviewReady) {
-				int32 generation = ctx->extraData.GetInt32("generation", 0);
-				int32 size = ctx->extraData.GetInt32("size", 64);
+			    int32 generation = ctx->extraData.GetInt32("generation", 0);
+			    int32 size = ctx->extraData.GetInt32("size", 64);
 
-				BBitmap* bmp = new BBitmap(
-					BRect(0, 0, size - 1, size - 1), B_RGBA32);
-				if (BIconUtils::GetVectorIcon((const uint8*)buffer.Buffer(),
-					buffer.BufferLength(), bmp) == B_OK) {
-					reply.AddPointer("bitmap", bmp);
-					reply.AddInt32("id", ctx->extraData.GetInt32("id", 0));
-					reply.AddInt32("generation", generation);
-					ctx->target.SendMessage(&reply);
-				} else {
-					delete bmp;
-				}
+			    BBitmap* bmp = new BBitmap(
+			        BRect(0, 0, size - 1, size - 1), B_RGBA32);
+			    if (BIconUtils::GetVectorIcon((const uint8*)buffer.Buffer(),
+			        buffer.BufferLength(), bmp) == B_OK) {
+			        reply.AddPointer("bitmap", bmp);
+			        reply.AddInt32("id", ctx->extraData.GetInt32("id", 0));
+			        reply.AddInt32("generation", generation);
+			        reply.AddData("hvif_data", B_RAW_TYPE, buffer.Buffer(), buffer.BufferLength());
+			        ctx->target.SendMessage(&reply);
+			    } else {
+			        delete bmp;
+			    }
 			} else {
 				BString jsonString((const char*)buffer.Buffer(), buffer.BufferLength());
 				BMessage jsonMsg;
