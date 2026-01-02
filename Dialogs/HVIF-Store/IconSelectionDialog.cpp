@@ -133,6 +133,8 @@ IconSelectionDialog::_InitGUI()
 	fOpenBtn->SetEnabled(false);
 	fOpenBtn->MakeDefault(true);
 
+	AddShortcut('W', B_COMMAND_KEY, new BMessage(B_QUIT_REQUESTED));
+
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_SMALL_SPACING)
 		.SetInsets(B_USE_WINDOW_INSETS)
 		.AddGroup(B_HORIZONTAL, B_USE_SMALL_SPACING)
