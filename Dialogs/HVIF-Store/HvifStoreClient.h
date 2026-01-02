@@ -45,11 +45,13 @@ private:
 
 			static int32    _ThreadEntry(void* data);
 			static int32    _IconDownloadThreadEntry(void* data);
-			static status_t _DownloadToBuffer(const BUrl& url, BMallocIO& buffer);
+			static status_t _DownloadToBuffer(const BUrl& url, BMallocIO& buffer,
+								volatile bool* cancelled = NULL);
 
 			BMessenger      fTarget;
 			BString         fBaseUrl;
 			int32           fCurrentGeneration;
+			volatile bool   fShuttingDown;
 
 			BList           fActiveRequests;
 			BList           fPendingRequests;
