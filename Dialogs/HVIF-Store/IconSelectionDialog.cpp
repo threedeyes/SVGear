@@ -191,9 +191,9 @@ const char*
 IconSelectionDialog::_GetFormatMimeType(IconFormat format) const
 {
 	switch (format) {
-		case kFormatHVIF: return "application/x-vnd.Haiku-icon";
+		case kFormatHVIF: return "image/x-hvif";
 		case kFormatSVG:  return "image/svg+xml";
-		case kFormatIOM:  return "application/x-vnd.Haiku-icon-o-matic";
+		case kFormatIOM:  return "application/x-vnd.Haiku-icon";
 		default:          return "application/octet-stream";
 	}
 }
