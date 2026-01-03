@@ -44,9 +44,12 @@ private:
 			void            _SetLoading(bool loading);
 			void            _SaveFormat(IconFormat format);
 			void            _DoSaveFormat(BMessage* message);
+
+#ifdef HVIF_STORE_CLIENT
 			void            _CopyFormat(uint32 command);
 			void            _ProcessClipboardData(const uint8* data, size_t size,
 								uint32 command, int32 id, const char* name);
+#endif
 
 			const char*     _GetFormatExtension(IconFormat format) const;
 			const char*     _GetFormatMimeType(IconFormat format) const;

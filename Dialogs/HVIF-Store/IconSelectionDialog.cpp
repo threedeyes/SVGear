@@ -24,7 +24,10 @@
 #include "TagsFlowView.h"
 #include "HvifStoreDefs.h"
 #include "IconsData.h"
+
+#ifdef HVIF_STORE_CLIENT
 #include "IconExportUtils.h"
+#endif
 
 #undef  B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT          "HVIFStoreDialog"
@@ -351,7 +354,7 @@ IconSelectionDialog::_DoSaveFormat(BMessage* message)
 	fPendingSaveFormat = kFormatNone;
 }
 
-
+#ifdef HVIF_STORE_CLIENT
 void
 IconSelectionDialog::_CopyFormat(uint32 command)
 {
@@ -383,12 +386,10 @@ IconSelectionDialog::_CopyFormat(uint32 command)
 
 		_SetLoading(true);
 
-#ifdef HVIF_STORE_CLIENT
 		fCopyRDefBtn->SetEnabled(false);
 		fCopyCppBtn->SetEnabled(false);
 		fCopySvgBtn->SetEnabled(false);
 		fCopyImgBtn->SetEnabled(false);
-#endif
 
 		BMessage msg(kMsgDownloadIcon);
 		msg.AddInt32("id", item->id);
@@ -420,6 +421,7 @@ IconSelectionDialog::_ProcessClipboardData(const uint8* data, size_t size,
 			break;
 	}
 }
+#endif
 
 
 void
@@ -525,12 +527,14 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			PostMessage(B_QUIT_REQUESTED);
 			break;
 
+#ifdef HVIF_STORE_CLIENT
 		case kMsgCopyRDef:
 		case kMsgCopyCPP:
 		case kMsgCopySVG:
 		case kMsgCopyImgTag:
 			_CopyFormat(message->what);
 			break;
+#endif
 
 		case kMsgSaveFormat: {
 			int32 format;
@@ -556,6 +560,7 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		}
 
 		case kMsgIconDataReady: {
+#ifdef HVIF_STORE_CLIENT
 			int32 clipboardAction;
 			if (message->FindInt32("clipboard_action", &clipboardAction) == B_OK) {
 				const void* data = NULL;
@@ -577,6 +582,7 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 				PostMessage(kMsgSelectIcon);
 				break;
 			}
+#endif
 
 			BString savePath;
 			int32 saveFormat;
@@ -626,8 +632,13 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			if (fTarget.IsValid()) {
 				fTarget.SendMessage(message);
 			}
+
+#ifndef HVIF_STORE_CLIENT
+			PostMessage(B_QUIT_REQUESTED);
+#else
 			if (!fTarget.IsValid())
 				PostMessage(B_QUIT_REQUESTED);
+#endif
 			break;
 		}
 
