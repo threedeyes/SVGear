@@ -44,6 +44,10 @@ private:
 			void            _SetLoading(bool loading);
 			void            _SaveFormat(IconFormat format);
 			void            _DoSaveFormat(BMessage* message);
+			void            _CopyFormat(uint32 command);
+			void            _ProcessClipboardData(const uint8* data, size_t size,
+								uint32 command, int32 id, const char* name);
+
 			const char*     _GetFormatExtension(IconFormat format) const;
 			const char*     _GetFormatMimeType(IconFormat format) const;
 
@@ -68,6 +72,13 @@ private:
 
 			BFilePanel*     fSavePanel;
 			IconFormat      fPendingSaveFormat;
+
+#ifdef HVIF_STORE_CLIENT
+			BButton*        fCopyRDefBtn;
+			BButton*        fCopyCppBtn;
+			BButton*        fCopySvgBtn;
+			BButton*        fCopyImgBtn;
+#endif
 };
 
 #endif

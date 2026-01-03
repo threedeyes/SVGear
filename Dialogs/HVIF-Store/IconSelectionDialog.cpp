@@ -24,6 +24,7 @@
 #include "TagsFlowView.h"
 #include "HvifStoreDefs.h"
 #include "IconsData.h"
+#include "IconExportUtils.h"
 
 #undef  B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT          "HVIFStoreDialog"
@@ -147,11 +148,22 @@ IconSelectionDialog::_InitGUI()
 	fInfoView->SetTarget(BMessenger(this));
 	fGrid->SetInfoView(fInfoView);
 
-	BButton* cancelBtn = new BButton("cancel", B_TRANSLATE("Cancel"), new BMessage(kMsgCancel));
+#ifdef HVIF_STORE_CLIENT
+	fCopyRDefBtn = new BButton("rdef", "RDEF Array", new BMessage(kMsgCopyRDef));
+	fCopyCppBtn = new BButton("cpp", "C++ Array", new BMessage(kMsgCopyCPP));
+	fCopySvgBtn = new BButton("svg", "SVG Code", new BMessage(kMsgCopySVG));
+	fCopyImgBtn = new BButton("img", "HTML Base64", new BMessage(kMsgCopyImgTag));
 
+	fCopyRDefBtn->SetEnabled(false);
+	fCopyCppBtn->SetEnabled(false);
+	fCopySvgBtn->SetEnabled(false);
+	fCopyImgBtn->SetEnabled(false);
+#else
+	BButton* cancelBtn = new BButton("cancel", B_TRANSLATE("Cancel"), new BMessage(kMsgCancel));
 	fOpenBtn = new BButton("open", B_TRANSLATE("Open"), new BMessage(kMsgOpenIcon));
 	fOpenBtn->SetEnabled(false);
 	fOpenBtn->MakeDefault(true);
+#endif
 
 	AddShortcut('W', B_COMMAND_KEY, new BMessage(B_QUIT_REQUESTED));
 
@@ -166,14 +178,19 @@ IconSelectionDialog::_InitGUI()
 			.Add(fGridScroll, 3.0f)
 			.Add(fInfoView, 0.0f)
 		.End()
-#ifndef HVIF_STORE_CLIENT
 		.Add(new BSeparatorView(B_HORIZONTAL))
 		.AddGroup(B_HORIZONTAL)
 			.AddGlue()
+#ifdef HVIF_STORE_CLIENT
+			.Add(fCopyRDefBtn)
+			.Add(fCopyCppBtn)
+			.Add(fCopySvgBtn)
+			.Add(fCopyImgBtn)
+#else
 			.Add(cancelBtn)
 			.Add(fOpenBtn)
-		.End()
 #endif
+		.End()
 	.End();
 }
 
@@ -336,6 +353,76 @@ IconSelectionDialog::_DoSaveFormat(BMessage* message)
 
 
 void
+IconSelectionDialog::_CopyFormat(uint32 command)
+{
+	IconItem* item = fGrid->SelectedItem();
+	if (item == NULL)
+		return;
+
+	if (command == kMsgCopyRDef || command == kMsgCopyCPP) {
+		if (item->hvifData != NULL && item->hvifSize > 0) {
+			_ProcessClipboardData(item->hvifData, item->hvifSize, command,
+				item->id, item->title);
+		} else {
+			BAlert* alert = new BAlert(B_TRANSLATE("Error"),
+				B_TRANSLATE("HVIF data is missing in memory."),
+				B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+			alert->Go();
+		}
+		return;
+	}
+
+	if (command == kMsgCopySVG || command == kMsgCopyImgTag) {
+		if (item->svgUrl.IsEmpty()) {
+			BAlert* alert = new BAlert(B_TRANSLATE("Error"),
+				B_TRANSLATE("SVG format is not available for this icon."),
+				B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+			alert->Go();
+			return;
+		}
+
+		_SetLoading(true);
+
+#ifdef HVIF_STORE_CLIENT
+		fCopyRDefBtn->SetEnabled(false);
+		fCopyCppBtn->SetEnabled(false);
+		fCopySvgBtn->SetEnabled(false);
+		fCopyImgBtn->SetEnabled(false);
+#endif
+
+		BMessage msg(kMsgDownloadIcon);
+		msg.AddInt32("id", item->id);
+		msg.AddString("title", item->title);
+		msg.AddInt32("clipboard_action", command);
+		msg.AddString("svg_path", item->svgUrl);
+
+		fClient->PostMessage(&msg);
+	}
+}
+
+
+void
+IconSelectionDialog::_ProcessClipboardData(const uint8* data, size_t size,
+	uint32 command, int32 id, const char* name)
+{
+	switch (command) {
+		case kMsgCopyRDef:
+			IconExportUtils::CopyToClipboardRDef(data, size, id, name);
+			break;
+		case kMsgCopyCPP:
+			IconExportUtils::CopyToClipboardCPP(data, size, name);
+			break;
+		case kMsgCopySVG:
+			IconExportUtils::CopyToClipboardSVG(data, size);
+			break;
+		case kMsgCopyImgTag:
+			IconExportUtils::CopyToClipboardImgTag(data, size);
+			break;
+	}
+}
+
+
+void
 IconSelectionDialog::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
@@ -413,10 +500,22 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		    break;
 		}
 
-		case kMsgSelectIcon:
-			fOpenBtn->SetEnabled(fGrid->SelectedItem() != NULL);
+		case kMsgSelectIcon: {
+			IconItem* item = fGrid->SelectedItem();
+			bool hasSelection = (item != NULL);
+#ifdef HVIF_STORE_CLIENT
+			fCopyRDefBtn->SetEnabled(hasSelection && !item->hvifUrl.IsEmpty());
+			fCopyCppBtn->SetEnabled(hasSelection && !item->hvifUrl.IsEmpty());
+
+			bool hasSVG = hasSelection && !item->svgUrl.IsEmpty();
+			fCopySvgBtn->SetEnabled(hasSVG);
+			fCopyImgBtn->SetEnabled(hasSVG);
+#else
+			fOpenBtn->SetEnabled(hasSelection);
+#endif
 			fPreserveSelectionId = -1;
 			break;
+		}
 
 		case kMsgOpenIcon:
 			_OpenSelectedIcon();
@@ -424,6 +523,13 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 
 		case kMsgCancel:
 			PostMessage(B_QUIT_REQUESTED);
+			break;
+
+		case kMsgCopyRDef:
+		case kMsgCopyCPP:
+		case kMsgCopySVG:
+		case kMsgCopyImgTag:
+			_CopyFormat(message->what);
 			break;
 
 		case kMsgSaveFormat: {
@@ -450,6 +556,28 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		}
 
 		case kMsgIconDataReady: {
+			int32 clipboardAction;
+			if (message->FindInt32("clipboard_action", &clipboardAction) == B_OK) {
+				const void* data = NULL;
+				ssize_t size = 0;
+				const char* dataField = NULL;
+
+				if (clipboardAction == kMsgCopySVG || clipboardAction == kMsgCopyImgTag)
+					dataField = "svg_data";
+				else
+					dataField = "hvif_data";
+
+				if (dataField && message->FindData(dataField, B_RAW_TYPE, &data, &size) == B_OK) {
+					int32 id = message->GetInt32("id", 0);
+					BString title = message->GetString("title", "");
+					_ProcessClipboardData((const uint8*)data, size, clipboardAction, id, title);
+				}
+
+				_SetLoading(false);
+				PostMessage(kMsgSelectIcon);
+				break;
+			}
+
 			BString savePath;
 			int32 saveFormat;
 
@@ -489,12 +617,17 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			}
 
 			_SetLoading(false);
+#ifdef HVIF_STORE_CLIENT
+			PostMessage(kMsgSelectIcon);
+#else
 			fOpenBtn->SetEnabled(true);
+#endif
 
 			if (fTarget.IsValid()) {
 				fTarget.SendMessage(message);
 			}
-			PostMessage(B_QUIT_REQUESTED);
+			if (!fTarget.IsValid())
+				PostMessage(B_QUIT_REQUESTED);
 			break;
 		}
 
@@ -509,7 +642,7 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			alert->Go();
 
 			_SetLoading(false);
-			fOpenBtn->SetEnabled(fGrid->SelectedItem() != NULL);
+			PostMessage(kMsgSelectIcon);
 			break;
 		}
 
@@ -611,7 +744,11 @@ IconSelectionDialog::_ParseIcons(BMessage* data)
 
 	if (fPreserveSelectionId >= 0) {
 		if (fGrid->SelectIcon(fPreserveSelectionId)) {
+#ifndef HVIF_STORE_CLIENT
 			fOpenBtn->SetEnabled(true);
+#else
+			PostMessage(kMsgSelectIcon);
+#endif
 			fPreserveSelectionId = -1;
 		}
 	}
@@ -691,7 +828,9 @@ IconSelectionDialog::_OpenSelectedIcon()
 	}
 
 	_SetLoading(true);
+#ifndef HVIF_STORE_CLIENT
 	fOpenBtn->SetEnabled(false);
+#endif
 
 	fClient->DownloadIconData(
 		item->id,

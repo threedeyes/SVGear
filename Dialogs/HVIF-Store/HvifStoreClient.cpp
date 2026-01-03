@@ -459,6 +459,9 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 	reply.AddInt32("id", ctx->extraData.GetInt32("id", 0));
 	reply.AddString("title", ctx->extraData.GetString("title", ""));
 
+	if (ctx->extraData.HasInt32("clipboard_action"))
+		reply.AddInt32("clipboard_action", ctx->extraData.GetInt32("clipboard_action", 0));
+
 	BString savePath;
 	if (ctx->extraData.FindString("save_path", &savePath) == B_OK) {
 		reply.AddString("save_path", savePath);

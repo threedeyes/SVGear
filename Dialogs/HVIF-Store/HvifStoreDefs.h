@@ -65,7 +65,12 @@ enum {
 	kMsgSaveFormatRef    = 'svrf',
 	kMsgFormatDataReady  = 'fdrd',
 
-	kMsgDeleteTempFile   = 'dltf'
+	kMsgDeleteTempFile   = 'dltf',
+
+	kMsgCopyRDef         = 'cprd',
+	kMsgCopyCPP          = 'cpcp',
+	kMsgCopySVG          = 'cpsv',
+	kMsgCopyImgTag       = 'cpit'
 };
 
 #endif

@@ -9,6 +9,7 @@ SRCS = \
 	IconInfoView.cpp \
 	ChipView.cpp \
 	IconCache.cpp \
+	IconExportUtils.cpp \
 	HVIFStoreBrowser.cpp
 RDEFS =
 RSRCS =
