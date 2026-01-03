@@ -1,6 +1,6 @@
-NAME = HVIFStoreClient
+NAME = HVIFStoreBrowser
 TYPE = APP
-APP_MIME_SIG = application/x-vnd.HvifStoreClient
+APP_MIME_SIG = application/x-vnd.HvifStoreBrowser
 SRCS = \
 	HvifStoreClient.cpp \
 	IconGridView.cpp \
@@ -9,7 +9,7 @@ SRCS = \
 	IconInfoView.cpp \
 	ChipView.cpp \
 	IconCache.cpp \
-	test_dialog.cpp
+	HVIFStoreBrowser.cpp
 RDEFS =
 RSRCS =
 LIBS = be tracker network bnetapi netservices shared localestub $(STDCPPLIBS)
