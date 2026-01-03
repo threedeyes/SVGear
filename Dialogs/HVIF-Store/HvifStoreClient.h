@@ -36,6 +36,7 @@ public:
 								const char* hvifPath, const char* svgPath,
 								const char* iomPath);
 			void            CancelAllRequests();
+			int32           CurrentGeneration() const { return fCurrentGeneration; }
 
 private:
 			void            _QueueRequest(BUrl url, uint32 what,
@@ -47,11 +48,14 @@ private:
 			static int32    _IconDownloadThreadEntry(void* data);
 			static status_t _DownloadToBuffer(const BUrl& url, BMallocIO& buffer,
 								volatile bool* cancelled = NULL);
+			static bool     _TryDownloadFormat(RequestContext* ctx, BMessage& reply,
+								const char* pathField, const char* dataField);
 
 			BMessenger      fTarget;
 			BString         fBaseUrl;
 			int32           fCurrentGeneration;
 			volatile bool   fShuttingDown;
+			bigtime_t       fLastErrorTime;
 
 			BList           fActiveRequests;
 			BList           fPendingRequests;

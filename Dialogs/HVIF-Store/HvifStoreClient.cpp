@@ -5,6 +5,7 @@
 
 #include <UrlProtocolRoster.h>
 #include <HttpRequest.h>
+#include <HttpHeaders.h>
 #include <HttpResult.h>
 #include <Json.h>
 #include <Bitmap.h>
@@ -23,7 +24,8 @@
 
 using namespace BPrivate::Network;
 
-static const bigtime_t kShutdownTimeout = 1000000;
+static const bigtime_t kShutdownTimeout = 2000000;
+static const bigtime_t kRequestTimeout = 20000000;
 
 struct RequestContext {
 	BUrl url;
@@ -36,10 +38,11 @@ struct RequestContext {
 	thread_id threadId;
 	HvifStoreClient* client;
 	BString baseUrl;
+	BUrlRequest* requestObject;
 
 	RequestContext()
 		: generation(0), retriesLeft(kMaxRetries),
-		  cancelled(false), threadId(-1), client(NULL) {}
+		  cancelled(false), threadId(-1), client(NULL), requestObject(NULL) {}
 };
 
 
@@ -50,6 +53,7 @@ HvifStoreClient::HvifStoreClient(BMessenger target)
 	fBaseUrl(SERVER_URL),
 	fCurrentGeneration(0),
 	fShuttingDown(false),
+	fLastErrorTime(0),
 	fRequestLock("RequestLock")
 {
 	Run();
@@ -60,14 +64,24 @@ HvifStoreClient::~HvifStoreClient()
 {
 	fShuttingDown = true;
 
-	CancelAllRequests();
+	BAutolock lock(&fRequestLock);
+	_ClearPendingQueue();
+
+	for (int32 i = 0; i < fActiveRequests.CountItems(); i++) {
+		RequestContext* ctx = (RequestContext*)fActiveRequests.ItemAt(i);
+		if (ctx != NULL) {
+			ctx->cancelled = true;
+			if (ctx->requestObject) ctx->requestObject->Stop();
+		}
+	}
+	lock.Unlock();
 
 	bigtime_t startTime = system_time();
 
 	while (true) {
 		int32 activeCount = 0;
 		{
-			BAutolock lock(&fRequestLock);
+			BAutolock lock2(&fRequestLock);
 			activeCount = fActiveRequests.CountItems();
 		}
 
@@ -75,20 +89,13 @@ HvifStoreClient::~HvifStoreClient()
 			break;
 
 		if (system_time() - startTime > kShutdownTimeout) {
-			BAutolock lock(&fRequestLock);
-			for (int32 i = 0; i < fActiveRequests.CountItems(); i++) {
-				RequestContext* ctx = (RequestContext*)fActiveRequests.ItemAt(i);
-				if (ctx != NULL && ctx->threadId >= 0) {
-					kill_thread(ctx->threadId);
-				}
-			}
 			break;
 		}
 
 		snooze(50000);
 	}
 
-	BAutolock lock(&fRequestLock);
+	lock.Lock();
 	for (int32 i = 0; i < fActiveRequests.CountItems(); i++)
 		delete (RequestContext*)fActiveRequests.ItemAt(i);
 	for (int32 i = 0; i < fPendingRequests.CountItems(); i++)
@@ -214,8 +221,13 @@ HvifStoreClient::MessageReceived(BMessage* message)
 			RequestContext* ctx = NULL;
 			if (message->FindPointer("context", (void**)&ctx) == B_OK) {
 				BAutolock lock(&fRequestLock);
-				fActiveRequests.RemoveItem(ctx);
-				fPendingRequests.AddItem(ctx, 0);
+				if (ctx->cancelled) {
+					fActiveRequests.RemoveItem(ctx);
+					delete ctx;
+				} else {
+					fActiveRequests.RemoveItem(ctx);
+					fPendingRequests.AddItem(ctx, 0);
+				}
 			}
 			_ProcessQueue();
 			break;
@@ -223,6 +235,15 @@ HvifStoreClient::MessageReceived(BMessage* message)
 
 		case kMsgAbortQueue: {
 			_ClearPendingQueue();
+			break;
+		}
+
+		case kMsgNetworkError: {
+			bigtime_t now = system_time();
+			if (now - fLastErrorTime > 1000000) {
+				fLastErrorTime = now;
+				fTarget.SendMessage(message);
+			}
 			break;
 		}
 
@@ -290,12 +311,6 @@ HvifStoreClient::CancelAllRequests()
 
 	BAutolock lock(&fRequestLock);
 	_ClearPendingQueue();
-
-	for (int32 i = 0; i < fActiveRequests.CountItems(); i++) {
-		RequestContext* ctx = (RequestContext*)fActiveRequests.ItemAt(i);
-		if (ctx != NULL)
-			ctx->cancelled = true;
-	}
 }
 
 
@@ -380,22 +395,11 @@ HvifStoreClient::_DownloadToBuffer(const BUrl& url, BMallocIO& buffer, volatile 
 	thread_id thread = request->Run();
 
 	status_t threadResult;
-	while (true) {
-		status_t waitResult = wait_for_thread_etc(thread, B_RELATIVE_TIMEOUT,
-			100000, &threadResult);
+	wait_for_thread(thread, &threadResult);
 
-		if (waitResult == B_OK) {
-			break;
-		} else if (waitResult == B_TIMED_OUT) {
-			if (cancelled != NULL && *cancelled) {
-				request->Stop();
-				wait_for_thread(thread, &threadResult);
-				delete request;
-				return B_CANCELED;
-			}
-		} else {
-			break;
-		}
+	if (cancelled != NULL && *cancelled) {
+		delete request;
+		return B_CANCELED;
 	}
 
 	const BHttpResult* result = dynamic_cast<const BHttpResult*>(&request->Result());
@@ -406,6 +410,31 @@ HvifStoreClient::_DownloadToBuffer(const BUrl& url, BMallocIO& buffer, volatile 
 
 	delete request;
 	return status;
+}
+
+
+bool
+HvifStoreClient::_TryDownloadFormat(RequestContext* ctx, BMessage& reply,
+	const char* pathField, const char* dataField)
+{
+	BString path = ctx->extraData.GetString(pathField, "");
+	if (path.IsEmpty() || ctx->cancelled)
+		return false;
+
+	BString url = ctx->baseUrl;
+	url << "/uploads/" << path;
+	BMallocIO buffer;
+
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+	if (_DownloadToBuffer(BUrl(url.String(), true), buffer, &ctx->cancelled) == B_OK) {
+#else
+	if (_DownloadToBuffer(BUrl(url.String()), buffer, &ctx->cancelled) == B_OK) {
+#endif
+		reply.AddData(dataField, B_RAW_TYPE, buffer.Buffer(), buffer.BufferLength());
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -426,10 +455,6 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 
 	reply.AddInt32("id", ctx->extraData.GetInt32("id", 0));
 	reply.AddString("title", ctx->extraData.GetString("title", ""));
-	reply.AddString("author", ctx->extraData.GetString("author", ""));
-	reply.AddString("license", ctx->extraData.GetString("license", ""));
-	reply.AddString("mime_type", ctx->extraData.GetString("mime_type", ""));
-	reply.AddString("tags", ctx->extraData.GetString("tags", ""));
 
 	BString savePath;
 	if (ctx->extraData.FindString("save_path", &savePath) == B_OK) {
@@ -437,64 +462,28 @@ HvifStoreClient::_IconDownloadThreadEntry(void* data)
 		reply.AddInt32("save_format", ctx->extraData.GetInt32("save_format", -1));
 	}
 
-	BString hvifPath = ctx->extraData.GetString("hvif_path", "");
-	BString svgPath = ctx->extraData.GetString("svg_path", "");
-	BString iomPath = ctx->extraData.GetString("iom_path", "");
+	reply.AddString("author", ctx->extraData.GetString("author", ""));
+	reply.AddString("license", ctx->extraData.GetString("license", ""));
+	reply.AddString("mime_type", ctx->extraData.GetString("mime_type", ""));
+	reply.AddString("tags", ctx->extraData.GetString("tags", ""));
 
 	bool hasAnyData = false;
-
-	if (!hvifPath.IsEmpty() && !ctx->cancelled) {
-		BString url = ctx->baseUrl;
-		url << "/uploads/" << hvifPath;
-		BMallocIO buffer;
-#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
-		if (_DownloadToBuffer(BUrl(url.String(), true), buffer, &ctx->cancelled) == B_OK) {
-#else
-		if (_DownloadToBuffer(BUrl(url.String()), buffer, &ctx->cancelled) == B_OK) {
-#endif
-			reply.AddData("hvif_data", B_RAW_TYPE, buffer.Buffer(), 
-				buffer.BufferLength());
-			hasAnyData = true;
-		}
-	}
-
-	if (!svgPath.IsEmpty() && !ctx->cancelled) {
-		BString url = ctx->baseUrl;
-		url << "/uploads/" << svgPath;
-		BMallocIO buffer;
-#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
-		if (_DownloadToBuffer(BUrl(url.String(), true), buffer, &ctx->cancelled) == B_OK) {
-#else
-		if (_DownloadToBuffer(BUrl(url.String()), buffer, &ctx->cancelled) == B_OK) {
-#endif
-			reply.AddData("svg_data", B_RAW_TYPE, buffer.Buffer(), 
-				buffer.BufferLength());
-			hasAnyData = true;
-		}
-	}
-
-	if (!iomPath.IsEmpty() && !ctx->cancelled) {
-		BString url = ctx->baseUrl;
-		url << "/uploads/" << iomPath;
-		BMallocIO buffer;
-#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
-		if (_DownloadToBuffer(BUrl(url.String(), true), buffer, &ctx->cancelled) == B_OK) {
-#else
-		if (_DownloadToBuffer(BUrl(url.String()), buffer, &ctx->cancelled) == B_OK) {
-#endif
-			reply.AddData("iom_data", B_RAW_TYPE, buffer.Buffer(), 
-				buffer.BufferLength());
-			hasAnyData = true;
-		}
-	}
+	if (_TryDownloadFormat(ctx, reply, "hvif_path", "hvif_data"))
+		hasAnyData = true;
+	if (_TryDownloadFormat(ctx, reply, "svg_path", "svg_data"))
+		hasAnyData = true;
+	if (_TryDownloadFormat(ctx, reply, "iom_path", "iom_data"))
+		hasAnyData = true;
 
 	if (!ctx->cancelled) {
 		if (hasAnyData) {
-			ctx->target.SendMessage(&reply);
+			if (ctx->generation == ctx->client->CurrentGeneration()) {
+				ctx->target.SendMessage(&reply);
+			}
 		} else {
 			BMessage error(kMsgNetworkError);
 			error.AddString("error", B_TRANSLATE("Failed to download icon data"));
-			ctx->target.SendMessage(&error);
+			clientMessenger.SendMessage(&error);
 		}
 	}
 
@@ -522,6 +511,8 @@ HvifStoreClient::_ThreadEntry(void* data)
 	BMallocIO buffer;
 	BUrlRequest* request = BUrlProtocolRoster::MakeRequest(ctx->url, &buffer);
 
+	ctx->requestObject = request;
+
 	bool success = false;
 	int32 statusCode = 0;
 
@@ -533,22 +524,7 @@ HvifStoreClient::_ThreadEntry(void* data)
 		thread_id thread = request->Run();
 
 		status_t threadResult;
-		while (true) {
-			status_t waitResult = wait_for_thread_etc(thread, B_RELATIVE_TIMEOUT,
-				100000, &threadResult);
-
-			if (waitResult == B_OK) {
-				break;
-			} else if (waitResult == B_TIMED_OUT) {
-				if (ctx->cancelled) {
-					request->Stop();
-					wait_for_thread(thread, &threadResult);
-					break;
-				}
-			} else {
-				break;
-			}
-		}
+		wait_for_thread(thread, &threadResult);
 
 		if (!ctx->cancelled) {
 			const BHttpResult* result = dynamic_cast<const BHttpResult*>(&request->Result());
@@ -561,63 +537,67 @@ HvifStoreClient::_ThreadEntry(void* data)
 	}
 
 	if (!ctx->cancelled) {
-		if (success) {
-			BMessage reply(ctx->successWhat);
-			reply.AddMessage("extra", &ctx->extraData);
+		if (ctx->generation == ctx->client->CurrentGeneration()) {
+			if (success) {
+				BMessage reply(ctx->successWhat);
+				reply.AddMessage("extra", &ctx->extraData);
 
-			if (ctx->successWhat == kMsgIconPreviewReady) {
-			    int32 generation = ctx->extraData.GetInt32("generation", 0);
-			    int32 size = ctx->extraData.GetInt32("size", 64);
+				if (ctx->successWhat == kMsgIconPreviewReady) {
+				    int32 generation = ctx->extraData.GetInt32("generation", 0);
+				    int32 size = ctx->extraData.GetInt32("size", 64);
 
-			    BBitmap* bmp = new BBitmap(
-			        BRect(0, 0, size - 1, size - 1), B_RGBA32);
-			    if (BIconUtils::GetVectorIcon((const uint8*)buffer.Buffer(),
-			        buffer.BufferLength(), bmp) == B_OK) {
-			        reply.AddPointer("bitmap", bmp);
-			        reply.AddInt32("id", ctx->extraData.GetInt32("id", 0));
-			        reply.AddInt32("generation", generation);
-			        reply.AddData("hvif_data", B_RAW_TYPE, buffer.Buffer(), buffer.BufferLength());
-			        ctx->target.SendMessage(&reply);
-			    } else {
-			        delete bmp;
-			    }
-			} else {
-				BString jsonString((const char*)buffer.Buffer(), buffer.BufferLength());
-				BMessage jsonMsg;
-				if (BJson::Parse(jsonString, jsonMsg) == B_OK) {
-					reply.AddMessage("json", &jsonMsg);
-					ctx->target.SendMessage(&reply);
+				    BBitmap* bmp = new BBitmap(
+				        BRect(0, 0, size - 1, size - 1), B_RGBA32);
+				    if (BIconUtils::GetVectorIcon((const uint8*)buffer.Buffer(),
+				        buffer.BufferLength(), bmp) == B_OK) {
+				        reply.AddPointer("bitmap", bmp);
+				        reply.AddInt32("id", ctx->extraData.GetInt32("id", 0));
+				        reply.AddInt32("generation", generation);
+				        reply.AddData("hvif_data", B_RAW_TYPE, buffer.Buffer(), buffer.BufferLength());
+				        ctx->target.SendMessage(&reply);
+				    } else {
+				        delete bmp;
+				    }
 				} else {
-					BMessage error(kMsgNetworkError);
-					error.AddString("error", B_TRANSLATE("JSON parse failed"));
-					ctx->target.SendMessage(&error);
+					BString jsonString((const char*)buffer.Buffer(), buffer.BufferLength());
+					BMessage jsonMsg;
+					if (BJson::Parse(jsonString, jsonMsg) == B_OK) {
+						reply.AddMessage("json", &jsonMsg);
+						ctx->target.SendMessage(&reply);
+					} else {
+						BMessage error(kMsgNetworkError);
+						error.AddString("error", B_TRANSLATE("JSON parse failed"));
+						clientMessenger.SendMessage(&error);
+					}
 				}
-			}
-		} else {
-			if (ctx->retriesLeft > 0 && !ctx->cancelled) {
-				ctx->retriesLeft--;
-				delete request;
-
-				BMessage requeue(kMsgRequeueRequest);
-				requeue.AddPointer("context", ctx);
-				clientMessenger.SendMessage(&requeue);
-				return 0;
 			} else {
-				if (statusCode == 0 && !ctx->cancelled) {
-					BMessage abortMsg(kMsgAbortQueue);
-					clientMessenger.SendMessage(&abortMsg);
-				}
+				if (ctx->retriesLeft > 0) {
+					ctx->retriesLeft--;
+					ctx->requestObject = NULL;
+					delete request;
 
-				if (ctx->successWhat != kMsgIconPreviewReady && !ctx->cancelled) {
-					BMessage error(kMsgNetworkError);
-					error.AddString("url", ctx->url.UrlString());
-					error.AddInt32("status", statusCode);
-					ctx->target.SendMessage(&error);
+					BMessage requeue(kMsgRequeueRequest);
+					requeue.AddPointer("context", ctx);
+					clientMessenger.SendMessage(&requeue);
+					return 0;
+				} else {
+					if (statusCode == 0) {
+						BMessage abortMsg(kMsgAbortQueue);
+						clientMessenger.SendMessage(&abortMsg);
+					}
+
+					if (ctx->successWhat != kMsgIconPreviewReady) {
+						BMessage error(kMsgNetworkError);
+						error.AddString("url", ctx->url.UrlString());
+						error.AddInt32("status", statusCode);
+						clientMessenger.SendMessage(&error);
+					}
 				}
 			}
 		}
 	}
 
+	ctx->requestObject = NULL;
 	delete request;
 
 	BMessage finished(kMsgRequestFinished);
