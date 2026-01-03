@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <Catalog.h>
+#include <Window.h>
 
 #include "TagsFlowView.h"
 
@@ -20,7 +21,7 @@ const float TagsFlowView::kMinHeight = 28.0f;
 TagsFlowView::TagsFlowView()
 	:
 	BView("TagsFlow", B_WILL_DRAW | B_FRAME_EVENTS | B_FULL_UPDATE_ON_RESIZE),
-	fCheckBoxes(20),
+	fTags(20),
 	fCachedHeight(kMinHeight)
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
@@ -38,6 +39,12 @@ void
 TagsFlowView::AttachedToWindow()
 {
 	BView::AttachedToWindow();
+
+	for (int32 i = 0; i < fTags.CountItems(); i++) {
+		ChipView* chip = fTags.ItemAt(i);
+		chip->SetTarget(Window());
+	}
+
 	_DoLayout();
 }
 
@@ -84,23 +91,25 @@ TagsFlowView::PreferredSize()
 void
 TagsFlowView::AddTag(const char* name, BMessage* message)
 {
-	BCheckBox* cb = new BCheckBox(name, name, message);
-	fCheckBoxes.AddItem(cb);
-	AddChild(cb);
+	ChipView* chip = new ChipView(name, name, message, B_CHIP_STYLE_CATEGORY);
+	fTags.AddItem(chip);
+	AddChild(chip);
 
-	if (Window() != NULL)
+	if (Window() != NULL) {
+		chip->SetTarget(Window());
 		_DoLayout();
+	}
 }
 
 
 void
 TagsFlowView::ClearTags()
 {
-	for (int32 i = fCheckBoxes.CountItems() - 1; i >= 0; i--) {
-		BCheckBox* cb = fCheckBoxes.ItemAt(i);
-		RemoveChild(cb);
+	for (int32 i = fTags.CountItems() - 1; i >= 0; i--) {
+		ChipView* chip = fTags.ItemAt(i);
+		RemoveChild(chip);
 	}
-	fCheckBoxes.MakeEmpty();
+	fTags.MakeEmpty();
 	fCachedHeight = kMinHeight;
 
 	if (Window() != NULL)
@@ -111,7 +120,7 @@ TagsFlowView::ClearTags()
 int32
 TagsFlowView::CountTags() const
 {
-	return fCheckBoxes.CountItems();
+	return fTags.CountItems();
 }
 
 
@@ -120,12 +129,12 @@ TagsFlowView::GetSelectedTags(BString& outTags) const
 {
 	outTags = "";
 
-	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
-		BCheckBox* cb = fCheckBoxes.ItemAt(i);
-		if (cb->Value() == B_CONTROL_ON) {
+	for (int32 i = 0; i < fTags.CountItems(); i++) {
+		ChipView* chip = fTags.ItemAt(i);
+		if (chip->Value() == B_CONTROL_ON) {
 			if (!outTags.IsEmpty())
 				outTags << ",";
-			outTags << "[" << cb->Label() << "]";
+			outTags << "[" << chip->Label() << "]";
 		}
 	}
 }
@@ -134,11 +143,11 @@ TagsFlowView::GetSelectedTags(BString& outTags) const
 void
 TagsFlowView::ToggleTag(const char* name)
 {
-	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
-		BCheckBox* cb = fCheckBoxes.ItemAt(i);
-		if (strcmp(cb->Label(), name) == 0) {
-			cb->SetValue(cb->Value() == B_CONTROL_ON ? B_CONTROL_OFF : B_CONTROL_ON);
-			cb->Invoke();
+	for (int32 i = 0; i < fTags.CountItems(); i++) {
+		ChipView* chip = fTags.ItemAt(i);
+		if (strcmp(chip->Label(), name) == 0) {
+			chip->SetValue(chip->Value() == B_CONTROL_ON ? B_CONTROL_OFF : B_CONTROL_ON);
+			chip->Invoke();
 			return;
 		}
 	}
@@ -148,19 +157,12 @@ TagsFlowView::ToggleTag(const char* name)
 void
 TagsFlowView::DeselectAll()
 {
-	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
-		BCheckBox* cb = fCheckBoxes.ItemAt(i);
-		if (cb->Value() == B_CONTROL_ON) {
-			cb->SetValue(B_CONTROL_OFF);
+	for (int32 i = 0; i < fTags.CountItems(); i++) {
+		ChipView* chip = fTags.ItemAt(i);
+		if (chip->Value() == B_CONTROL_ON) {
+			chip->SetValue(B_CONTROL_OFF);
 		}
 	}
-}
-
-
-float
-TagsFlowView::_CalculateHeight(float width) const
-{
-	return fCachedHeight;
 }
 
 
@@ -176,25 +178,25 @@ TagsFlowView::_DoLayout()
 	float rowHeight = 0;
 	float maxWidth = width - kPadding * 2;
 
-	for (int32 i = 0; i < fCheckBoxes.CountItems(); i++) {
-		BCheckBox* cb = fCheckBoxes.ItemAt(i);
+	for (int32 i = 0; i < fTags.CountItems(); i++) {
+		ChipView* chip = fTags.ItemAt(i);
 
-		float cbWidth, cbHeight;
-		cb->GetPreferredSize(&cbWidth, &cbHeight);
+		float chipWidth, chipHeight;
+		chip->GetPreferredSize(&chipWidth, &chipHeight);
 
-		if (x + cbWidth > maxWidth && x > kPadding) {
+		if (x + chipWidth > maxWidth && x > kPadding) {
 			x = kPadding;
 			y += rowHeight + kVSpacing;
 			rowHeight = 0;
 		}
 
-		cb->MoveTo(x, y);
-		cb->ResizeTo(cbWidth, cbHeight);
+		chip->MoveTo(x, y);
+		chip->ResizeTo(chipWidth, chipHeight);
 
-		if (cbHeight > rowHeight)
-			rowHeight = cbHeight;
+		if (chipHeight > rowHeight)
+			rowHeight = chipHeight;
 
-		x += cbWidth + kHSpacing;
+		x += chipWidth + kHSpacing;
 	}
 
 	float newHeight = y + rowHeight + kPadding;

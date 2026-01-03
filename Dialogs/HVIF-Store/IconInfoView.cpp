@@ -42,7 +42,7 @@ IconInfoView::IconInfoView()
 	fDragButton(0),
 	fClickPoint(0, 0),
 	fDragStarted(false),
-	fTagRects(20)
+	fTagChips(20)
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 	_CalculateSizes();
@@ -100,6 +100,17 @@ IconInfoView::SetFilterTags(const char* tags)
 {
 	if (fCurrentFilterTags != tags) {
 		fCurrentFilterTags = tags;
+
+		for (int32 i = 0; i < fTagChips.CountItems(); i++) {
+			ChipView* chip = fTagChips.ItemAt(i);
+			if (chip->Style() == B_CHIP_STYLE_CATEGORY) {
+				BString bracketTag = "[";
+				bracketTag << chip->Label() << "]";
+				bool isActive = fCurrentFilterTags.FindFirst(bracketTag) >= 0;
+				chip->SetValue(isActive ? B_CONTROL_ON : B_CONTROL_OFF);
+			}
+		}
+
 		Invalidate();
 	}
 }
@@ -134,7 +145,15 @@ IconInfoView::SetIcon(IconItem* item)
 	for (int32 i = 0; i < kFormatCount; i++)
 		fFormatRects[i] = BRect();
 
-	fTagRects.MakeEmpty();
+	for (int32 i = fTagChips.CountItems() - 1; i >= 0; i--) {
+		ChipView* chip = fTagChips.ItemAt(i);
+		RemoveChild(chip);
+	}
+	fTagChips.MakeEmpty();
+
+	if (item && !item->tags.IsEmpty()) {
+		_CreateTagChips();
+	}
 
 	fDragButton = 0;
 	fDragStarted = false;
@@ -151,7 +170,11 @@ IconInfoView::Clear()
 	for (int32 i = 0; i < kFormatCount; i++)
 		fFormatRects[i] = BRect();
 
-	fTagRects.MakeEmpty();
+	for (int32 i = fTagChips.CountItems() - 1; i >= 0; i--) {
+		ChipView* chip = fTagChips.ItemAt(i);
+		RemoveChild(chip);
+	}
+	fTagChips.MakeEmpty();
 
 	fDragButton = 0;
 	fDragStarted = false;
@@ -211,16 +234,28 @@ IconInfoView::_IsOverPreview(BPoint point) const
 }
 
 
+BString
+IconInfoView::_GetMetaTagAt(BPoint point) const
+{
+	for (int32 i = 0; i < fTagChips.CountItems(); i++) {
+		ChipView* chip = fTagChips.ItemAt(i);
+		if (chip->Style() == B_CHIP_STYLE_CATEGORY && chip->Frame().Contains(point))
+			return chip->Label();
+	}
+	return "";
+}
+
+
 bool
 IconInfoView::_IsOverClickable(BPoint point) const
 {
 	if (_IsOverPreview(point))
 		return true;
 
-	if (!_GetTagAt(point).IsEmpty())
+	if (_GetFormatAt(point) != kFormatNone)
 		return true;
 
-	if (_GetFormatAt(point) != kFormatNone)
+	if (!_GetMetaTagAt(point).IsEmpty())
 		return true;
 
 	return false;
@@ -313,7 +348,7 @@ IconInfoView::MouseDown(BPoint where)
 		return;
 	}
 
-	BString clickedTag = _GetTagAt(where);
+	BString clickedTag = _GetMetaTagAt(where);
 	if (!clickedTag.IsEmpty()) {
 		BMessage msg(kMsgMetaTagClicked);
 		msg.AddString("tag", clickedTag);
@@ -328,6 +363,94 @@ IconInfoView::MouseUp(BPoint where)
 	fDragButton = 0;
 	fDragStarted = false;
 	BView::MouseUp(where);
+}
+
+
+void
+IconInfoView::_CreateTagChips()
+{
+	if (fCurrentItem == NULL || fCurrentItem->tags.IsEmpty())
+		return;
+
+	BString tags = fCurrentItem->tags;
+	int32 pos = 0;
+
+	while (true) {
+		int32 nextPos = tags.FindFirst(',', pos);
+		BString tag;
+		if (nextPos >= 0) {
+			tags.CopyInto(tag, pos, nextPos - pos);
+			pos = nextPos + 1;
+		} else {
+			tags.CopyInto(tag, pos, tags.Length() - pos);
+		}
+
+		tag.Trim();
+		if (tag.IsEmpty()) {
+			if (nextPos < 0) break;
+			continue;
+		}
+
+		bool isMeta = tag.StartsWith("[") && tag.EndsWith("]");
+		if (isMeta) {
+			tag.Remove(0, 1);
+			tag.Truncate(tag.Length() - 1);
+		}
+
+		chip_style style = isMeta ? B_CHIP_STYLE_CATEGORY : B_CHIP_STYLE_TAG;
+		ChipView* chip = new ChipView(tag, tag, NULL, style);
+		chip->SetClickable(false);
+
+		if (isMeta) {
+			BString bracketTag = "[";
+			bracketTag << tag << "]";
+			if (fCurrentFilterTags.FindFirst(bracketTag) >= 0) {
+				chip->SetValue(B_CONTROL_ON);
+			}
+		}
+
+		fTagChips.AddItem(chip);
+		AddChild(chip);
+
+		if (nextPos < 0) break;
+	}
+}
+
+
+void
+IconInfoView::_LayoutTagChips(float& ioY, float contentX, float maxWidth)
+{
+	if (fTagChips.IsEmpty())
+		return;
+
+	float x = contentX;
+	float y = ioY;
+	float rowHeight = 0;
+	float spacingX = 4.0f;
+	float spacingY = 4.0f;
+
+	for (int32 i = 0; i < fTagChips.CountItems(); i++) {
+		ChipView* chip = fTagChips.ItemAt(i);
+
+		float chipW, chipH;
+		chip->GetPreferredSize(&chipW, &chipH);
+
+		if (x + chipW > contentX + maxWidth && x > contentX) {
+			x = contentX;
+			y += rowHeight + spacingY;
+			rowHeight = 0;
+		}
+
+		chip->MoveTo(x, y);
+		chip->ResizeTo(chipW, chipH);
+
+		if (chipH > rowHeight)
+			rowHeight = chipH;
+
+		x += chipW + spacingX;
+	}
+
+	ioY = y + rowHeight + spacingY;
 }
 
 
@@ -449,18 +572,6 @@ IconInfoView::_GetFormatAt(BPoint point) const
 }
 
 
-BString
-IconInfoView::_GetTagAt(BPoint point) const
-{
-	for (int32 i = 0; i < fTagRects.CountItems(); i++) {
-		TagRect* tagRect = fTagRects.ItemAt(i);
-		if (tagRect->rect.Contains(point) && tagRect->isMeta)
-			return tagRect->name;
-	}
-	return "";
-}
-
-
 float
 IconInfoView::_DrawFormats(float x, float y, float maxWidth)
 {
@@ -528,8 +639,6 @@ IconInfoView::Draw(BRect updateRect)
 
 	for (int32 i = 0; i < kFormatCount; i++)
 		fFormatRects[i] = BRect();
-
-	fTagRects.MakeEmpty();
 
 	if (fCurrentItem == NULL) {
 		SetHighColor(tint_color(ViewColor(), B_DARKEN_2_TINT));
@@ -599,7 +708,7 @@ IconInfoView::Draw(BRect updateRect)
 		DrawString(B_TRANSLATE("Tags:"), BPoint(contentX, y + fh.ascent));
 		y += lineHeight + 2;
 
-		y = _DrawTags(fCurrentItem->tags, contentX, y, maxWidth);
+		_LayoutTagChips(y, contentX, maxWidth);
 	}
 
 	y += 6;
@@ -650,98 +759,11 @@ IconInfoView::_DrawField(const char* label, const char* value, float y, float ma
 }
 
 
-float
-IconInfoView::_DrawTags(const char* tags, float x, float y, float maxWidth)
-{
-	font_height fh;
-	GetFontHeight(&fh);
-	float fontH = fh.ascent + fh.descent;
-
-	float tagVPadding = 3.0f;
-	float tagHPadding = 6.0f;
-	float spacingX = 4.0f;
-	float spacingY = 4.0f;
-
-	float tagHeight = fontH + tagVPadding * 2;
-	float startX = x;
-	float currentX = x;
-	float currentY = y;
-
-	BString string(tags);
-	int32 pos = 0;
-
-	while (true) {
-		int32 nextPos = string.FindFirst(',', pos);
-		BString tag;
-		if (nextPos >= 0) {
-			string.CopyInto(tag, pos, nextPos - pos);
-			pos = nextPos + 1;
-		} else {
-			string.CopyInto(tag, pos, string.Length() - pos);
-		}
-
-		tag.Trim();
-		if (tag.IsEmpty()) {
-			if (nextPos < 0) break;
-			continue;
-		}
-
-		bool isMeta = false;
-		if (tag.StartsWith("[") && tag.EndsWith("]")) {
-			isMeta = true;
-			tag.Remove(0, 1);
-			tag.Truncate(tag.Length() - 1);
-		}
-
-		float tagWidth = StringWidth(tag) + tagHPadding * 2;
-
-		if (currentX + tagWidth > startX + maxWidth && currentX > startX) {
-			currentX = startX;
-			currentY += tagHeight + spacingY;
-		}
-
-		BRect rect(currentX, currentY, currentX + tagWidth, currentY + tagHeight);
-
-		fTagRects.AddItem(new TagRect(rect, tag.String(), isMeta));
-
-		if (isMeta) {
-			BString bracketTag = "[";
-			bracketTag << tag << "]";
-			bool isActive = fCurrentFilterTags.FindFirst(bracketTag) >= 0;
-
-			if (isActive) {
-				SetHighColor(ui_color(B_CONTROL_HIGHLIGHT_COLOR));
-				FillRoundRect(rect, 4.0f, 4.0f);
-				SetHighColor(ui_color(B_MENU_SELECTED_ITEM_TEXT_COLOR));
-			} else {
-				SetHighColor(ui_color(B_MENU_SELECTION_BACKGROUND_COLOR));
-				FillRoundRect(rect, 4.0f, 4.0f);
-				SetHighColor(ui_color(B_MENU_SELECTED_ITEM_TEXT_COLOR));
-			}
-		} else {
-			SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
-			float radius = tagHeight / 2.0f;
-			FillRoundRect(rect, radius, radius);
-			SetHighColor(ui_color(B_PANEL_TEXT_COLOR));
-		}
-
-		float textY = currentY + tagVPadding + fh.ascent;
-		DrawString(tag, BPoint(currentX + tagHPadding, textY));
-
-		currentX += tagWidth + spacingX;
-
-		if (nextPos < 0) break;
-	}
-
-	return currentY + tagHeight + spacingY;
-}
-
-
 BString
 IconInfoView::_FormatSize(int32 bytes) const
 {
 	BString result;
-	
+
 	if (bytes < 1024) {
 		result << bytes << " B";
 	} else if (bytes < 1024 * 1024) {
