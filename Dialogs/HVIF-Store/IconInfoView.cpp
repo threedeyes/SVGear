@@ -354,56 +354,78 @@ IconInfoView::_CreateTagChips()
 	if (fCurrentItem == NULL || fCurrentItem->tags.IsEmpty())
 		return;
 
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+	BObjectList<BString, true> metaTags(10);
+	BObjectList<BString, true> regularTags(10);
+#else
+	BObjectList<BString> metaTags(10, true);
+	BObjectList<BString> regularTags(10, true);
+#endif
+
 	BString tags = fCurrentItem->tags;
 	int32 pos = 0;
 
 	while (true) {
 		int32 nextPos = tags.FindFirst(',', pos);
-		BString tag;
+		BString* tag = new BString();
+
 		if (nextPos >= 0) {
-			tags.CopyInto(tag, pos, nextPos - pos);
+			tags.CopyInto(*tag, pos, nextPos - pos);
 			pos = nextPos + 1;
 		} else {
-			tags.CopyInto(tag, pos, tags.Length() - pos);
+			tags.CopyInto(*tag, pos, tags.Length() - pos);
 		}
 
-		tag.Trim();
-		if (tag.IsEmpty()) {
+		tag->Trim();
+		if (tag->IsEmpty()) {
+			delete tag;
 			if (nextPos < 0) break;
 			continue;
 		}
 
-		bool isMeta = tag.StartsWith("[") && tag.EndsWith("]");
-		if (isMeta) {
-			tag.Remove(0, 1);
-			tag.Truncate(tag.Length() - 1);
+		if (tag->StartsWith("[") && tag->EndsWith("]")) {
+			metaTags.AddItem(tag);
+		} else {
+			regularTags.AddItem(tag);
 		}
 
-		chip_style style = isMeta ? B_CHIP_STYLE_CATEGORY : B_CHIP_STYLE_TAG;
+		if (nextPos < 0) break;
+	}
 
-		BMessage* msg = NULL;
-		if (isMeta) {
-			msg = new BMessage(kMsgMetaTagClicked);
-			msg->AddString("tag", tag);
-		}
+	for (int32 i = 0; i < metaTags.CountItems(); i++) {
+		BString* tagStr = metaTags.ItemAt(i);
+		BString label = *tagStr;
 
-		ChipView* chip = new ChipView(tag, tag, msg, style);
-		chip->SetClickable(isMeta);
+		label.Remove(0, 1);
+		label.Truncate(label.Length() - 1);
 
-		if (isMeta) {
-			chip->SetTarget(this);
+		BMessage* msg = new BMessage(kMsgMetaTagClicked);
+		msg->AddString("tag", label);
 
-			BString bracketTag = "[";
-			bracketTag << tag << "]";
-			if (fCurrentFilterTags.FindFirst(bracketTag) >= 0) {
-				chip->SetValue(B_CONTROL_ON);
-			}
+		ChipView* chip = new ChipView(label.String(), label.String(), msg,
+			B_CHIP_STYLE_CATEGORY);
+		chip->SetClickable(true);
+		chip->SetTarget(this);
+
+		BString bracketTag = "[";
+		bracketTag << label << "]";
+		if (fCurrentFilterTags.FindFirst(bracketTag) >= 0) {
+			chip->SetValue(B_CONTROL_ON);
 		}
 
 		fTagChips.AddItem(chip);
 		AddChild(chip);
+	}
 
-		if (nextPos < 0) break;
+	for (int32 i = 0; i < regularTags.CountItems(); i++) {
+		BString* tagStr = regularTags.ItemAt(i);
+
+		ChipView* chip = new ChipView(tagStr->String(), tagStr->String(), NULL,
+			B_CHIP_STYLE_TAG);
+		chip->SetClickable(false);
+
+		fTagChips.AddItem(chip);
+		AddChild(chip);
 	}
 }
 
