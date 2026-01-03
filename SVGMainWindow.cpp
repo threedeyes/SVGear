@@ -156,44 +156,9 @@ SVGMainWindow::MessageReceived(BMessage* message)
 			break;
 		}
 
-		case kMsgIconDataReady: {
-			const void* data = NULL;
-			ssize_t size = 0;
-
-			_LoadNewFile();
-
-			if (message->FindData("svg_data", B_RAW_TYPE, &data, &size) == B_OK && size > 0)
-				fCurrentSource.SetTo((const char*)data, size);
-
-			if (message->FindData("hvif_data", B_RAW_TYPE, &data, &size) == B_OK && size > 0) {
-				delete[] fCurrentHVIFData;
-				fCurrentHVIFSize = size;
-				fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
-				memcpy(fCurrentHVIFData, data, fCurrentHVIFSize);
-			}
-
-			BString titleStr = message->GetString("title", "Downloaded Icon");
-			BString titleWin("SVGear - ");
-			titleWin << titleStr;
-			SetTitle(titleWin.String());
-
-			fOriginalSourceText = fCurrentSource;
-			fDocumentModified = true;
-
-			if (fSVGView) {
-				fSVGView->LoadFromMemory(fCurrentSource.String());
-				fSVGView->ResetView();
-			}
-
-			if (fIconView && fCurrentHVIFData)
-				fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
-
-			_UpdateAllTabs();
-			_UpdateStatus();
-			_UpdateUIState();
-			_UpdateStatView();
+		case kMsgIconDataReady:
+			_HandleIconDataReady(message);
 			break;
-		}
 
 		case MSG_EXPORT_HVIF:
 		case MSG_EXPORT_RDEF:
@@ -950,6 +915,60 @@ SVGMainWindow::_HandleClipboardCopyMessages(BMessage* message)
 			break;
 		}
 	}
+}
+
+void
+SVGMainWindow::_HandleIconDataReady(BMessage* message)
+{
+	const void* data = NULL;
+	ssize_t size = 0;
+
+	_LoadNewFile();
+
+	if (message->FindData("svg_data", B_RAW_TYPE, &data, &size) == B_OK && size > 0) {
+		BString svgContent((const char*)data, size);
+		int32 svgTagStart = svgContent.FindFirst("<svg");
+		if (svgTagStart >= 0) {
+			int32 svgTagEnd = svgContent.FindFirst(">", svgTagStart);
+			if (svgTagEnd != B_ERROR) {
+				BString tagHeader;
+				svgContent.CopyInto(tagHeader, svgTagStart, svgTagEnd - svgTagStart);
+				if (tagHeader.FindFirst("width=") == B_ERROR &&
+					tagHeader.FindFirst("height=") == B_ERROR) {
+					svgContent.Insert(" width=\"64\" height=\"64\"", svgTagStart + 4);
+				}
+			}
+		}
+		fCurrentSource = svgContent;
+	}
+
+	if (message->FindData("hvif_data", B_RAW_TYPE, &data, &size) == B_OK && size > 0) {
+		delete[] fCurrentHVIFData;
+		fCurrentHVIFSize = size;
+		fCurrentHVIFData = new unsigned char[fCurrentHVIFSize];
+		memcpy(fCurrentHVIFData, data, fCurrentHVIFSize);
+	}
+
+	BString titleStr = message->GetString("title", "Downloaded Icon");
+	BString titleWin("SVGear - ");
+	titleWin << titleStr;
+	SetTitle(titleWin.String());
+
+	fOriginalSourceText = fCurrentSource;
+	fDocumentModified = true;
+
+	if (fSVGView) {
+		fSVGView->LoadFromMemory(fCurrentSource.String());
+		fSVGView->ResetView();
+	}
+
+	if (fIconView && fCurrentHVIFData)
+		fIconView->SetIcon(fCurrentHVIFData, fCurrentHVIFSize);
+
+	_UpdateAllTabs();
+	_UpdateStatus();
+	_UpdateUIState();
+	_UpdateStatView();
 }
 
 void

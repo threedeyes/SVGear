@@ -80,6 +80,7 @@ private:
 	void _HandleSelectionMessages(BMessage *message);
 	void _HandleSearchMessages(BMessage* message);
 	void _HandleClipboardCopyMessages(BMessage* message);
+	void _HandleIconDataReady(BMessage* message);
 
 	// Clipboard
 	void _CopyToClipboard(const char* text);
