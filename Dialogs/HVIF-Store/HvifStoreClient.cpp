@@ -159,15 +159,19 @@ HvifStoreClient::MessageReceived(BMessage* message)
 
 		case kMsgIconPreviewReady: {
 			int32 id, generation, size;
-			BString path;
+			BString path, hash;
 			if (message->FindInt32("id", &id) == B_OK &&
 				message->FindString("path", &path) == B_OK &&
 				message->FindInt32("generation", &generation) == B_OK &&
 				message->FindInt32("size", &size) == B_OK) {
+
+				hash = message->GetString("hash", "");
+
 				BString url = fBaseUrl;
 				url << "/uploads/" << path;
 				BMessage data;
 				data.AddInt32("id", id);
+				data.AddString("hash", hash);
 				data.AddInt32("generation", generation);
 				data.AddInt32("size", size);
 #if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
@@ -276,11 +280,13 @@ HvifStoreClient::Search(const char* query, const char* tags, int32 page, int32 l
 
 
 void
-HvifStoreClient::FetchPreview(int32 id, const char* relativePath, int32 generation, int32 size)
+HvifStoreClient::FetchPreview(int32 id, const char* relativePath,
+	const char* hash, int32 generation, int32 size)
 {
 	BMessage msg(kMsgIconPreviewReady);
 	msg.AddInt32("id", id);
 	msg.AddString("path", relativePath);
+	msg.AddString("hash", hash);
 	msg.AddInt32("generation", generation);
 	msg.AddInt32("size", size);
 	PostMessage(&msg);
@@ -522,7 +528,8 @@ HvifStoreClient::_ThreadEntry(void* data)
 	
 	if (ctx->successWhat == kMsgIconPreviewReady) {
 		int32 id = ctx->extraData.GetInt32("id", 0);
-		if (id > 0 && ctx->client->fIconCache->GetIcon(id, &buffer) == B_OK) {
+		BString hash = ctx->extraData.GetString("hash", "");
+		if (id > 0 && !hash.IsEmpty() && ctx->client->fIconCache->GetIcon(id, hash.String(), &buffer) == B_OK) {
 			fromCache = true;
 			success = true;
 			statusCode = 200;
@@ -552,8 +559,9 @@ HvifStoreClient::_ThreadEntry(void* data)
 					
 					if (ctx->successWhat == kMsgIconPreviewReady) {
 						int32 id = ctx->extraData.GetInt32("id", 0);
-						if (id > 0) {
-							ctx->client->fIconCache->SaveIcon(id, 
+						BString hash = ctx->extraData.GetString("hash", "");
+						if (id > 0 && !hash.IsEmpty()) {
+							ctx->client->fIconCache->SaveIcon(id, hash.String(),
 								buffer.Buffer(), buffer.BufferLength());
 						}
 					}

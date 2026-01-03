@@ -25,6 +25,8 @@ struct IconItem {
 	BString     svgUrl;
 	BString     iomUrl;
 
+	BString     hvifHash;
+
 	int32       hvifSize;
 	int32       svgSize;
 	int32       iomSize;

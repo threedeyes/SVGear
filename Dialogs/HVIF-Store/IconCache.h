@@ -15,8 +15,8 @@ public:
 							IconCache();
 	virtual					~IconCache();
 
-			status_t		GetIcon(int32 id, BMallocIO* data);
-			status_t		SaveIcon(int32 id, const void* data, size_t size);
+			status_t		GetIcon(int32 id, const char* hash, BMallocIO* data);
+			status_t		SaveIcon(int32 id, const char* hash, const void* data, size_t size);
 
 private:
 			void			_Init();

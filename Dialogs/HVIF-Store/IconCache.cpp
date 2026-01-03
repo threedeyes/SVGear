@@ -71,16 +71,15 @@ IconCache::_Init()
 }
 
 status_t
-IconCache::GetIcon(int32 id, BMallocIO* data)
+IconCache::GetIcon(int32 id, const char* hash, BMallocIO* data)
 {
 	BAutolock lock(fLock);
 	_Init();
 
-	if (!fInitialized)
+	if (!fInitialized || hash == NULL || *hash == '\0')
 		return B_ERROR;
 
-	BString name;
-	name << id;
+	BString name(hash);
 
 	BPath path(fCacheDir);
 	path.Append(name.String());
@@ -105,19 +104,24 @@ IconCache::GetIcon(int32 id, BMallocIO* data)
 }
 
 status_t
-IconCache::SaveIcon(int32 id, const void* data, size_t size)
+IconCache::SaveIcon(int32 id, const char* hash, const void* data, size_t size)
 {
 	BAutolock lock(fLock);
 	_Init();
 
-	if (!fInitialized || size == 0)
+	if (!fInitialized || size == 0 || hash == NULL || *hash == '\0')
 		return B_ERROR;
 
-	BString name;
-	name << id;
+	BString name(hash);
 
 	BPath path(fCacheDir);
 	path.Append(name.String());
+
+	BEntry entry(path.Path());
+	if (entry.Exists()) {
+		entry.SetModificationTime(time(NULL));
+		return B_OK;
+	}
 
 	BFile file(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
 	if (file.InitCheck() != B_OK)

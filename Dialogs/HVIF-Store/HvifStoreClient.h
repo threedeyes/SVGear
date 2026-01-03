@@ -31,7 +31,7 @@ public:
 			void            Search(const char* query, const char* tags,
 								int32 page, int32 limit);
 			void            FetchPreview(int32 id, const char* relativePath,
-								int32 generation, int32 size);
+								const char* hash, int32 generation, int32 size);
 			void            DownloadIconData(int32 id, const char* title,
 								const char* author, const char* license,
 								const char* mimeType, const char* tags,

@@ -787,6 +787,8 @@ IconSelectionDialog::_AddIconFromMessage(BMessage* item)
 	icon->svgUrl = item->GetString("svg_path", "");
 	icon->iomUrl = item->GetString("iom_path", "");
 
+	icon->hvifHash = item->GetString("hvif_hash", "");
+
 	icon->hvifSize = (int32)item->GetDouble("hvif_size", 0.0);
 	icon->svgSize = (int32)item->GetDouble("svg_size", 0.0);
 	icon->iomSize = (int32)item->GetDouble("iom_size", 0.0);
@@ -816,7 +818,7 @@ IconSelectionDialog::_AddIconFromMessage(BMessage* item)
 	fGrid->AddItem(icon);
 
 	if (!icon->hvifUrl.IsEmpty()) {
-		fClient->FetchPreview(icon->id, icon->hvifUrl, 
+		fClient->FetchPreview(icon->id, icon->hvifUrl, icon->hvifHash,
 			fGrid->CurrentGeneration(), fGrid->IconSize());
 	}
 }
