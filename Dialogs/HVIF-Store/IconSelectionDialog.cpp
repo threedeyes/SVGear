@@ -12,6 +12,7 @@
 #include <File.h>
 #include <NodeInfo.h>
 #include <Entry.h>
+#include <IconUtils.h>
 
 #include <cstdlib>
 #include <cstdio>
@@ -22,15 +23,22 @@
 #include "IconInfoView.h"
 #include "TagsFlowView.h"
 #include "HvifStoreDefs.h"
+#include "IconsData.h"
 
 #undef  B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT          "HVIFStoreDialog"
 
 IconSelectionDialog::IconSelectionDialog(BMessenger target)
 	:
-	BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("Select Icon from HVIF Store"),
+	BWindow(BRect(0, 0, 100, 100),
+#ifdef HVIF_STORE_CLIENT
+	B_TRANSLATE("HVIF-Store Browser"),
+#else
+	B_TRANSLATE("Select Icon from HVIF Store"),
+#endif
 			B_TITLED_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
 			B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS),
+	fResetButtonIcon(NULL),
 	fTarget(target),
 	fPage(1),
 	fLoading(false),
@@ -65,6 +73,7 @@ IconSelectionDialog::~IconSelectionDialog()
 {
 	delete fSearchRunner;
 	delete fSavePanel;
+	delete fResetButtonIcon;
 
 	if (fClient->Lock())
 		fClient->Quit();
@@ -87,11 +96,22 @@ IconSelectionDialog::Show()
 	InvalidateLayout();
 	Layout(true);
 
-	BWindow::Show();
-
 	float w, h;
 	fSearchEntry->GetPreferredSize(&w, &h);
 	fResetButton->SetExplicitSize(BSize(h, h));
+
+	if (fResetButtonIcon == NULL) {
+		fResetButtonIcon = new BBitmap(BRect(0, 0, h - 8, h - 8), B_RGBA32);
+		if (fResetButtonIcon->InitCheck() != B_OK
+			|| BIconUtils::GetVectorIcon((const uint8*)kClearIconData, kClearIconDataSize, fResetButtonIcon) != B_OK) {
+			delete fResetButtonIcon;
+			fResetButtonIcon = NULL;
+		} else {
+			fResetButton->SetIcon(fResetButtonIcon);
+		}
+	}
+
+	BWindow::Show();
 }
 
 void
@@ -114,7 +134,7 @@ IconSelectionDialog::_InitGUI()
 	fSearchEntry = new BTextControl("search", B_TRANSLATE("Search:"), "", new BMessage(kMsgSearch));
 	fSearchEntry->SetModificationMessage(new BMessage(kMsgSearch));
 
-	fResetButton = new BButton("reset", "×", new BMessage(kMsgClearTags));
+	fResetButton = new BButton("reset", "", new BMessage(kMsgClearTags));
 
 	fTagsView = new TagsFlowView();
 
@@ -137,7 +157,7 @@ IconSelectionDialog::_InitGUI()
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_SMALL_SPACING)
 		.SetInsets(B_USE_WINDOW_INSETS)
-		.AddGroup(B_HORIZONTAL, B_USE_SMALL_SPACING)
+		.AddGroup(B_HORIZONTAL, B_USE_BORDER_SPACING)
 			.Add(fSearchEntry)
 			.Add(fResetButton)
 		.End()
@@ -146,12 +166,14 @@ IconSelectionDialog::_InitGUI()
 			.Add(fGridScroll, 3.0f)
 			.Add(fInfoView, 0.0f)
 		.End()
+#ifndef HVIF_STORE_CLIENT
 		.Add(new BSeparatorView(B_HORIZONTAL))
 		.AddGroup(B_HORIZONTAL)
 			.AddGlue()
 			.Add(cancelBtn)
 			.Add(fOpenBtn)
 		.End()
+#endif
 	.End();
 }
 

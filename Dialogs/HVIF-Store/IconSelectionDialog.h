@@ -9,6 +9,7 @@
 #include <Window.h>
 #include <TextControl.h>
 #include <Button.h>
+#include <Bitmap.h>
 #include <Messenger.h>
 #include <MessageRunner.h>
 #include <FilePanel.h>
@@ -54,7 +55,9 @@ private:
 			TagsFlowView*   fTagsView;
 			BButton*        fOpenBtn;
 			BButton*        fResetButton;
-			
+
+			BBitmap*        fResetButtonIcon;
+
 			BMessenger      fTarget;
 			int32           fPage;
 			bool            fLoading;
