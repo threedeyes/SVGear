@@ -840,7 +840,6 @@ IconSelectionDialog::_OpenSelectedIcon()
 		return;
 	}
 
-	_SetLoading(true);
 #ifndef HVIF_STORE_CLIENT
 	fOpenBtn->SetEnabled(false);
 #endif
