@@ -56,6 +56,7 @@ HvifStoreClient::HvifStoreClient(BMessenger target)
 	fLastErrorTime(0),
 	fRequestLock("RequestLock")
 {
+	fIconCache = new IconCache();
 	Run();
 }
 
@@ -103,6 +104,8 @@ HvifStoreClient::~HvifStoreClient()
 
 	fActiveRequests.MakeEmpty();
 	fPendingRequests.MakeEmpty();
+	
+	delete fIconCache;
 }
 
 
@@ -509,29 +512,49 @@ HvifStoreClient::_ThreadEntry(void* data)
 	}
 
 	BMallocIO buffer;
-	BUrlRequest* request = BUrlProtocolRoster::MakeRequest(ctx->url, &buffer);
-
-	ctx->requestObject = request;
-
+	BUrlRequest* request = NULL;
+	bool fromCache = false;
 	bool success = false;
 	int32 statusCode = 0;
+	
+	if (ctx->successWhat == kMsgIconPreviewReady) {
+		int32 id = ctx->extraData.GetInt32("id", 0);
+		if (id > 0 && ctx->client->fIconCache->GetIcon(id, &buffer) == B_OK) {
+			fromCache = true;
+			success = true;
+			statusCode = 200;
+		}
+	}
 
-	if (request != NULL) {
-		BHttpRequest* httpReq = dynamic_cast<BHttpRequest*>(request);
-		if (httpReq)
-			httpReq->SetUserAgent(APP_USER_AGENT);
+	if (!fromCache) {
+		request = BUrlProtocolRoster::MakeRequest(ctx->url, &buffer);
+		ctx->requestObject = request;
 
-		thread_id thread = request->Run();
+		if (request != NULL) {
+			BHttpRequest* httpReq = dynamic_cast<BHttpRequest*>(request);
+			if (httpReq)
+				httpReq->SetUserAgent(APP_USER_AGENT);
 
-		status_t threadResult;
-		wait_for_thread(thread, &threadResult);
+			thread_id thread = request->Run();
 
-		if (!ctx->cancelled) {
-			const BHttpResult* result = dynamic_cast<const BHttpResult*>(&request->Result());
-			statusCode = (result != NULL) ? result->StatusCode() : 0;
+			status_t threadResult;
+			wait_for_thread(thread, &threadResult);
 
-			if (request->Status() == B_OK && result != NULL && statusCode == 200) {
-				success = true;
+			if (!ctx->cancelled) {
+				const BHttpResult* result = dynamic_cast<const BHttpResult*>(&request->Result());
+				statusCode = (result != NULL) ? result->StatusCode() : 0;
+
+				if (request->Status() == B_OK && result != NULL && statusCode == 200) {
+					success = true;
+					
+					if (ctx->successWhat == kMsgIconPreviewReady) {
+						int32 id = ctx->extraData.GetInt32("id", 0);
+						if (id > 0) {
+							ctx->client->fIconCache->SaveIcon(id, 
+								buffer.Buffer(), buffer.BufferLength());
+						}
+					}
+				}
 			}
 		}
 	}

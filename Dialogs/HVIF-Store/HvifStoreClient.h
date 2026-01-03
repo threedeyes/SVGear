@@ -14,6 +14,8 @@
 #include <Locker.h>
 #include <List.h>
 
+#include "IconCache.h"
+
 using namespace BPrivate::Network;
 
 struct RequestContext;
@@ -61,6 +63,7 @@ private:
 			BList           fPendingRequests;
 
 			BLocker         fRequestLock;
+			IconCache*      fIconCache;
 };
 
 #endif
