@@ -23,6 +23,7 @@ SRCS = \
 	Dialogs/HVIF-Store/IconSelectionDialog.cpp \
 	Dialogs/HVIF-Store/TagsFlowView.cpp \
 	Dialogs/HVIF-Store/ChipView.cpp \
+	Dialogs/HVIF-Store/IconCache.cpp \
 	External/BSVGView/BSVGView.cpp \
 	main.cpp
 RDEFS = Resources.rdef
