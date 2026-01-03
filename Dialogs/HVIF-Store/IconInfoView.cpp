@@ -196,6 +196,10 @@ IconInfoView::MessageReceived(BMessage* message)
 			}
 			break;
 		}
+		case kMsgMetaTagClicked: {
+			fTarget.SendMessage(message);
+			break;
+		}
 		default:
 			BView::MessageReceived(message);
 			break;
@@ -234,18 +238,6 @@ IconInfoView::_IsOverPreview(BPoint point) const
 }
 
 
-BString
-IconInfoView::_GetMetaTagAt(BPoint point) const
-{
-	for (int32 i = 0; i < fTagChips.CountItems(); i++) {
-		ChipView* chip = fTagChips.ItemAt(i);
-		if (chip->Style() == B_CHIP_STYLE_CATEGORY && chip->Frame().Contains(point))
-			return chip->Label();
-	}
-	return "";
-}
-
-
 bool
 IconInfoView::_IsOverClickable(BPoint point) const
 {
@@ -253,9 +245,6 @@ IconInfoView::_IsOverClickable(BPoint point) const
 		return true;
 
 	if (_GetFormatAt(point) != kFormatNone)
-		return true;
-
-	if (!_GetMetaTagAt(point).IsEmpty())
 		return true;
 
 	return false;
@@ -347,13 +336,6 @@ IconInfoView::MouseDown(BPoint where)
 		fTarget.SendMessage(&msg);
 		return;
 	}
-
-	BString clickedTag = _GetMetaTagAt(where);
-	if (!clickedTag.IsEmpty()) {
-		BMessage msg(kMsgMetaTagClicked);
-		msg.AddString("tag", clickedTag);
-		fTarget.SendMessage(&msg);
-	}
 }
 
 
@@ -398,10 +380,19 @@ IconInfoView::_CreateTagChips()
 		}
 
 		chip_style style = isMeta ? B_CHIP_STYLE_CATEGORY : B_CHIP_STYLE_TAG;
-		ChipView* chip = new ChipView(tag, tag, NULL, style);
-		chip->SetClickable(false);
+
+		BMessage* msg = NULL;
+		if (isMeta) {
+			msg = new BMessage(kMsgMetaTagClicked);
+			msg->AddString("tag", tag);
+		}
+
+		ChipView* chip = new ChipView(tag, tag, msg, style);
+		chip->SetClickable(isMeta);
 
 		if (isMeta) {
+			chip->SetTarget(this);
+
 			BString bracketTag = "[";
 			bracketTag << tag << "]";
 			if (fCurrentFilterTags.FindFirst(bracketTag) >= 0) {

@@ -47,7 +47,6 @@ private:
 								float y, float maxWidth);
 			float			_DrawFormats(float x, float y, float maxWidth);
 			BString			_FormatSize(int32 bytes) const;
-			BString			_GetMetaTagAt(BPoint point) const;
 			IconFormat		_GetFormatAt(BPoint point) const;
 			bool			_IsOverClickable(BPoint point) const;
 			bool			_IsOverPreview(BPoint point) const;
