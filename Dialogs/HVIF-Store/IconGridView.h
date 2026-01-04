@@ -55,6 +55,7 @@ public:
 	virtual void            AttachedToWindow();
 	virtual void            Draw(BRect updateRect);
 	virtual void            FrameResized(float width, float height);
+	virtual void            ScrollTo(BPoint where);
 	virtual void            MouseDown(BPoint where);
 	virtual void            MouseMoved(BPoint where, uint32 transit,
 								const BMessage* dragMessage);
@@ -96,6 +97,7 @@ private:
 			float           _AnimationAngle() const;
 			BRect           _LoadingIndicatorRect() const;
 			BRect           _LoadMoreIconRect() const;
+			void            _CheckAutoLoad();
 
 			void            _StartDrag(BPoint point, IconItem* item);
 			status_t        _CreateTempFile(BPath& tempPath, const char* title);

@@ -203,6 +203,8 @@ IconGridView::SetLoading(bool loading)
 {
 	if (fLoading != loading) {
 		fLoading = loading;
+		if (!fLoading)
+			_CheckAutoLoad();
 		Invalidate();
 	}
 }
@@ -214,6 +216,7 @@ IconGridView::SetHasMore(bool hasMore)
 	if (fHasMore != hasMore) {
 		fHasMore = hasMore;
 		_RecalculateLayout();
+		_CheckAutoLoad();
 		Invalidate();
 	}
 }
@@ -420,9 +423,50 @@ IconGridView::Draw(BRect updateRect)
 void
 IconGridView::FrameResized(float width, float height)
 {
+	int32 anchorIndex = -1;
+
+	if (fSelection < 0 && fColumns > 0 && !fItems.IsEmpty()) {
+		float rowHeight = fCellHeight + fPadding;
+		int32 row = (int32)(Bounds().top / rowHeight);
+		anchorIndex = row * fColumns;
+		if (anchorIndex < 0) anchorIndex = 0;
+		if (anchorIndex >= fItems.CountItems())
+			anchorIndex = fItems.CountItems() - 1;
+	}
+
 	_RecalculateLayout();
+
+	float targetY = -1.0f;
+
+	if (fSelection >= 0) {
+		BRect frame = _ItemFrame(fSelection);
+		targetY = frame.top + (frame.Height() / 2) - (height / 2);
+	} else if (anchorIndex >= 0) {
+		BRect frame = _ItemFrame(anchorIndex);
+		targetY = frame.top - fPadding;
+	}
+
+	if (targetY != -1.0f) {
+		float maxScroll = fTotalHeight - height;
+		if (maxScroll < 0) maxScroll = 0;
+
+		if (targetY < 0) targetY = 0;
+		if (targetY > maxScroll) targetY = maxScroll;
+
+		ScrollTo(BPoint(0, targetY));
+	}
+
+	_CheckAutoLoad();
 	Invalidate();
 	BView::FrameResized(width, height);
+}
+
+
+void
+IconGridView::ScrollTo(BPoint where)
+{
+	BView::ScrollTo(where);
+	_CheckAutoLoad();
 }
 
 
@@ -613,6 +657,7 @@ IconGridView::AddItem(IconItem* item)
 	item->generation = fGeneration;
 	fItems.AddItem(item);
 	_RecalculateLayout();
+	_CheckAutoLoad();
 	Invalidate(_ItemFrame(fItems.CountItems() - 1));
 }
 
@@ -991,4 +1036,18 @@ IconGridView::_CleanupOldTempFiles()
 			}
 		}
 	}
+}
+
+
+void
+IconGridView::_CheckAutoLoad()
+{
+	if (fLoading || !fHasMore || Window() == NULL)
+		return;
+
+	float rowHeight = fCellHeight + fPadding;
+
+	// Only auto-load if there is a gap of more than one row at the bottom
+	if (Bounds().bottom > fTotalHeight + rowHeight)
+		Window()->PostMessage(kMsgLoadMore);
 }
