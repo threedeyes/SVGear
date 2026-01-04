@@ -1606,6 +1606,7 @@ SVGMainWindow::_ToggleStructureView()
 
 	_UpdateToolBarStates();
 	_UpdateUIState();
+	_UpdateViewMenu();
 }
 
 void
@@ -1620,6 +1621,7 @@ SVGMainWindow::_ToggleStatView()
 
 	_UpdateToolBarStates();
 	_UpdateUIState();
+	_UpdateViewMenu();
 }
 
 void
