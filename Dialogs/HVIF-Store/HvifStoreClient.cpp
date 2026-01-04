@@ -15,6 +15,7 @@
 #include <OS.h>
 #include <Autolock.h>
 #include <Catalog.h>
+#include <cstdio>
 
 #include "HvifStoreClient.h"
 #include "HvifStoreDefs.h"
@@ -159,19 +160,17 @@ HvifStoreClient::MessageReceived(BMessage* message)
 
 		case kMsgIconPreviewReady: {
 			int32 id, generation, size;
-			BString path, hash;
+			BString path;
 			if (message->FindInt32("id", &id) == B_OK &&
 				message->FindString("path", &path) == B_OK &&
 				message->FindInt32("generation", &generation) == B_OK &&
 				message->FindInt32("size", &size) == B_OK) {
 
-				hash = message->GetString("hash", "");
-
 				BString url = fBaseUrl;
 				url << "/uploads/" << path;
 				BMessage data;
 				data.AddInt32("id", id);
-				data.AddString("hash", hash);
+				data.AddString("path", path);
 				data.AddInt32("generation", generation);
 				data.AddInt32("size", size);
 #if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
@@ -528,8 +527,9 @@ HvifStoreClient::_ThreadEntry(void* data)
 	
 	if (ctx->successWhat == kMsgIconPreviewReady) {
 		int32 id = ctx->extraData.GetInt32("id", 0);
-		BString hash = ctx->extraData.GetString("hash", "");
-		if (id > 0 && !hash.IsEmpty() && ctx->client->fIconCache->GetIcon(id, hash.String(), &buffer) == B_OK) {
+		BString cacheKey = ctx->extraData.GetString("path", "");
+
+		if (id > 0 && !cacheKey.IsEmpty() && ctx->client->fIconCache->GetIcon(id, cacheKey.String(), &buffer) == B_OK) {
 			fromCache = true;
 			success = true;
 			statusCode = 200;
@@ -559,9 +559,10 @@ HvifStoreClient::_ThreadEntry(void* data)
 					
 					if (ctx->successWhat == kMsgIconPreviewReady) {
 						int32 id = ctx->extraData.GetInt32("id", 0);
-						BString hash = ctx->extraData.GetString("hash", "");
-						if (id > 0 && !hash.IsEmpty()) {
-							ctx->client->fIconCache->SaveIcon(id, hash.String(),
+						BString cacheKey = ctx->extraData.GetString("path", "");
+
+						if (id > 0 && !cacheKey.IsEmpty()) {
+							ctx->client->fIconCache->SaveIcon(id, cacheKey.String(),
 								buffer.Buffer(), buffer.BufferLength());
 						}
 					}

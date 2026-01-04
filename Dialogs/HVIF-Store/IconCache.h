@@ -9,6 +9,7 @@
 #include <Path.h>
 #include <DataIO.h>
 #include <Locker.h>
+#include <String.h>
 
 class IconCache {
 public:
@@ -21,6 +22,7 @@ public:
 private:
 			void			_Init();
 			void			_Cleanup();
+			BString			_SanitizeName(const char* name);
 
 			BPath			fCacheDir;
 			off_t			fMaxCacheSize;

@@ -70,6 +70,26 @@ IconCache::_Init()
 	fInitialized = true;
 }
 
+BString
+IconCache::_SanitizeName(const char* name)
+{
+	BString safeName(name);
+	safeName.ReplaceAll('/', '_');
+	safeName.ReplaceAll('\\', '_');
+	safeName.ReplaceAll(':', '_');
+	safeName.ReplaceAll('*', '_');
+	safeName.ReplaceAll('?', '_');
+	safeName.ReplaceAll('"', '_');
+	safeName.ReplaceAll('<', '_');
+	safeName.ReplaceAll('>', '_');
+	safeName.ReplaceAll('|', '_');
+
+	if (safeName.Length() > 240)
+		safeName.Truncate(240);
+
+	return safeName;
+}
+
 status_t
 IconCache::GetIcon(int32 id, const char* hash, BMallocIO* data)
 {
@@ -79,7 +99,7 @@ IconCache::GetIcon(int32 id, const char* hash, BMallocIO* data)
 	if (!fInitialized || hash == NULL || *hash == '\0')
 		return B_ERROR;
 
-	BString name(hash);
+	BString name = _SanitizeName(hash);
 
 	BPath path(fCacheDir);
 	path.Append(name.String());
@@ -89,13 +109,13 @@ IconCache::GetIcon(int32 id, const char* hash, BMallocIO* data)
 		return B_ENTRY_NOT_FOUND;
 
 	off_t size;
-	file.GetSize(&size);
-
-	if (size == 0)
+	if (file.GetSize(&size) != B_OK || size == 0)
 		return B_ERROR;
 
-	data->SetSize(size);
-	if (file.Read(const_cast<void*>(data->Buffer()), size) != (ssize_t)size)
+	if (data->SetSize(size) != B_OK)
+		return B_NO_MEMORY;
+
+	if (file.ReadAt(0, const_cast<void*>(data->Buffer()), size) != (ssize_t)size)
 		return B_ERROR;
 
 	file.SetModificationTime(time(NULL));
@@ -112,23 +132,30 @@ IconCache::SaveIcon(int32 id, const char* hash, const void* data, size_t size)
 	if (!fInitialized || size == 0 || hash == NULL || *hash == '\0')
 		return B_ERROR;
 
-	BString name(hash);
+	BString name = _SanitizeName(hash);
 
 	BPath path(fCacheDir);
-	path.Append(name.String());
+	if (path.Append(name.String()) != B_OK)
+		return B_ERROR;
 
 	BEntry entry(path.Path());
 	if (entry.Exists()) {
-		entry.SetModificationTime(time(NULL));
-		return B_OK;
+		off_t existingSize;
+		if (entry.GetSize(&existingSize) == B_OK && existingSize == (off_t)size) {
+			entry.SetModificationTime(time(NULL));
+			return B_OK;
+		}
 	}
 
 	BFile file(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
 	if (file.InitCheck() != B_OK)
 		return B_ERROR;
 
-	if (file.Write(data, size) != (ssize_t)size)
+	if (file.Write(data, size) != (ssize_t)size) {
+		BEntry incomplete(path.Path());
+		incomplete.Remove();
 		return B_ERROR;
+	}
 
 	fWriteCounter++;
 	if (fWriteCounter > kCleanupInterval) {
