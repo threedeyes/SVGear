@@ -1,0 +1,27 @@
+1	Russian	application/x-vnd.HvifStoreBrowser	1047943002
+Author:	HVIFStoreDialog		Автор:
+Error	HVIFStoreDialog		Ошибка
+Failed to create download thread	HVIFStoreDialog		Ошибка создания потока загрузки
+Failed to download icon data	HVIFStoreDialog		Ошибка загрузки данных иконки
+Failed to save file.	HVIFStoreDialog		Ошибка сохранения файла.
+Hide tags	HVIFStoreDialog		Скрыть теги
+HVIF data is missing in memory.	HVIFStoreDialog		Данные HVIF отсутствуют в памяти.
+HVIF-Store Browser	HVIFStoreDialog		HVIF-Store Browser
+JSON parse failed	HVIFStoreDialog		Ошибка парсера JSON
+License:	HVIFStoreDialog		Лицензия:
+Load more	HVIFStoreDialog		Загрузить ещё
+Loading...	HVIFStoreDialog		Загрузка...
+MIME:	HVIFStoreDialog		MIME:
+Network error occurred	HVIFStoreDialog		Произошла сетевая ошибка
+No icon data available for this icon.	HVIFStoreDialog		Отсутствуют данные изображения для этой иконки.
+No icons loaded	HVIFStoreDialog		Иконки не загружены
+OK	HVIFStoreDialog		OK
+Save as:	HVIFStoreDialog		Сохранить как:
+Save icon as 	HVIFStoreDialog		Сохранить иконку как
+Search:	HVIFStoreDialog		Поиск:
+Select an icon	HVIFStoreDialog		Выберете иконку
+Show all tags...	HVIFStoreDialog		Показать все теги...
+SVG format is not available for this icon.	HVIFStoreDialog		SVG формат недоступен для данной иконки.
+Tags:	HVIFStoreDialog		Теги:
+This format is not available for this icon.	HVIFStoreDialog		Данный формат не доступен для этой иконки.
+Untitled	HVIFStoreDialog		Без названия

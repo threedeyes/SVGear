@@ -1,0 +1,27 @@
+1	French	application/x-vnd.HvifStoreBrowser	1047943002
+Author:	HVIFStoreDialog		Auteur :
+Error	HVIFStoreDialog		Erreur
+Failed to create download thread	HVIFStoreDialog		Échec de la création du fil de téléchargement
+Failed to download icon data	HVIFStoreDialog		Échec du téléchargement des données de l'icone
+Failed to save file.	HVIFStoreDialog		Échec de la sauvegarde du fichier
+Hide tags	HVIFStoreDialog		Cacher les balises
+HVIF data is missing in memory.	HVIFStoreDialog		Les données HVIF sont manquantes en mémoire.
+HVIF-Store Browser	HVIFStoreDialog		Navigateur Stock-HVIF
+JSON parse failed	HVIFStoreDialog		Échec de l'analyse JSON
+License:	HVIFStoreDialog		Licence :
+Load more	HVIFStoreDialog		En charger plus
+Loading...	HVIFStoreDialog		Chargement en cours...
+MIME:	HVIFStoreDialog		MIME :
+Network error occurred	HVIFStoreDialog		Une erreur réseau est apparue
+No icon data available for this icon.	HVIFStoreDialog		Aucune donnée d'icone est disponible pour cet icone
+No icons loaded	HVIFStoreDialog		Aucun icone chargé
+OK	HVIFStoreDialog		D'accord
+Save as:	HVIFStoreDialog		Sauvegarder en tant que :
+Save icon as 	HVIFStoreDialog		Sauvegarder l'icone en tant que
+Search:	HVIFStoreDialog		Rechercher :
+Select an icon	HVIFStoreDialog		Sélectionnez un icone
+Show all tags...	HVIFStoreDialog		Afficher toutes les balises...
+SVG format is not available for this icon.	HVIFStoreDialog		Le format SVG n'est pas disponible pour cet icone.
+Tags:	HVIFStoreDialog		Balises :
+This format is not available for this icon.	HVIFStoreDialog		Ce format n'est pas disponible pour cet icone.
+Untitled	HVIFStoreDialog		Sans titre
