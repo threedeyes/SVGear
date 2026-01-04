@@ -1047,7 +1047,6 @@ IconGridView::_CheckAutoLoad()
 
 	float rowHeight = fCellHeight + fPadding;
 
-	// Only auto-load if there is a gap of more than one row at the bottom
 	if (Bounds().bottom > fTotalHeight + rowHeight)
 		Window()->PostMessage(kMsgLoadMore);
 }
