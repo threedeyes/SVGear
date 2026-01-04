@@ -37,7 +37,7 @@ private:
 			void            _CalculateWindowSize(float* width, float* height);
 			void            _Search(bool clear = true);
 			void            _ScheduleSearch();
-			void            _ParseCategories(BMessage* data);
+			void            _ParseTags(BMessage* data);
 			void            _ParseIcons(BMessage* data);
 			void            _AddIconFromMessage(BMessage* item);
 			void            _OpenSelectedIcon();

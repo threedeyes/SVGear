@@ -103,12 +103,13 @@ IconInfoView::SetFilterTags(const char* tags)
 
 		for (int32 i = 0; i < fTagChips.CountItems(); i++) {
 			ChipView* chip = fTagChips.ItemAt(i);
-			if (chip->Style() == B_CHIP_STYLE_CATEGORY) {
-				BString bracketTag = "[";
-				bracketTag << chip->Label() << "]";
-				bool isActive = fCurrentFilterTags.FindFirst(bracketTag) >= 0;
-				chip->SetValue(isActive ? B_CONTROL_ON : B_CONTROL_OFF);
-			}
+			bool isBracket = chip->Style() == B_CHIP_STYLE_CATEGORY;
+			BString checkTag = isBracket ? "[" : "";
+			checkTag << chip->Label();
+			if (isBracket) checkTag << "]";
+
+			bool isActive = fCurrentFilterTags.FindFirst(checkTag) >= 0;
+			chip->SetValue(isActive ? B_CONTROL_ON : B_CONTROL_OFF);
 		}
 
 		Invalidate();
@@ -400,16 +401,14 @@ IconInfoView::_CreateTagChips()
 		label.Truncate(label.Length() - 1);
 
 		BMessage* msg = new BMessage(kMsgMetaTagClicked);
-		msg->AddString("tag", label);
+		msg->AddString("tag", *tagStr);
 
 		ChipView* chip = new ChipView(label.String(), label.String(), msg,
 			B_CHIP_STYLE_CATEGORY);
 		chip->SetClickable(true);
 		chip->SetTarget(this);
 
-		BString bracketTag = "[";
-		bracketTag << label << "]";
-		if (fCurrentFilterTags.FindFirst(bracketTag) >= 0) {
+		if (fCurrentFilterTags.FindFirst(*tagStr) >= 0) {
 			chip->SetValue(B_CONTROL_ON);
 		}
 
@@ -420,9 +419,17 @@ IconInfoView::_CreateTagChips()
 	for (int32 i = 0; i < regularTags.CountItems(); i++) {
 		BString* tagStr = regularTags.ItemAt(i);
 
-		ChipView* chip = new ChipView(tagStr->String(), tagStr->String(), NULL,
+		BMessage* msg = new BMessage(kMsgMetaTagClicked);
+		msg->AddString("tag", *tagStr);
+
+		ChipView* chip = new ChipView(tagStr->String(), tagStr->String(), msg,
 			B_CHIP_STYLE_TAG);
-		chip->SetClickable(false);
+		chip->SetClickable(true);
+		chip->SetTarget(this);
+
+		if (fCurrentFilterTags.FindFirst(*tagStr) >= 0) {
+			chip->SetValue(B_CONTROL_ON);
+		}
 
 		fTagChips.AddItem(chip);
 		AddChild(chip);

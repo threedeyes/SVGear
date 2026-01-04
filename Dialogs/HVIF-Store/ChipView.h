@@ -10,7 +10,8 @@
 
 enum chip_style {
 	B_CHIP_STYLE_TAG,
-	B_CHIP_STYLE_CATEGORY
+	B_CHIP_STYLE_CATEGORY,
+	B_CHIP_STYLE_ACTION
 };
 
 class ChipView : public BControl {
@@ -43,10 +44,10 @@ public:
 private:
 	float					_CornerRadius() const;
 	BRect					_ChipRect() const;
-	BRect					_FocusRect() const;
 
 	chip_style				fStyle;
 	bool					fClickable;
+	font_height             fFontHeight;
 };
 
 #endif

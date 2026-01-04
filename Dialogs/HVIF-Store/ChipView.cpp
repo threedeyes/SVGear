@@ -6,23 +6,32 @@
 #include "ChipView.h"
 #include <ControlLook.h>
 #include <Cursor.h>
+#include <Window.h>
 
 static const float kCategoryCornerRadius = 4.0f;
 static const float kHPadding = 6.0f;
-static const float kVPadding = 3.0f;
-static const float kFocusLineWidth = 2.0f;
-static const float kFocusInset = -2.0f;
-
+static const float kVPadding = 2.0f;
 
 ChipView::ChipView(const char* name, const char* label, BMessage* message,
 	chip_style style)
 	:
 	BControl(name, label, message, B_WILL_DRAW | B_NAVIGABLE),
 	fStyle(style),
-	fClickable(style == B_CHIP_STYLE_CATEGORY)
+	fClickable(style == B_CHIP_STYLE_CATEGORY || style == B_CHIP_STYLE_ACTION)
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 	SetLowUIColor(B_PANEL_BACKGROUND_COLOR);
+	BFont font;
+	GetFont(&font);
+
+	//font.SetSize(font.Size() * 0.95f);
+
+	if (style == B_CHIP_STYLE_ACTION)
+		font.SetFace(B_BOLD_FACE);
+
+	font.GetHeight(&fFontHeight);
+
+	SetFont(&font);
 }
 
 
@@ -60,11 +69,8 @@ ChipView::SetClickable(bool clickable)
 void
 ChipView::GetPreferredSize(float* width, float* height)
 {
-	font_height fh;
-	GetFontHeight(&fh);
-
 	float textWidth = StringWidth(Label());
-	float fontHeight = fh.ascent + fh.descent;
+	float fontHeight = fFontHeight.ascent + fFontHeight.descent;
 
 	if (width)
 		*width = textWidth + kHPadding * 2;
@@ -106,34 +112,42 @@ ChipView::Draw(BRect updateRect)
 	bool selected = (Value() == B_CONTROL_ON);
 	bool focused = IsFocus() && fClickable;
 
+	if (fStyle == B_CHIP_STYLE_ACTION) {
+		SetHighColor(ui_color(B_LINK_TEXT_COLOR));
+
+		BRect bounds = Bounds();
+		float textWidth = StringWidth(Label());
+		float textX = (bounds.Width() - textWidth) / 2.0f;
+		float textY = (bounds.Height() - (fFontHeight.ascent + fFontHeight.descent)) / 2.0f + fFontHeight.ascent;
+
+		DrawString(Label(), BPoint(textX, textY));
+
+		if (focused) {
+			SetHighColor(ui_color(B_CONTROL_MARK_COLOR));
+			StrokeRoundRect(_ChipRect(), _CornerRadius(), _CornerRadius());
+		}
+		return;
+	}
+
 	rgb_color bgColor = selected
 		? ui_color(B_CONTROL_HIGHLIGHT_COLOR)
-		: ui_color(B_CONTROL_BACKGROUND_COLOR);
+		: fStyle == B_CHIP_STYLE_TAG ? ui_color(B_CONTROL_BACKGROUND_COLOR)
+		: tint_color(ui_color(B_CONTROL_BACKGROUND_COLOR), B_DARKEN_1_TINT);
 
 	SetHighColor(bgColor);
 	FillRoundRect(_ChipRect(), _CornerRadius(), _CornerRadius());
 
-	SetHighColor(ui_color(B_CONTROL_BORDER_COLOR));
+	SetHighColor(focused ? ui_color(B_CONTROL_MARK_COLOR) : ui_color(B_CONTROL_BORDER_COLOR));
 	StrokeRoundRect(_ChipRect(), _CornerRadius(), _CornerRadius());
 
 	SetHighColor(ui_color(B_CONTROL_TEXT_COLOR));
 
-	font_height fh;
-	GetFontHeight(&fh);
-
 	BRect bounds = Bounds();
 	float textWidth = StringWidth(Label());
 	float textX = (bounds.Width() - textWidth) / 2.0f;
-	float textY = (bounds.Height() - (fh.ascent + fh.descent)) / 2.0f + fh.ascent;
+	float textY = (bounds.Height() - (fFontHeight.ascent + fFontHeight.descent)) / 2.0f + fFontHeight.ascent;
 
 	DrawString(Label(), BPoint(textX, textY));
-
-	if (focused) {
-		SetHighColor(ui_color(B_CONTROL_MARK_COLOR));
-		SetPenSize(kFocusLineWidth);
-		StrokeRoundRect(_FocusRect(), _CornerRadius(), _CornerRadius());
-		SetPenSize(1.0f);
-	}
 }
 
 
@@ -143,7 +157,9 @@ ChipView::MouseDown(BPoint where)
 	if (!IsEnabled() || !fClickable)
 		return;
 
-	SetValue(Value() == B_CONTROL_ON ? B_CONTROL_OFF : B_CONTROL_ON);
+	if (fStyle != B_CHIP_STYLE_ACTION)
+		SetValue(Value() == B_CONTROL_ON ? B_CONTROL_OFF : B_CONTROL_ON);
+
 	Invoke();
 }
 
@@ -200,13 +216,4 @@ BRect
 ChipView::_ChipRect() const
 {
 	return Bounds();
-}
-
-
-BRect
-ChipView::_FocusRect() const
-{
-	BRect rect = _ChipRect();
-	rect.InsetBy(kFocusInset, kFocusInset);
-	return rect;
 }

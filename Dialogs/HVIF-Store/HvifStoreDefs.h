@@ -43,11 +43,12 @@ enum {
 
 	kMsgMetaTagClicked   = 'mtcl',
 	kMsgClearTags        = 'cltg',
+	kMsgToggleTagsExpansion = 'tgex',
 
-	kMsgFetchCategories  = 'ftct',
+	kMsgFetchTags        = 'fttg',
 	kMsgDownloadIcon     = 'dnic',
 
-	kMsgCategoriesLoaded = 'ctld',
+	kMsgTagsLoaded       = 'tgld',
 	kMsgIconsLoaded      = 'icld',
 	kMsgIconPreviewReady = 'iprd',
 	kMsgIconDataReady    = 'idrd',

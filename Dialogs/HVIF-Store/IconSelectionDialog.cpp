@@ -176,11 +176,12 @@ IconSelectionDialog::_InitGUI()
 			.Add(fSearchEntry)
 			.Add(fResetButton)
 		.End()
-		.Add(fTagsView)
-		.AddGroup(B_HORIZONTAL, B_USE_SMALL_SPACING)
+		.Add(fTagsView, 20.0f)
+		.AddGroup(B_HORIZONTAL, B_USE_SMALL_SPACING, 0.9f)
 			.Add(fGridScroll, 3.0f)
 			.Add(fInfoView, 0.0f)
 		.End()
+		.AddGlue(0.1f)
 		.Add(new BSeparatorView(B_HORIZONTAL))
 		.AddGroup(B_HORIZONTAL)
 			.AddGlue()
@@ -451,6 +452,14 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		case kMsgTagToggled: {
 			fTagsView->GetSelectedTags(fCurrentTags);
 			fInfoView->SetFilterTags(fCurrentTags);
+
+			bool expanded = fTagsView->IsExpanded();
+			if (expanded) {
+				fTagsView->ToggleExpanded();
+                if (fGridScroll->IsHidden()) fGridScroll->Show();
+                if (fInfoView->IsHidden()) fInfoView->Show();
+			}
+
 			_Search(true);
 			break;
 		}
@@ -459,6 +468,20 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			BString tag;
 			if (message->FindString("tag", &tag) == B_OK) {
 				fTagsView->ToggleTag(tag);
+			}
+			break;
+		}
+
+		case kMsgToggleTagsExpansion: {
+			fTagsView->ToggleExpanded();
+			bool expanded = fTagsView->IsExpanded();
+
+			if (expanded) {
+				fGridScroll->Hide();
+				fInfoView->Hide();
+			} else {
+				fGridScroll->Show();
+				fInfoView->Show();
 			}
 			break;
 		}
@@ -472,10 +495,10 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			break;
 		}
 
-		case kMsgCategoriesLoaded: {
+		case kMsgTagsLoaded: {
 			BMessage json;
 			if (message->FindMessage("json", &json) == B_OK)
-				_ParseCategories(&json);
+				_ParseTags(&json);
 			break;
 		}
 
@@ -686,29 +709,12 @@ IconSelectionDialog::_Search(bool clear)
 
 
 void
-IconSelectionDialog::_ParseCategories(BMessage* data)
+IconSelectionDialog::_ParseTags(BMessage* data)
 {
 	if (data == NULL)
 		return;
 
-	fTagsView->ClearTags();
-
-	char indexStr[32];
-	int32 i = 0;
-
-	while (true) {
-		snprintf(indexStr, sizeof(indexStr), "%" B_PRId32, i);
-		BMessage item;
-
-		if (data->FindMessage(indexStr, &item) != B_OK)
-			break;
-
-		BString catName = item.GetString("name", "");
-		if (!catName.IsEmpty()) {
-			fTagsView->AddTag(catName, new BMessage(kMsgTagToggled));
-		}
-		i++;
-	}
+	fTagsView->SetTags(data);
 }
 
 
@@ -719,6 +725,18 @@ IconSelectionDialog::_ParseIcons(BMessage* data)
 
 	if (data == NULL)
 		return;
+
+	int32 absoluteTotal = 0;
+	if (data->FindInt32("absolute_total", &absoluteTotal) == B_OK) {
+		BString title;
+#ifdef HVIF_STORE_CLIENT
+		title = B_TRANSLATE("HVIF-Store Browser");
+#else
+		title = B_TRANSLATE("Select Icon from HVIF Store");
+#endif
+		title << " (" << absoluteTotal << ")";
+		SetTitle(title.String());
+	}
 
 	BMessage dataField;
 	int32 count = 0;

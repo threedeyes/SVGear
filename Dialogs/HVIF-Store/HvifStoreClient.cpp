@@ -146,13 +146,13 @@ HvifStoreClient::MessageReceived(BMessage* message)
 			break;
 		}
 
-		case kMsgFetchCategories: {
+		case kMsgFetchTags: {
 			BString url = fBaseUrl;
-			url << "/api.php?action=get_meta_categories";
+			url << "/api.php?action=get_tags";
 #if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
-			_QueueRequest(BUrl(url.String(), true), kMsgCategoriesLoaded);
+			_QueueRequest(BUrl(url.String(), true), kMsgTagsLoaded);
 #else
-			_QueueRequest(BUrl(url.String()), kMsgCategoriesLoaded);
+			_QueueRequest(BUrl(url.String()), kMsgTagsLoaded);
 #endif
 			break;
 		}
@@ -263,7 +263,7 @@ HvifStoreClient::MessageReceived(BMessage* message)
 void
 HvifStoreClient::FetchCategories()
 {
-	PostMessage(kMsgFetchCategories);
+	PostMessage(kMsgFetchTags);
 }
 
 

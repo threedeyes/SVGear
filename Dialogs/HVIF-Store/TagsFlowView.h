@@ -12,6 +12,17 @@
 
 #include "ChipView.h"
 
+struct TagItem {
+	BString name;
+	bool isMeta;
+	bool isSelected;
+
+	TagItem(const char* n) : name(n), isMeta(false), isSelected(false) {
+		if (name.StartsWith("[") && name.EndsWith("]"))
+			isMeta = true;
+	}
+};
+
 class TagsFlowView : public BView {
 public:
 							TagsFlowView();
@@ -24,23 +35,28 @@ public:
 	virtual BSize			MaxSize();
 	virtual BSize			PreferredSize();
 
-			void			AddTag(const char* name, BMessage* message);
-			void			ClearTags();
-			int32			CountTags() const;
+			void			SetTags(const BMessage* tagsList);
 			void			GetSelectedTags(BString& outTags) const;
 
 			void			ToggleTag(const char* name);
 			void			DeselectAll();
 
+			void			ToggleExpanded();
+			bool			IsExpanded() const { return fExpanded; }
+
 private:
+			void			_RebuildViews();
 			void			_DoLayout();
 
 #if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
-			BObjectList<ChipView, true> fTags;
+			BObjectList<TagItem, true> fTagItems;
+			BObjectList<ChipView, false> fChipViews;
 #else
-			BObjectList<ChipView> fTags;
+			BObjectList<TagItem> fTagItems;
+			BObjectList<ChipView> fChipViews;
 #endif
 			float			fCachedHeight;
+			bool			fExpanded;
 
 	static const float		kHSpacing;
 	static const float		kVSpacing;
