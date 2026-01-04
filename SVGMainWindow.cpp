@@ -1377,7 +1377,6 @@ SVGMainWindow::_LoadNewFile()
 	}
 	_UpdateUIState();
 	_UpdateStatView();
-	_UpdateStatView();
 }
 
 void
