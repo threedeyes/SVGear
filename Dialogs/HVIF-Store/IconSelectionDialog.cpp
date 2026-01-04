@@ -36,12 +36,15 @@ IconSelectionDialog::IconSelectionDialog(BMessenger target)
 	:
 	BWindow(BRect(0, 0, 100, 100),
 #ifdef HVIF_STORE_CLIENT
-	B_TRANSLATE("HVIF-Store Browser"),
+		B_TRANSLATE("HVIF-Store Browser"),
+		B_TITLED_WINDOW_LOOK,
+		B_NORMAL_WINDOW_FEEL,
 #else
-	B_TRANSLATE("Select Icon from HVIF Store"),
+		B_TRANSLATE("Select Icon from HVIF Store"),
+		B_TITLED_WINDOW_LOOK,
+		B_MODAL_APP_WINDOW_FEEL,
 #endif
-			B_TITLED_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
-			B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS),
+		B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS),
 	fResetButtonIcon(NULL),
 	fTarget(target),
 	fPage(1),
@@ -275,7 +278,7 @@ IconSelectionDialog::_SaveFormat(IconFormat format)
 	if (fSavePanel == NULL) {
 		BMessage* message = new BMessage(kMsgSaveFormatRef);
 		fSavePanel = new BFilePanel(B_SAVE_PANEL, new BMessenger(this),
-			NULL, 0, false, message);
+			NULL, 0, false, message, NULL, true, true);
 	}
 
 	fSavePanel->SetSaveText(defaultName.String());
@@ -283,9 +286,9 @@ IconSelectionDialog::_SaveFormat(IconFormat format)
 	BString panelTitle = B_TRANSLATE("Save icon as ");
 	panelTitle << _GetFormatExtension(format);
 	fSavePanel->Window()->SetTitle(panelTitle.String());
-
+#ifndef HVIF_STORE_CLIENT
 	SetFeel(B_NORMAL_WINDOW_FEEL);
-
+#endif
 	fSavePanel->Show();
 }
 
@@ -568,7 +571,9 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		}
 
 		case kMsgSaveFormatRef:
+#ifndef HVIF_STORE_CLIENT
 			SetFeel(B_MODAL_APP_WINDOW_FEEL);
+#endif
 			_DoSaveFormat(message);
 			break;
 
@@ -576,7 +581,9 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			void* source = NULL;
 			if (message->FindPointer("source", &source) == B_OK
 				&& source == fSavePanel) {
+#ifndef HVIF_STORE_CLIENT
 				SetFeel(B_MODAL_APP_WINDOW_FEEL);
+#endif
 				fPendingSaveFormat = kFormatNone;
 			}
 			break;
