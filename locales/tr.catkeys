@@ -1,4 +1,4 @@
-1	Turkish	application/x-vnd.svgear	635258296
+1	Turkish	application/x-vnd.svgear	2568627665
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld pks
 About SVGear…	SVGMenuManager		SVGear hakkında…
 Bounding box	SVGMenuManager		Sınırlayıcı kutu
@@ -186,11 +186,9 @@ Author:	HVIFStoreDialog		Yazar:
 Cancel	HVIFStoreDialog		Vazgeç
 Error	HVIFStoreDialog		Hata
 Failed to create download thread	HVIFStoreDialog		İndirme iş parçacığı oluşturulamadı
-Failed to create network thread	HVIFStoreDialog		Ağ iş parçacığı oluşturulamadı
-Failed to create request	HVIFStoreDialog		İstek oluşturulamadı
-Failed to decode icon	HVIFStoreDialog		Simge kodu çözülemedi
 Failed to download icon data	HVIFStoreDialog		Simge verisi indirilemedi
-File sizes:	HVIFStoreDialog		Dosya boyutları:
+Failed to save file.	HVIFStoreDialog		Failed to save file.
+Hide tags	HVIFStoreDialog		Hide tags
 JSON parse failed	HVIFStoreDialog		JSON ayrıştırma hatası
 License:	HVIFStoreDialog		Lisans:
 Load more	HVIFStoreDialog		Daha fazla yükle
@@ -201,10 +199,14 @@ No icon data available for this icon.	HVIFStoreDialog		Bu simge için veri yok.
 No icons loaded	HVIFStoreDialog		Simge yüklenmedi
 OK	HVIFStoreDialog		Tamam
 Open	HVIFStoreDialog		Aç
+Save as:	HVIFStoreDialog		Save as:
+Save icon as 	HVIFStoreDialog		Save icon as 
 Search:	HVIFStoreDialog		Ara:
 Select an icon	HVIFStoreDialog		Bir simge seçin
 Select Icon from HVIF Store	HVIFStoreDialog		HVIF Store Simge Seç
+Show all tags...	HVIFStoreDialog		Show all tags...
 Tags:	HVIFStoreDialog		Etiketler:
+This format is not available for this icon.	HVIFStoreDialog		This format is not available for this icon.
 Untitled	HVIFStoreDialog		Adsız
 Bounds	SVGStatView		Sınırlar
 Closed paths:	SVGStatView		Kapalı yollar:

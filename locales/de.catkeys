@@ -1,4 +1,4 @@
-1	German	application/x-vnd.svgear	635258296
+1	German	application/x-vnd.svgear	2568627665
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld Pixel
 About SVGear…	SVGMenuManager		Über SVGear …
 Bounding box	SVGMenuManager		Begrenzungs-Box
@@ -186,11 +186,9 @@ Author:	HVIFStoreDialog		Autor:
 Cancel	HVIFStoreDialog		Abbrechen
 Error	HVIFStoreDialog		Fehler
 Failed to create download thread	HVIFStoreDialog		Download-Thread konnte nicht erstellt werden
-Failed to create network thread	HVIFStoreDialog		Netzwerk-Thread konnte nicht erstellt werden
-Failed to create request	HVIFStoreDialog		Anfrage konnte nicht erstellt werden
-Failed to decode icon	HVIFStoreDialog		Icon konnte nicht dekodiert werden
 Failed to download icon data	HVIFStoreDialog		Icon-Daten konnten nicht heruntergeladen werden
-File sizes:	HVIFStoreDialog		Dateigrößen:
+Failed to save file.	HVIFStoreDialog		Datei konnte nicht gespeichert werden.
+Hide tags	HVIFStoreDialog		Tags ausblenden
 JSON parse failed	HVIFStoreDialog		JSON-Parsing fehlgeschlagen
 License:	HVIFStoreDialog		Lizenz:
 Load more	HVIFStoreDialog		Mehr laden
@@ -201,10 +199,14 @@ No icon data available for this icon.	HVIFStoreDialog		Keine Daten für dieses I
 No icons loaded	HVIFStoreDialog		Keine Icons geladen
 OK	HVIFStoreDialog		OK
 Open	HVIFStoreDialog		Öffnen
+Save as:	HVIFStoreDialog		Speichern als:
+Save icon as 	HVIFStoreDialog		Speichere Icon als
 Search:	HVIFStoreDialog		Suchen:
 Select an icon	HVIFStoreDialog		Wähle ein Icon
 Select Icon from HVIF Store	HVIFStoreDialog		Icon aus HVIF-Store wählen
+Show all tags...	HVIFStoreDialog		Alle Tags zeigen …
 Tags:	HVIFStoreDialog		Tags:
+This format is not available for this icon.	HVIFStoreDialog		Dieses Format ist für das Icon nicht verfügbar.
 Untitled	HVIFStoreDialog		Unbenannt
 Bounds	SVGStatView		Begrenzungen
 Closed paths:	SVGStatView		Geschlossene Pfade:

@@ -1,4 +1,4 @@
-1	Russian	application/x-vnd.svgear	635258296
+1	Russian	application/x-vnd.svgear	2568627665
 %ld px	SVGMenuManager	Image size, 'pixels'	%ld px
 About SVGear…	SVGMenuManager		О программе SVGear…
 Bounding box	SVGMenuManager		Габаритная рамка
@@ -186,11 +186,9 @@ Author:	HVIFStoreDialog		Автор:
 Cancel	HVIFStoreDialog		Отмена
 Error	HVIFStoreDialog		Ошибка
 Failed to create download thread	HVIFStoreDialog		Ошибка создания потока загрузки
-Failed to create network thread	HVIFStoreDialog		Ошибка создания сетевого потока
-Failed to create request	HVIFStoreDialog		Ошибка создания запроса
-Failed to decode icon	HVIFStoreDialog		Ошибка декодирования иконки
 Failed to download icon data	HVIFStoreDialog		Ошибка загрузки данных иконки
-File sizes:	HVIFStoreDialog		Размеры файлов:
+Failed to save file.	HVIFStoreDialog		Ошибка сохранения файла.
+Hide tags	HVIFStoreDialog		Скрыть теги
 JSON parse failed	HVIFStoreDialog		Ошибка парсера JSON
 License:	HVIFStoreDialog		Лицензия:
 Load more	HVIFStoreDialog		Загрузить ещё
@@ -201,10 +199,14 @@ No icon data available for this icon.	HVIFStoreDialog		Отсутствуют д
 No icons loaded	HVIFStoreDialog		Иконки не загружены
 OK	HVIFStoreDialog		OK
 Open	HVIFStoreDialog		Открыть
+Save as:	HVIFStoreDialog		Сохранить как:
+Save icon as 	HVIFStoreDialog		Сохранить иконку как
 Search:	HVIFStoreDialog		Поиск:
 Select an icon	HVIFStoreDialog		Выберете иконку
 Select Icon from HVIF Store	HVIFStoreDialog		Выбор иконки с сайта HVIF Store
-Tags:	HVIFStoreDialog		Тэги:
+Show all tags...	HVIFStoreDialog		Показать все теги...
+Tags:	HVIFStoreDialog		Теги:
+This format is not available for this icon.	HVIFStoreDialog		Данный формат не доступен для этой иконки.
 Untitled	HVIFStoreDialog		Без названия
 Bounds	SVGStatView		Границы
 Closed paths:	SVGStatView		Замкнутых путей:

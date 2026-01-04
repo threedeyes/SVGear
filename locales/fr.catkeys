@@ -1,0 +1,252 @@
+1	French	application/x-vnd.svgear	2568627665
+%ld px	SVGMenuManager	Image size, 'pixels'	%ld px
+About SVGear…	SVGMenuManager		À propos de SVGear…
+Bounding box	SVGMenuManager		Boîte de limites
+C++ array…	SVGMenuManager		Zone C++…
+Center	SVGMenuManager		Centrer
+Display mode	SVGMenuManager		Mode d'affichage
+Document style	SVGMenuManager		Du style document
+Export	SVGMenuManager		Exporter
+File	SVGMenuManager		Fichier
+Fill only	SVGMenuManager		Seulement les formes pleines
+Fit to window	SVGMenuManager		Adapté à la fenêtre
+Help	SVGMenuManager		Aide
+HVIF Icon…	SVGMenuManager		Icone HVIF…
+Icon store…	SVGMenuManager		Stock d'icone...
+Icon-O-Matic…	SVGMenuManager		Icon-O-Matic…
+New	SVGMenuManager		Nouveau
+None	SVGMenuManager		Aucune
+Normal	SVGMenuManager		Normal
+Open…	SVGMenuManager		Ouvrir…
+Original size	SVGMenuManager		Dimensions d'origine
+Outline	SVGMenuManager		Contour
+PNG image	SVGMenuManager		Image PNG
+Quit	SVGMenuManager		Quitter
+RDef resource…	SVGMenuManager		Ressource RDef…
+Reset view	SVGMenuManager		Réinitialiser la vue
+Save	SVGMenuManager		Sauvegarder
+Save as…	SVGMenuManager		Sauvegarder en tant que…
+Show sources panel	SVGMenuManager		Afficher le panneau des sources
+Show statistics panel	SVGMenuManager		Afficher le panneau des statistiques
+Show structure panel	SVGMenuManager		Afficher le panneau de la structure
+Show transparency grid	SVGMenuManager		Afficher la grille de transparence
+Simple frame	SVGMenuManager		Juste le cadre
+Stroke only	SVGMenuManager		Seulement les formes tracées
+Tools	SVGMenuManager		Outils
+Transparent gray	SVGMenuManager		Grise et transparente
+View	SVGMenuManager		Vue
+Zoom in	SVGMenuManager		Agrandir
+Zoom original	SVGMenuManager		Zoom d'origine
+Zoom out	SVGMenuManager		Réduire
+%ld px	SVGMainWindow	Image size, 'pixels'	%ld px
+Apply (Alt+Enter)	SVGMainWindow		Appliquer (Alt+Enter)
+Best fit	SVGMainWindow		Adapté au mieux
+C++ code copied to clipboard	SVGMainWindow		Code C++ copié dans le presse-papiers
+Center	SVGMainWindow		Centrer
+Copy	SVGMainWindow		Copier
+Copy HVIF as C++ code	SVGMainWindow		Copier HVIF en tant que code C++
+Copy HVIF as RDef code	SVGMainWindow		Copier HVIF en tant que code RDef
+Copy raster image…	SVGMainWindow		Copier l'image matricielle…
+Copy SVG as Base64	SVGMainWindow		Copier SVG en tant que Base64
+Copy SVG source	SVGMainWindow		Copier le source SVG
+Could not find directory reference	SVGMainWindow		Référence de répertoire introuvable
+Could not find file name	SVGMainWindow		Nom de fichier introuvable
+Cut	SVGMainWindow		Couper
+Document	SVGMainWindow		Document
+Error	SVGMainWindow		Erreur
+Error parsing SVG from source code. Please check the syntax.	SVGMainWindow		Erreur d'analyse SVG depuis le code source. Veuillez vérifier la syntaxe.
+Failed to export file	SVGMainWindow		Échec de l'exportation du fichier
+Failed to render image	SVGMainWindow		Échec du rendu de l'image
+Failed to save file	SVGMainWindow		Échec de la sauvegarde du fichier
+File exported successfully	SVGMainWindow		Exportation du fichier réussie
+File saved successfully	SVGMainWindow		Sauvegarde du fichier réussie
+Fill only	SVGMainWindow		Seulement les formes pleines
+Find next	SVGMainWindow		Trouver l’occurrence suivante
+Find previous	SVGMainWindow		Trouver l'occurrence précédente
+Gray	SVGMainWindow		Grise
+HTML img tag with Base64 SVG copied	SVGMainWindow		Balise img HTML avec SVG Base64 copiée
+Icon store	SVGMainWindow		Stock d'icones
+Image copied to clipboard	SVGMainWindow		Image copiée dans le presse-papiers
+Invalid file path	SVGMainWindow		Chemin de fichier non-valide
+New	SVGMainWindow		Nouveau
+No data available for export	SVGMainWindow		Aucune donnée disponible pour l'exportation
+No HVIF data available	SVGMainWindow		Aucune donnée HVIF disponible
+No HVIF data generated	SVGMainWindow		Aucune donnée HVIF générée
+No SVG loaded	SVGMainWindow		Aucun SVG chargé
+None	SVGMainWindow		Aucune
+Normal	SVGMainWindow		Normal
+OK	SVGMainWindow		D'accord
+Open	SVGMainWindow		Ouvrir
+Original size	SVGMainWindow		Dimensions d'origine
+Outline	SVGMainWindow		Contour
+Paste	SVGMainWindow		Coller
+RDef code copied to clipboard	SVGMainWindow		Code RDef copié dans le presse-papiers
+Ready	SVGMainWindow		Prêt
+Redo	SVGMainWindow		Refaire
+Save	SVGMainWindow		Sauvegarder
+Show bounding box	SVGMainWindow		Afficher la boîte de limites
+Show source code	SVGMainWindow		Afficher le code source
+Show statistics	SVGMainWindow		Afficher les statistiques
+Show structure	SVGMainWindow		Afficher la structure
+Show transparency grid	SVGMainWindow		Afficher la grille de transparence
+Simple	SVGMainWindow		Simple
+Size: %s × %s | Scale: %s | Mode: %s | BBox: %s	SVGMainWindow		Dimensions : %s × %s | Échelle : %s | Mode : %s | BLim : %s
+Source code is empty.	SVGMainWindow		Le code source est inexistant.
+Stroke only	SVGMainWindow		Seulement les formes tracées
+SVG source copied to clipboard	SVGMainWindow		Source SVG copié dans le presse-papiers
+SVGear provides an intuitive interface for viewing and manipulating SVG (Scalable Vector Graphics) files. \nThe application supports format conversion operations, enabling users to transform SVG files into other vector formats such as HVIF (Haiku Vector Icon Format).	SVGMainWindow		SVGear fournit une interface intuitive pour voir et manipuler des fichiers  SVG (Scalable Vector Graphics). \nL'application supporte les opérations de conversion de format, permettant aux utilisateurs de transformer les fichiers SVG en d'autres formats de fichier vectoriels tels que HVIF (Haiku Vector Icon Format).
+Text wrap	SVGMainWindow		Passer automatiquement à la ligne
+Undo	SVGMainWindow		Défaire
+Unknown	SVGMainWindow		Inconnu / Inconnue
+Zoom in	SVGMainWindow		Agrandir
+Zoom original	SVGMainWindow		Zoom d'origine
+Zoom out	SVGMainWindow		Réduire
+Advanced simplification	SVGVectorizationDialog		Simplification avancée
+Applying blur	SVGVectorizationDialog		Application du flou
+Area tolerance	SVGVectorizationDialog		Tolérance de zone
+Auto	SVGVectorizationDialog		Auto
+Background method:	SVGVectorizationDialog		Méthode d'arrière-plan :
+Background tolerance	SVGVectorizationDialog		Tolérance d'arrière-plan
+Basic	SVGVectorizationDialog		Basique
+Blur delta	SVGVectorizationDialog		Delta du flou
+Blur radius	SVGVectorizationDialog		Rayon du flou
+Blur settings	SVGVectorizationDialog		Paramètres du flou
+Cancel	SVGVectorizationDialog		Annuler
+Circle detection tolerance	SVGVectorizationDialog		Tolérance de détection de cercle
+Collinear tolerance	SVGVectorizationDialog		Tolérance de colinéarité
+Colors	SVGVectorizationDialog		Couleurs
+Creating palette	SVGVectorizationDialog		Création de la palette
+Curve protection	SVGVectorizationDialog		Protection de courbure
+Curve smoothing	SVGVectorizationDialog		Adoucissement de courbure
+Curve threshold	SVGVectorizationDialog		Seuil de courbure
+Custom	SVGVectorizationDialog		Personnalisée
+Detect geometric shapes	SVGVectorizationDialog		Détecter les formes géométriques
+Detect gradients	SVGVectorizationDialog		Détecter les gradients
+Detecting geometry	SVGVectorizationDialog		Détection de la géométrie
+Detecting gradients	SVGVectorizationDialog		Détection des gradients
+Douglas-Peucker	SVGVectorizationDialog		Douglas-Peucker
+Fast	SVGVectorizationDialog		Rapide
+Filter small objects	SVGVectorizationDialog		Filtrer les petits objets
+Filtering	SVGVectorizationDialog		Filtrage
+Filtering objects	SVGVectorizationDialog		Filtrage des objets
+Finished	SVGVectorizationDialog		Terminé / Terminée
+Fixing winding	SVGVectorizationDialog		Réparation de winding
+General	SVGVectorizationDialog		Général / Générale
+Geometry	SVGVectorizationDialog		Géométrie
+Gradients	SVGVectorizationDialog		Gradients
+Line detection tolerance	SVGVectorizationDialog		Tolérance de détection de ligne
+Line threshold	SVGVectorizationDialog		Seuil de ligne
+Max subdivisions	SVGVectorizationDialog		Sous-divisions max
+Maximum circle radius	SVGVectorizationDialog		Rayon de cercle maximum
+Merging regions	SVGVectorizationDialog		Fusion des régions
+Min background ratio	SVGVectorizationDialog		Rapport d'arrière-plan minimum
+Min gradient size	SVGVectorizationDialog		Dimensions de gradient minimum
+Min R² threshold	SVGVectorizationDialog		Seuil R² minimum
+Min RGB delta	SVGVectorizationDialog		Delta RGB minimum
+Min samples	SVGVectorizationDialog		Échantillons minimum
+Min segment length	SVGVectorizationDialog		Longueur de segment minimum
+Minimum circle radius	SVGVectorizationDialog		Rayon de cercle minimum
+Minimum object area	SVGVectorizationDialog		Surface d'objet minimum
+Minimum object height	SVGVectorizationDialog		Hauteur d'objet minimum
+Minimum object perimeter	SVGVectorizationDialog		Périmètre d'objet minimum
+Minimum object width	SVGVectorizationDialog		Largeur d'objet minimum
+Number of colors	SVGVectorizationDialog		Nombre de couleurs
+OK	SVGVectorizationDialog		D'accord
+Optimal	SVGVectorizationDialog		Optimal / Optimale
+Optimize SVG output	SVGVectorizationDialog		Optimiser la sortie SVG
+Output	SVGVectorizationDialog		Sortie
+Output scale	SVGVectorizationDialog		Échelle de sortie
+Path omit threshold	SVGVectorizationDialog		Seuil d'omission de chemin
+Preset:	SVGVectorizationDialog		Pre-sélection :
+Processing	SVGVectorizationDialog		Traitement en cours
+Quality	SVGVectorizationDialog		Qualité
+Quantization cycles	SVGVectorizationDialog		Quantification des cycles
+Quantizing colors	SVGVectorizationDialog		Quantification des couleurs
+Remove background	SVGVectorizationDialog		Supprimer l'arrière-plan
+Remove duplicate paths	SVGVectorizationDialog		Supprimer les chemins dupliqués
+Removing background	SVGVectorizationDialog		Suppression de l'arrière-plan
+Round coordinates	SVGVectorizationDialog		Arrondir les coordonnées
+Sample stride	SVGVectorizationDialog		Pas d’échantillonnage
+Scanning paths	SVGVectorizationDialog		Balayage des chemins
+Show description	SVGVectorizationDialog		Afficher la description
+Simple	SVGVectorizationDialog		Simple
+Simplification	SVGVectorizationDialog		Simplification
+Simplification tolerance	SVGVectorizationDialog		Tolérance de simplification
+Simplifying (DP)	SVGVectorizationDialog		Simplification (DP)
+Simplifying (VW)	SVGVectorizationDialog		Simplification (VW)
+Starting	SVGVectorizationDialog		Démarrage
+Starting vectorization	SVGVectorizationDialog		Démarrage de la vectorisation
+Tracing paths	SVGVectorizationDialog		Dessin des chemins
+Unifying edges	SVGVectorizationDialog		Unification des bords
+Use ViewBox	SVGVectorizationDialog		Utiliser la ViewBox
+Vectorization error	SVGVectorizationDialog		Erreur de vectorisation
+Vectorization settings	SVGVectorizationDialog		Paramètres de vectorisation
+Visvalingam-Whyatt	SVGVectorizationDialog		Visvalingam-Whyatt
+Author:	HVIFStoreDialog		Auteur :
+Cancel	HVIFStoreDialog		Annuler
+Error	HVIFStoreDialog		Erreur
+Failed to create download thread	HVIFStoreDialog		Échec de la création du fil de téléchargement
+Failed to download icon data	HVIFStoreDialog		Échec du téléchargement des données de l'icone
+Failed to save file.	HVIFStoreDialog		Échec de la sauvegarde du fichier
+Hide tags	HVIFStoreDialog		Cacher les balises
+JSON parse failed	HVIFStoreDialog		Échec de l'analyse JSON
+License:	HVIFStoreDialog		Licence :
+Load more	HVIFStoreDialog		En charger plus
+Loading...	HVIFStoreDialog		Chargement...
+MIME:	HVIFStoreDialog		MIME :
+Network error occurred	HVIFStoreDialog		Une erreur de réseau s'est produite
+No icon data available for this icon.	HVIFStoreDialog		Aucune donnée d'icone n'est disponible pour cet icone.
+No icons loaded	HVIFStoreDialog		Aucun icone chargé
+OK	HVIFStoreDialog		D'accord
+Open	HVIFStoreDialog		Ouvrir
+Save as:	HVIFStoreDialog		Sauvegarder en tant que :
+Save icon as 	HVIFStoreDialog		Sauvegarder l'icone en tant que
+Search:	HVIFStoreDialog		Rechercher :
+Select an icon	HVIFStoreDialog		Sélectionnez un icone
+Select Icon from HVIF Store	HVIFStoreDialog		Sélection d'un icone depuis le Stock HVIF
+Show all tags...	HVIFStoreDialog		Afficher toutes les balises
+Tags:	HVIFStoreDialog		Balises :
+This format is not available for this icon.	HVIFStoreDialog		Ce format n'est pas disponible pour cet icone.
+Untitled	HVIFStoreDialog		Sans titre
+Bounds	SVGStatView		Limites
+Closed paths:	SVGStatView		Chemins fermés :
+Content	SVGStatView		Contenu
+File	SVGStatView		Fichier
+Filled shapes:	SVGStatView		Formes pleines :
+Gradients:	SVGStatView		Gradients :
+Height:	SVGStatView		Hauteur :
+HVIF size:	SVGStatView		Taille HVIF :
+Image	SVGStatView		Image
+Max X:	SVGStatView		Max X :
+Max Y:	SVGStatView		Max Y :
+Min X:	SVGStatView		Min X :
+Min Y:	SVGStatView		Min Y :
+Paths:	SVGStatView		Chemins :
+Points:	SVGStatView		Points :
+Shapes:	SVGStatView		Formes :
+Stroked shapes:	SVGStatView		Formes tracées :
+SVG size:	SVGStatView		Taille SVG :
+Width:	SVGStatView		Largeur :
+Color	SVGStructureView		Couleur
+Linear gradient	SVGStructureView		Gradient linéaire
+None	SVGStructureView		Aucune
+Paints	SVGStructureView		Habillages
+Paths	SVGStructureView		Chemins
+Radial gradient	SVGStructureView		Gradient radial
+Shape %ld Fill	SVGStructureView		Forme %ld Pleine
+Shape %ld Stroke	SVGStructureView		Forme %ld Tracée
+Shapes	SVGStructureView		Formes
+Could not get export file information	SVGFileManager		Impossible d'obtenir l'information du fichier d'exportation
+Error	SVGFileManager		Erreur
+Error converting %s to SVG	SVGFileManager		Erreur de conversion de %s en SVG
+Error loading %s file: %s	SVGFileManager		Erreur de chargement du fichier %s : %s
+Error loading SVG file: %s	SVGFileManager		Erreur de chargement du fichier SVG : %s
+Error reading SVG file	SVGFileManager		Erreur de lecture du fichier SVG
+Error saving file: %s	SVGFileManager		Erreur de sauvegarde du fichier : %s
+File path not specified	SVGFileManager		Chemin de fichier non spécifié
+OK	SVGFileManager		D'accord
+Unable to load file: %s\nUnknown or unsupported format	SVGFileManager		Impossible de charger le fichier : %s\nFormat inconnu ou non-supporté
+Drop a file to view or vectorize	SVGView		Déposer un fichier pour le voir ou le vectoriser
+Hold the right mouse button to view the original raster image	SVGView		Maintenir le bouton droit de la souris pour voir l'image matricielle originale
+Path %ld.%ld (%d pts)	SVGListItem		Chemin %ld.%ld (%d pts)
+Shape %ld	SVGListItem		Forme %ld
