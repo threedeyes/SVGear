@@ -533,6 +533,8 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		case kMsgSelectIcon: {
 			IconItem* item = fGrid->SelectedItem();
 			bool hasSelection = (item != NULL);
+			bool isLoadMore = fGrid->IsLoadMoreSelected();
+
 #ifdef HVIF_STORE_CLIENT
 			fCopyRDefBtn->SetEnabled(hasSelection && !item->hvifUrl.IsEmpty());
 			fCopyCppBtn->SetEnabled(hasSelection && !item->hvifUrl.IsEmpty());
@@ -541,7 +543,13 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			fCopySvgBtn->SetEnabled(hasSVG);
 			fCopyImgBtn->SetEnabled(hasSVG);
 #else
-			fOpenBtn->SetEnabled(hasSelection);
+			if (isLoadMore) {
+				fOpenBtn->SetLabel(B_TRANSLATE("Load more..."));
+				fOpenBtn->SetEnabled(true);
+			} else {
+				fOpenBtn->SetLabel(B_TRANSLATE("Open"));
+				fOpenBtn->SetEnabled(hasSelection);
+			}
 #endif
 			fPreserveSelectionId = -1;
 			break;
@@ -707,7 +715,7 @@ IconSelectionDialog::DispatchMessage(BMessage* message, BHandler* handler)
 				if (fGrid != NULL && !fGrid->IsFocus()) {
 					fGrid->MakeFocus(true);
 
-					if (fGrid->SelectedItem() == NULL && fGrid->CountItems() > 0) {
+					if (fGrid->SelectedItem() == NULL && !fGrid->IsLoadMoreSelected() && fGrid->CountItems() > 0) {
 						const char bytes[1] = { B_HOME };
 						fGrid->KeyDown(bytes, 1);
 					}
@@ -727,6 +735,10 @@ IconSelectionDialog::_Search(bool clear)
 	_SetLoading(true);
 
 	if (clear) {
+#ifndef HVIF_STORE_CLIENT
+		fOpenBtn->SetLabel(B_TRANSLATE("Open"));
+		fOpenBtn->SetEnabled(false);
+#endif
 		IconItem* selected = fGrid->SelectedItem();
 		if (selected != NULL) {
 			fPreserveSelectionId = selected->id;
@@ -880,6 +892,11 @@ IconSelectionDialog::_AddIconFromMessage(BMessage* item)
 void
 IconSelectionDialog::_OpenSelectedIcon()
 {
+	if (fGrid->IsLoadMoreSelected()) {
+		PostMessage(kMsgLoadMore);
+		return;
+	}
+
 	IconItem* item = fGrid->SelectedItem();
 	if (item == NULL)
 		return;

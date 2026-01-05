@@ -76,7 +76,9 @@ public:
 			int32           CountItems() const;
 			int32           CurrentGeneration() const { return fGeneration; }
 			int32           IconSize() const { return (int32)fIconSize; }
-			
+
+			bool            IsLoadMoreSelected() const { return fSelection == fItems.CountItems(); }
+
 			void            SetInfoView(IconInfoView* infoView);
 			void            SetLoading(bool loading);
 			bool            IsLoading() const { return fLoading; }
