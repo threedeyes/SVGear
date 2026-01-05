@@ -40,7 +40,11 @@ IconGridView::IconGridView()
 	:
 	BView("IconGrid", B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE 
 		| B_FULL_UPDATE_ON_RESIZE | B_PULSE_NEEDED),
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 	fItems(20),
+#else
+	fItems(20, true),
+#endif
 	fSelection(-1),
 	fHoveredItem(-1),
 	fLoadMoreHovered(false),

@@ -42,7 +42,11 @@ IconInfoView::IconInfoView()
 	fDragButton(0),
 	fClickPoint(0, 0),
 	fDragStarted(false),
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
 	fTagChips(20)
+#else
+	fTagChips(20, true)
+#endif
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 	_CalculateSizes();
