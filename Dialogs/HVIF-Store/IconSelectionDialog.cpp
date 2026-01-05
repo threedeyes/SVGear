@@ -118,6 +118,8 @@ IconSelectionDialog::Show()
 		}
 	}
 
+	fSearchEntry->MakeFocus(true);
+
 	BWindow::Show();
 }
 
@@ -690,6 +692,32 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		default:
 			BWindow::MessageReceived(message);
 	}
+}
+
+
+void
+IconSelectionDialog::DispatchMessage(BMessage* message, BHandler* handler)
+{
+	if (message->what == B_KEY_DOWN) {
+		int8 byte;
+		if (message->FindInt8("byte", &byte) == B_OK) {
+			if (byte == B_UP_ARROW || byte == B_DOWN_ARROW ||
+				byte == B_PAGE_UP || byte == B_PAGE_DOWN) {
+
+				if (fGrid != NULL && !fGrid->IsFocus()) {
+					fGrid->MakeFocus(true);
+
+					if (fGrid->SelectedItem() == NULL && fGrid->CountItems() > 0) {
+						const char bytes[1] = { B_HOME };
+						fGrid->KeyDown(bytes, 1);
+					}
+
+					return;
+				}
+			}
+		}
+	}
+	BWindow::DispatchMessage(message, handler);
 }
 
 

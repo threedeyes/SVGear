@@ -71,6 +71,7 @@ public:
 								const uint8* hvifData = NULL, size_t hvifDataSize = 0);
 
 			bool            SelectIcon(int32 id);
+			void            SelectFirstIfEmpty();
 			IconItem*       SelectedItem() const;
 			int32           CountItems() const;
 			int32           CurrentGeneration() const { return fGeneration; }

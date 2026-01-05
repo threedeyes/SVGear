@@ -257,9 +257,14 @@ IconGridView::_DrawLoadingIndicator(BRect bounds)
 void
 IconGridView::_DrawLoadMoreItem(BRect frame)
 {
-	if (fLoadMoreHovered) {
-		SetHighColor(tint_color(ui_color(B_LIST_BACKGROUND_COLOR), 
-			B_DARKEN_1_TINT));
+	bool selected = (fSelection == fItems.CountItems());
+
+	if (fLoadMoreHovered || selected) {
+		rgb_color bgColor = selected
+			? ui_color(B_LIST_SELECTED_BACKGROUND_COLOR)
+			: tint_color(ui_color(B_LIST_BACKGROUND_COLOR), B_DARKEN_1_TINT);
+
+		SetHighColor(bgColor);
 		BRect hoverRect = frame;
 		hoverRect.InsetBy(2, 2);
 		FillRoundRect(hoverRect, 4, 4);
@@ -270,8 +275,14 @@ IconGridView::_DrawLoadMoreItem(BRect frame)
 	BRect iconRect(iconLeft, iconTop, 
 		iconLeft + fIconSize - 1, iconTop + fIconSize - 1);
 
-	SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
-	FillRoundRect(iconRect, 4, 4);
+	rgb_color iconColor = selected
+		? ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR)
+		: tint_color(ViewColor(), B_DARKEN_1_TINT);
+
+	if (!selected) {
+		SetHighColor(iconColor);
+		FillRoundRect(iconRect, 4, 4);
+	}
 
 	if (fLoading) {
 		float angle = _AnimationAngle();
@@ -286,14 +297,20 @@ IconGridView::_DrawLoadMoreItem(BRect frame)
 			float y = centerY + sin(dotAngle) * radius;
 
 			float alpha = 1.0f - (i / 8.0f);
-			rgb_color color = tint_color(ViewColor(), B_DARKEN_3_TINT);
+			rgb_color color = selected
+				? tint_color(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR), B_DARKEN_2_TINT)
+				: tint_color(ViewColor(), B_DARKEN_3_TINT);
 			color.alpha = (uint8)(alpha * 255);
 			SetHighColor(color);
 
 			FillEllipse(BPoint(x, y), 3, 3);
 		}
 	} else {
-		SetHighColor(tint_color(ViewColor(), B_DARKEN_3_TINT));
+		rgb_color dotsColor = selected
+			? ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR)
+			: tint_color(ViewColor(), B_DARKEN_3_TINT);
+
+		SetHighColor(dotsColor);
 		float dotY = iconRect.top + iconRect.Height() / 2;
 		float dotSpacing = fIconSize / 5;
 		float dotX = iconRect.left + iconRect.Width() / 2 - dotSpacing;
@@ -308,7 +325,7 @@ IconGridView::_DrawLoadMoreItem(BRect frame)
 	font_height fh;
 	GetFontHeight(&fh);
 
-	SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
+	SetHighColor(selected ? ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR) : ui_color(B_LIST_ITEM_TEXT_COLOR));
 
 	const char* text = fLoading ? B_TRANSLATE("Loading...") : B_TRANSLATE("Load more");
 	float textWidth = StringWidth(text);
@@ -467,6 +484,31 @@ IconGridView::ScrollTo(BPoint where)
 {
 	BView::ScrollTo(where);
 	_CheckAutoLoad();
+
+	BPoint mousePos;
+	uint32 buttons;
+	GetMouse(&mousePos, &buttons, false);
+
+	if (Bounds().Contains(mousePos)) {
+		int32 newHovered = _ItemAtPoint(mousePos);
+		bool newLoadMoreHovered = _IsLoadMoreAtPoint(mousePos);
+
+		if (newHovered != fHoveredItem) {
+			int32 oldHovered = fHoveredItem;
+			fHoveredItem = newHovered;
+
+			if (oldHovered >= 0)
+				Invalidate(_ItemFrame(oldHovered));
+			if (fHoveredItem >= 0)
+				Invalidate(_ItemFrame(fHoveredItem));
+		}
+
+		if (newLoadMoreHovered != fLoadMoreHovered) {
+			fLoadMoreHovered = newLoadMoreHovered;
+			if (fHasMore || fLoading)
+				Invalidate(_LoadMoreFrame());
+		}
+	}
 }
 
 
@@ -476,6 +518,18 @@ IconGridView::MouseDown(BPoint where)
 	MakeFocus(true);
 
 	if (_IsLoadMoreAtPoint(where)) {
+		if (fHasMore || fLoading) {
+			int32 loadMoreIndex = fItems.CountItems();
+			if (fSelection != loadMoreIndex) {
+				int32 oldSelection = fSelection;
+				fSelection = loadMoreIndex;
+
+				if (oldSelection >= 0) Invalidate(_ItemFrame(oldSelection));
+				Invalidate(_LoadMoreFrame());
+				_UpdateInfoView();
+			}
+		}
+
 		if (!fLoading && fHasMore) {
 			BWindow* window = Window();
 			if (window != NULL)
@@ -510,20 +564,26 @@ IconGridView::MouseDown(BPoint where)
 		int32 oldSelection = fSelection;
 		fSelection = newSelection;
 
-		if (oldSelection >= 0)
-			Invalidate(_ItemFrame(oldSelection));
+		if (oldSelection >= 0) {
+			if (oldSelection == fItems.CountItems())
+				Invalidate(_LoadMoreFrame());
+			else
+				Invalidate(_ItemFrame(oldSelection));
+		}
 		if (fSelection >= 0)
 			Invalidate(_ItemFrame(fSelection));
 
 		_UpdateInfoView();
 	}
 
-	BWindow* window = Window();
-	if (window != NULL)
-		window->PostMessage(kMsgSelectIcon);
+	if (fSelection < fItems.CountItems()) {
+		BWindow* window = Window();
+		if (window != NULL)
+			window->PostMessage(kMsgSelectIcon);
 
-	if (clicks == 2 && fSelection >= 0 && window != NULL)
-		window->PostMessage(kMsgOpenIcon);
+		if (clicks == 2 && fSelection >= 0 && window != NULL)
+			window->PostMessage(kMsgOpenIcon);
+	}
 }
 
 
@@ -585,32 +645,75 @@ IconGridView::MouseUp(BPoint where)
 void
 IconGridView::KeyDown(const char* bytes, int32 numBytes)
 {
-	if (fItems.IsEmpty()) {
+	if (fItems.IsEmpty() && !fHasMore) {
 		BView::KeyDown(bytes, numBytes);
 		return;
 	}
 
+	int32 maxIndex = fItems.CountItems() - 1;
+	if (fHasMore || fLoading) maxIndex++;
+
 	int32 newSelection = fSelection;
+
+	if (newSelection < 0) newSelection = 0;
+
+	BRect bounds = Bounds();
+	float rowHeight = fCellHeight + fPadding;
+	int32 visibleRows = (int32)(bounds.Height() / rowHeight);
+	if (visibleRows < 1) visibleRows = 1;
+	int32 itemsPerPage = visibleRows * fColumns;
 
 	switch (bytes[0]) {
 		case B_LEFT_ARROW:
-			if (fSelection > 0) newSelection--;
+			if (newSelection > 0) newSelection--;
 			break;
+
 		case B_RIGHT_ARROW:
-			if (fSelection < fItems.CountItems() - 1) newSelection++;
+			if (newSelection < maxIndex) newSelection++;
 			break;
+
 		case B_UP_ARROW:
-			if (fSelection >= fColumns) newSelection -= fColumns;
+			if (newSelection >= fColumns) {
+				newSelection -= fColumns;
+			}
 			break;
-		case B_DOWN_ARROW:
-			if (fSelection + fColumns < fItems.CountItems())
-				newSelection += fColumns;
-			else if (fSelection < 0 && fItems.CountItems() > 0)
-				newSelection = 0;
+
+		case B_DOWN_ARROW: {
+			int32 nextRowIndex = newSelection + fColumns;
+			if (nextRowIndex <= maxIndex) {
+				newSelection = nextRowIndex;
+			} else {
+				int32 currentRow = newSelection / fColumns;
+				int32 lastRow = maxIndex / fColumns;
+				if (currentRow < lastRow) {
+					newSelection = maxIndex;
+				}
+			}
 			break;
+		}
+
+		case B_PAGE_UP:
+			newSelection -= itemsPerPage;
+			if (newSelection < 0) newSelection = 0;
+			break;
+
+		case B_PAGE_DOWN:
+			newSelection += itemsPerPage;
+			if (newSelection > maxIndex) newSelection = maxIndex;
+			break;
+
 		case B_ENTER: {
+			if (fSelection == fItems.CountItems() && (fHasMore || fLoading)) {
+				if (!fLoading) {
+					BWindow* window = Window();
+					if (window != NULL)
+						window->PostMessage(kMsgLoadMore);
+				}
+				return;
+			}
+
 			BWindow* window = Window();
-			if (fSelection >= 0 && window != NULL)
+			if (fSelection >= 0 && fSelection < fItems.CountItems() && window != NULL)
 				window->PostMessage(kMsgOpenIcon);
 			return;
 		}
@@ -618,28 +721,35 @@ IconGridView::KeyDown(const char* bytes, int32 numBytes)
 			newSelection = 0;
 			break;
 		case B_END:
-			newSelection = fItems.CountItems() - 1;
+			newSelection = maxIndex;
 			break;
 		default:
 			BView::KeyDown(bytes, numBytes);
 			return;
 	}
 
-	if (newSelection != fSelection && newSelection >= 0) {
+	if (newSelection != fSelection) {
 		int32 oldSelection = fSelection;
 		fSelection = newSelection;
 
-		if (oldSelection >= 0)
+		if (oldSelection == fItems.CountItems())
+			Invalidate(_LoadMoreFrame());
+		else if (oldSelection >= 0)
 			Invalidate(_ItemFrame(oldSelection));
 
-		Invalidate(_ItemFrame(fSelection));
+		if (fSelection == fItems.CountItems())
+			Invalidate(_LoadMoreFrame());
+		else
+			Invalidate(_ItemFrame(fSelection));
 
 		_ScrollToSelection();
 		_UpdateInfoView();
 
-		BWindow* window = Window();
-		if (window != NULL)
-			window->PostMessage(kMsgSelectIcon);
+		if (fSelection < fItems.CountItems()) {
+			BWindow* window = Window();
+			if (window != NULL)
+				window->PostMessage(kMsgSelectIcon);
+		}
 	}
 }
 
@@ -730,8 +840,12 @@ IconGridView::SelectIcon(int32 id)
 			int32 oldSelection = fSelection;
 			fSelection = i;
 
-			if (oldSelection >= 0)
-				Invalidate(_ItemFrame(oldSelection));
+			if (oldSelection >= 0) {
+				if (oldSelection == fItems.CountItems())
+					Invalidate(_LoadMoreFrame());
+				else
+					Invalidate(_ItemFrame(oldSelection));
+			}
 
 			Invalidate(_ItemFrame(fSelection));
 
@@ -870,7 +984,9 @@ IconGridView::_ScrollToSelection()
 	if (fSelection < 0)
 		return;
 
-	BRect frame = _ItemFrame(fSelection);
+	BRect frame = (fSelection == fItems.CountItems())
+		? _LoadMoreFrame() : _ItemFrame(fSelection);
+
 	BRect bounds = Bounds();
 
 	float scrollY = bounds.top;
