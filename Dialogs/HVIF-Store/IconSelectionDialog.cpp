@@ -774,7 +774,8 @@ IconSelectionDialog::_ParseIcons(BMessage* data)
 		return;
 
 	int32 absoluteTotal = 0;
-	if (data->FindInt32("absolute_total", &absoluteTotal) == B_OK) {
+	if (data->FindInt32("absolute_total", &absoluteTotal) != B_OK) {
+		BString absoluteTotal = data->GetString("absolute_total", "0");
 		BString title;
 #ifdef HVIF_STORE_CLIENT
 		title = B_TRANSLATE("HVIF-Store Browser");
