@@ -77,6 +77,9 @@ private:
 			BFilePanel*     fSavePanel;
 			IconFormat      fPendingSaveFormat;
 
+			bool            fTagFilterMode;
+			BString         fSavedSearchQuery;
+
 #ifdef HVIF_STORE_CLIENT
 			BButton*        fCopyRDefBtn;
 			BButton*        fCopyCppBtn;

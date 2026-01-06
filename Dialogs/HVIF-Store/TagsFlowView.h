@@ -44,6 +44,8 @@ public:
 			void			ToggleExpanded();
 			bool			IsExpanded() const { return fExpanded; }
 
+			void			Filter(const char* query);
+
 private:
 			void			_RebuildViews();
 			void			_DoLayout();

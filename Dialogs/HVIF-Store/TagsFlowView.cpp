@@ -190,6 +190,38 @@ TagsFlowView::ToggleExpanded()
 
 
 void
+TagsFlowView::Filter(const char* query)
+{
+	BString q(query);
+	q.ToLower();
+
+	for (int32 i = 0; i < fChipViews.CountItems(); i++) {
+		ChipView* chip = fChipViews.ItemAt(i);
+
+		if (chip->Style() == B_CHIP_STYLE_ACTION) {
+			if (chip->IsHidden())
+				chip->Show();
+			continue;
+		}
+
+		BString label(chip->Label());
+		label.ToLower();
+
+		if (q.IsEmpty() || label.FindFirst(q) >= 0 || chip->Value() == B_CONTROL_ON) {
+			if (chip->IsHidden())
+				chip->Show();
+		} else {
+			if (!chip->IsHidden())
+				chip->Hide();
+		}
+	}
+
+	_DoLayout();
+	Invalidate();
+}
+
+
+void
 TagsFlowView::_RebuildViews()
 {
 	while (!fChipViews.IsEmpty()) {
@@ -296,6 +328,9 @@ TagsFlowView::_DoLayout()
 
 	for (int32 i = 0; i < fChipViews.CountItems(); i++) {
 		ChipView* chip = fChipViews.ItemAt(i);
+
+		if (chip->IsHidden())
+			continue;
 
 		float chipWidth, chipHeight;
 		chip->GetPreferredSize(&chipWidth, &chipHeight);

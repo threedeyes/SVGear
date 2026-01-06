@@ -52,7 +52,8 @@ IconSelectionDialog::IconSelectionDialog(BMessenger target)
 	fSearchRunner(NULL),
 	fPreserveSelectionId(-1),
 	fSavePanel(NULL),
-	fPendingSaveFormat(kFormatNone)
+	fPendingSaveFormat(kFormatNone),
+	fTagFilterMode(false)
 {
 	float width, height;
 	_CalculateWindowSize(&width, &height);
@@ -436,9 +437,13 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 	switch (message->what) {
 		case kMsgSearch: {
 			BString currentQuery = fSearchEntry->Text();
-			if (currentQuery != fLastSearchQuery) {
-				fLastSearchQuery = currentQuery;
-				_ScheduleSearch();
+			if (fTagFilterMode) {
+				fTagsView->Filter(currentQuery.String());
+			} else {
+				if (currentQuery != fLastSearchQuery) {
+					fLastSearchQuery = currentQuery;
+					_ScheduleSearch();
+				}
 			}
 			break;
 		}
@@ -458,11 +463,16 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			fTagsView->GetSelectedTags(fCurrentTags);
 			fInfoView->SetFilterTags(fCurrentTags);
 
-			bool expanded = fTagsView->IsExpanded();
-			if (expanded) {
+			if (fTagFilterMode) {
 				fTagsView->ToggleExpanded();
-                if (fGridScroll->IsHidden()) fGridScroll->Show();
-                if (fInfoView->IsHidden()) fInfoView->Show();
+
+				fTagFilterMode = false;
+				fSearchEntry->SetLabel(B_TRANSLATE("Search:"));
+				fSearchEntry->SetText(fSavedSearchQuery.String());
+				fTagsView->Filter("");
+
+				fGridScroll->Show();
+				fInfoView->Show();
 			}
 
 			_Search(true);
@@ -482,11 +492,24 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 			bool expanded = fTagsView->IsExpanded();
 
 			if (expanded) {
+				fTagFilterMode = true;
+				fSavedSearchQuery = fSearchEntry->Text();
+				fSearchEntry->SetText("");
+				fSearchEntry->SetLabel(B_TRANSLATE("Filter tags:"));
+				fSearchEntry->MakeFocus(true);
+				fTagsView->Filter("");
+
 				fGridScroll->Hide();
 				fInfoView->Hide();
 			} else {
+				fTagFilterMode = false;
+				fSearchEntry->SetText(fSavedSearchQuery.String());
+				fSearchEntry->SetLabel(B_TRANSLATE("Search:"));
+				fTagsView->Filter("");
+
 				fGridScroll->Show();
 				fInfoView->Show();
+				_Search(true);
 			}
 			break;
 		}
@@ -494,9 +517,14 @@ IconSelectionDialog::MessageReceived(BMessage* message)
 		case kMsgClearTags: {
 			fTagsView->DeselectAll();
 			fSearchEntry->SetText("");
+			if (fTagFilterMode)
+				fTagsView->Filter("");
+
 			fTagsView->GetSelectedTags(fCurrentTags);
 			fInfoView->SetFilterTags(fCurrentTags);
-			_Search(true);
+
+			if (!fTagFilterMode)
+				_Search(true);
 			break;
 		}
 
